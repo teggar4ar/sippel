@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class DetailAktivitas extends Model
+{
+    use SoftDeletes;
+
+    protected $table = 'detail_aktivitas';
+
+    protected $fillable = [
+        'kehadiran',
+        'nilai',
+        'partisipasi',
+        'catatan',
+        'aktivitas_pembelajaran_id',
+        'siswa_id',
+    ];
+
+    protected $casts = [
+        'nilai' => 'decimal:2',
+        'partisipasi' => 'decimal:2',
+    ];
+
+    /**
+     * Get the learning activity this detail belongs to
+     */
+    public function aktivitasPembelajaran(): BelongsTo
+    {
+        return $this->belongsTo(AktivitasPembelajaran::class);
+    }
+
+    /**
+     * Get the student for this activity detail
+     */
+    public function siswa(): BelongsTo
+    {
+        return $this->belongsTo(Siswa::class);
+    }
+}

@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 final class UserResource extends Resource
 {
@@ -23,6 +24,40 @@ final class UserResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    /**
+     * Hide Users navigation from non-admin users
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = Auth::user();
+        if (!$user instanceof User) {
+            return false;
+        }
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Restrict access to admin users only
+     */
+    public static function canAccess(): bool
+    {
+        $user = Auth::user();
+        if (!$user instanceof User) {
+            return false;
+        }
+        return $user->hasRole('admin');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Manajemen';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 1;
+    }
 
     public static function getGloballySearchableAttributes(): array
     {

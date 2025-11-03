@@ -18,6 +18,8 @@ use Filament\Support\Enums\Platform;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -30,19 +32,27 @@ final class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('app')
+            ->path('app')
             ->login(Login::class)
             ->spa()
             ->profile()
-            ->multiFactorAuthentication(
-                AppAuthentication::make()
-                    ->recoverable(),
-            )
+            // ->multiFactorAuthentication(
+            //     AppAuthentication::make()
+            //         ->recoverable(),
+            // )
             ->sidebarCollapsibleOnDesktop()
-//            ->topNavigation()
+            //            ->topNavigation()
             ->colors([
                 'primary' => Color::Blue,
+            ])
+            ->navigationGroups([
+                'Master Data',
+                'Manajemen',
+                'Pembelajaran',
+                'Laporan',
+                'Dashboard',
+                'Data Saya',
             ])
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
@@ -51,10 +61,9 @@ final class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
+            ->widgets(
+                $this->getConditionalWidgets()
+            )
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -68,10 +77,29 @@ final class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])->globalSearchFieldSuffix(fn (): ?string => match (Platform::detect()) {
+            ])->globalSearchFieldSuffix(fn(): ?string => match (Platform::detect()) {
                 Platform::Windows, Platform::Linux => 'CTRL + K',
                 Platform::Mac => '⌘ + K',
                 default => null,
             });
+    }
+
+    /**
+     * Get widgets conditionally based on user role.
+     * Only admin users can see AccountWidget and FilamentInfoWidget.
+     */
+    protected function getConditionalWidgets(): array
+    {
+        $user = Auth::user();
+
+        // Only show default widgets to admin users
+        if ($user instanceof User && $user->hasRole('admin')) {
+            return [
+                AccountWidget::class,
+                FilamentInfoWidget::class,
+            ];
+        }
+
+        return [];
     }
 }

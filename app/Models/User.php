@@ -11,13 +11,16 @@ use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 final class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that should be hidden for serialization.
@@ -33,8 +36,8 @@ final class User extends Authenticatable implements FilamentUser, HasAppAuthenti
 
     public function canAccessPanel(Panel $panel): bool
     {
-        /* TODO: Please implement your own logic here. */
-        return true; // str_ends_with($this->email, '@larament.test');
+        // Allow all authenticated users with any of these roles to access the single admin panel
+        return $this->hasAnyRole(['admin', 'teacher', 'student']);
     }
 
     public function getAppAuthenticationSecret(): ?string
@@ -80,5 +83,54 @@ final class User extends Authenticatable implements FilamentUser, HasAppAuthenti
             'app_authentication_secret' => 'encrypted',
             'app_authentication_recovery_codes' => 'encrypted:array',
         ];
+    }
+
+    /**
+     * Accessor for Indonesian 'nama' - maps to 'name' field
+     * Provides compatibility for both name and nama references
+     */
+    public function getNamaAttribute(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Mutator for Indonesian 'nama' - maps to 'name' field
+     */
+    public function setNamaAttribute(string $value): void
+    {
+        $this->attributes['name'] = $value;
+    }
+
+    /**
+     * Get the student profile associated with this user
+     */
+    public function siswa(): HasOne
+    {
+        return $this->hasOne(Siswa::class);
+    }
+
+    /**
+     * Get all classes where this user is the homeroom teacher (wali kelas)
+     */
+    public function kelasAsWali(): HasMany
+    {
+        return $this->hasMany(Kelas::class, 'wali_kelas_id');
+    }
+
+    /**
+     * Get all subjects where this user is the teacher
+     */
+    public function mataPelajaranAsGuru(): HasMany
+    {
+        return $this->hasMany(MataPelajaran::class, 'guru_id');
+    }
+
+    /**
+     * Get all learning activities created by this teacher
+     */
+    public function aktivitasPembelajaran(): HasMany
+    {
+        return $this->hasMany(AktivitasPembelajaran::class, 'guru_id');
     }
 }
