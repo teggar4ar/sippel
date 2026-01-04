@@ -1,0 +1,28 @@
+{
+    "name": "SIPPEL - Portal Guru",
+    "short_name": "SIPPEL Guru",
+    "description": "Sistem Informasi Pencatatan Aktivitas Pembelajaran - Portal Guru",
+    "start_url": "/teacher",
+    "scope": "/teacher",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "background_color": "#f8fafc",
+    "theme_color": "#1e293b",
+    "icons": [
+        {
+            "src": "/icons/teacher-icon-192.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/teacher-icon-512.svg",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["education", "productivity"],
+    "lang": "id",
+    "dir": "ltr"
+}

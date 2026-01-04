@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('laporan', function (Blueprint $table) {
+        Schema::create('laporan', function (Blueprint $table): void {
             $table->id();
 
             // Aggregated/cached statistics

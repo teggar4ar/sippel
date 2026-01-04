@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\TahunAjarans\Schemas;
 
 use App\Models\TahunAjaran;
@@ -7,11 +9,10 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Validation\ValidationException;
 
-class TahunAjaranForm
+final class TahunAjaranForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -53,11 +54,11 @@ class TahunAjaranForm
                     ->helperText('Hanya satu tahun ajaran yang dapat aktif pada satu waktu')
                     ->inline(false)
                     ->live()
-                    ->afterStateUpdated(function ($state, $record) {
+                    ->afterStateUpdated(function ($state, $record): void {
                         if ($state) {
                             // Check if another academic year is already active
                             $activeExists = TahunAjaran::where('status', true)
-                                ->when($record, fn($query) => $query->where('id', '!=', $record->id))
+                                ->when($record, fn ($query) => $query->where('id', '!=', $record->id))
                                 ->exists();
 
                             if ($activeExists) {

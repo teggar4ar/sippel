@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('mata_pelajaran', function (Blueprint $table) {
+        Schema::create('mata_pelajaran', function (Blueprint $table): void {
             $table->id();
             $table->string('nama_mapel', 100); // Subject name
             $table->foreignId('guru_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();

@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('aktivitas_pembelajaran', function (Blueprint $table) {
+        Schema::create('aktivitas_pembelajaran', function (Blueprint $table): void {
             $table->id();
             $table->date('tanggal'); // Activity date
             $table->string('topik', 255)->nullable(); // Topic/title
@@ -24,6 +24,8 @@ return new class() extends Migration
             // Indexes
             $table->index('tanggal');
             $table->index(['kelas_id', 'tanggal']); // Composite index for filtering
+            $table->index(['kelas_id', 'mata_pelajaran_id', 'tanggal'], 'aktivitas_kelas_mapel_tanggal_idx');
+            $table->index(['mata_pelajaran_id', 'tanggal'], 'aktivitas_mapel_tanggal_idx');
         });
     }
 

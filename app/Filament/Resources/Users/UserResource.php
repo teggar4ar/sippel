@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 final class UserResource extends Resource
@@ -31,9 +32,10 @@ final class UserResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         $user = Auth::user();
-        if (!$user instanceof User) {
+        if (! $user instanceof User) {
             return false;
         }
+
         return $user->hasRole('admin');
     }
 
@@ -43,18 +45,19 @@ final class UserResource extends Resource
     public static function canAccess(): bool
     {
         $user = Auth::user();
-        if (!$user instanceof User) {
+        if (! $user instanceof User) {
             return false;
         }
+
         return $user->hasRole('admin');
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string
     {
         return 'Manajemen';
     }
 
-    public static function getNavigationSort(): ?int
+    public static function getNavigationSort(): int
     {
         return 1;
     }
@@ -91,5 +94,14 @@ final class UserResource extends Resource
             'create' => CreateUser::route('/create'),
             'edit' => EditUser::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * Eager load relationships to prevent N+1 queries
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['roles', 'siswa']);
     }
 }

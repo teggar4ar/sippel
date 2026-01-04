@@ -11,8 +11,8 @@ use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -20,7 +20,19 @@ use Spatie\Permission\Traits\HasRoles;
 final class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'jenis_kelamin',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -36,7 +48,10 @@ final class User extends Authenticatable implements FilamentUser, HasAppAuthenti
 
     public function canAccessPanel(Panel $panel): bool
     {
-        // Allow all authenticated users with any of these roles to access the single admin panel
+        // During the authentication process (attemptWhen callback),
+        // the session doesn't have the user yet. Allow all valid roles to authenticate.
+        // After authentication, LoginResponse will redirect non-admins to their interfaces.
+        // Protection for direct /app access by non-admins is handled by panel middleware.
         return $this->hasAnyRole(['admin', 'teacher', 'student']);
     }
 
@@ -68,21 +83,6 @@ final class User extends Authenticatable implements FilamentUser, HasAppAuthenti
         /** @phpstan-ignore-next-line  */
         $this->app_authentication_recovery_codes = $codes;
         $this->save();
-    }
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'app_authentication_secret' => 'encrypted',
-            'app_authentication_recovery_codes' => 'encrypted:array',
-        ];
     }
 
     /**
@@ -132,5 +132,20 @@ final class User extends Authenticatable implements FilamentUser, HasAppAuthenti
     public function aktivitasPembelajaran(): HasMany
     {
         return $this->hasMany(AktivitasPembelajaran::class, 'guru_id');
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'app_authentication_secret' => 'encrypted',
+            'app_authentication_recovery_codes' => 'encrypted:array',
+        ];
     }
 }

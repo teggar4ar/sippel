@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('tahun_ajaran', function (Blueprint $table) {
+        Schema::create('tahun_ajaran', function (Blueprint $table): void {
             $table->id();
             $table->string('nama_tahun', 20); // e.g., "2024/2025"
             $table->enum('semester', ['Ganjil', 'Genap'])->default('Ganjil');

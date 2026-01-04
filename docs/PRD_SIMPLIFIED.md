@@ -1,4 +1,4 @@
-# Product Requirements Document: SIPPEL (Sistem Informasi Pemantauan Pembelajaran Kelas)
+# Product Requirements Document: Sistem Informasi Pencatatan Aktivitas Pembelajaran
 ## Simplified Version for Final Project
 
 ---
@@ -7,7 +7,7 @@
 
 **Version:** 1.0 (Simplified for Academic Final Project)  
 **Date:** October 19, 2025  
-**Project:** SIPPEL - Web-Based Classroom Learning Activity Monitoring System  
+**Project:** SIPPEL - Web-Based Classroom Learning Activity Recording and Monitoring System  
 **Author:** Student Final Project  
 **Status:** Final Project Specification  
 **Project Duration:** 3-4 months  
@@ -18,7 +18,7 @@
 
 ### 1.1 Project overview
 
-SIPPEL (Sistem Informasi Pemantauan Pembelajaran Kelas) is a web-based information system designed to help junior high schools (SMP) monitor and manage classroom learning activities. This system will replace manual, paper-based attendance and grading processes with a digital solution.
+SIPPEL (Sistem Informasi Pencatatan Aktivitas Pembelajaran) is a web-based information system designed to help junior high schools (SMP) monitor and manage classroom learning activities. This system will replace manual, paper-based attendance and grading processes with a digital solution.
 
 ### 1.2 Purpose of this document
 
@@ -782,9 +782,7 @@ If time permits, these features can be added for additional credit:
 ---
 
 **Document End**
-- [ ] **1.2.4** Publish Spatie config: `php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"`
-- [ ] **1.2.5** Install DomPDF for reports: `composer require barryvdh/laravel-dompdf`
-- [ ] **1.2.6** Publish DomPDF config (optional): `php artisan vendor:publish --provider="Barryvdh\DomPDF\ServiceProvider"`
+
 
 #### Task 1.3: Database migrations (Core tables)
 - [ ] **1.3.1** Modify existing User model migration (`0001_01_01_000000_create_users_table.php`):
@@ -1548,61 +1546,7 @@ If time permits, these features can be added for additional credit:
 
 ---
 
-## Summary of phase breakdown
 
-**Total tasks:** 155+ detailed subtasks across 8 phases (reduced from 160+ due to boilerplate)
-
-**Key principles applied:**
-1. ✅ **Not overengineered** - Focus on core functionality, no unnecessary complexity
-2. ✅ **Clean code** - Proper naming, documentation, validation
-3. ✅ **Maintainable** - Clear structure, consistent patterns, documented decisions
-4. ✅ **Extensible** - Modular design, relationships properly defined, easy to add features
-5. ✅ **Boilerplate-aware** - Leverages existing setup, avoids redundant work
-
-**Estimated effort distribution (adjusted for boilerplate):**
-- Phase 1 (Foundation): **15 hours** (reduced from 25 - boilerplate saves 10 hours)
-- Phase 2 (Master Data): 30 hours
-- Phase 3 (Core Functionality): 40 hours
-- Phase 4 (Student Interface): 20 hours
-- Phase 5 (Reporting): 25 hours
-- Phase 6 (Dashboards): 20 hours
-- Phase 7 (Testing): **25 hours** (reduced from 30 - quality tools already set up)
-- Phase 8 (Submission): 15 hours
-- **Total: ~190 hours** (vs. ~205 hours from scratch = **15 hours saved!** ⚡)
-- **Timeline: ~12 hours/week over 16 weeks** (very achievable!)
-
-**Boilerplate advantages:**
-- ✅ FilamentPHP already configured with best practices
-- ✅ Authentication and session management ready
-- ✅ Quality tools (Pint, Larastan, Rector) pre-installed
-- ✅ Testing framework (Pest) with plugins ready
-- ✅ Development workflow (`composer review`) established
-- ✅ Admin panel structure in place
-- ✅ No need to configure basic Laravel setup
-
-**Critical path:**
-Phase 1 → Phase 2 → Phase 3 → Phase 5 (dependencies must be completed in order)
-
-**Parallel work opportunities:**
-- Phase 4 and 5 can partially overlap
-- Phase 6 widgets can be developed alongside Phase 4-5
-- Documentation in Phase 7 can start during Phase 6
-
-**Quick start checklist:**
-1. ✅ Clone boilerplate (done)
-2. ✅ Run `composer update` (done)
-3. 🔲 Update `.env` for MySQL
-4. 🔲 Install Spatie Permission
-5. 🔲 Install DomPDF
-6. 🔲 Create migrations
-7. 🔲 Create models
-8. 🔲 Set up roles & seeders
-9. 🔲 Create Teacher & Student panels
-10. 🔲 Start building resources!
-
----
-
-## 10. Database performance best practices
 
 ### 10.1 Query optimization guidelines
 
@@ -1797,7 +1741,7 @@ If time permits, these features can be added for additional credit:
 | NIS | Student Identification Number |
 | Sakit | Sick leave (attendance status) |
 | Siswa | Student |
-| SIPPEL | Sistem Informasi Pemantauan Pembelajaran Kelas |
+| SIPPEL | Sistem Informasi Pencatatan Aktivitas Pembelajaran |
 | SMP | Junior High School (grades 7-9) |
 | Wali Kelas | Homeroom teacher |
 

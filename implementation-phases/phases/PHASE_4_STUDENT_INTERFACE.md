@@ -10,7 +10,7 @@
 
 ## Task 4.0: Define student routes
 
-- [ ] **4.0.1** Add student routes to `routes/web.php`:
+- [x] **4.0.1** Add student routes to `routes/web.php`:
   ```php
   // Student Routes (Livewire + FluxUI)
   Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
@@ -21,7 +21,7 @@
   });
   ```
 
-- [ ] **4.0.2** Test student routes:
+- [x] **4.0.2** Test student routes:
   - Access `/student` as student → should work
   - Access `/student` as admin → should get 403
   - Access `/student` as teacher → should get 403
@@ -50,7 +50,7 @@ resources/views/
         └── profil.blade.php
 ```
 
-- [ ] **4.1.1** Create student layout with Flux UI:
+- [x] **4.1.1** Create student layout with Flux UI:
   ```blade
   <!-- resources/views/layouts/student.blade.php -->
   <!DOCTYPE html>
@@ -107,18 +107,18 @@ resources/views/
   </html>
   ```
 
-- [ ] **4.1.2** Test navigation on mobile devices
+- [x] **4.1.2** Test navigation on mobile devices
 
 ---
 
 ## Task 4.2: Student dashboard (Mobile-first)
 
-- [ ] **4.2.1** Create dashboard Livewire component:
+- [x] **4.2.1** Create dashboard Livewire component:
   ```bash
   php artisan make:livewire Student/Dashboard
   ```
 
-- [ ] **4.2.2** Build mobile-optimized dashboard with Flux UI:
+- [x] **4.2.2** Build mobile-optimized dashboard with Flux UI:
   ```blade
   <div class="space-y-6">
       <div>
@@ -192,7 +192,7 @@ resources/views/
   </div>
   ```
 
-- [ ] **4.2.3** Implement data calculations in component:
+- [x] **4.2.3** Implement data calculations in component:
   ```php
   public function getAttendancePercentageProperty()
   {
@@ -204,18 +204,18 @@ resources/views/
   }
   ```
 
-- [ ] **4.2.4** Test dashboard on actual mobile devices
+- [x] **4.2.4** Test dashboard on actual mobile devices
 
 ---
 
 ## Task 4.3: Attendance history view (Mobile-first)
 
-- [ ] **4.3.1** Create Livewire component:
+- [x] **4.3.1** Create Livewire component:
   ```bash
   php artisan make:livewire Student/RiwayatKehadiran
   ```
 
-- [ ] **4.3.2** Build mobile-optimized attendance view:
+- [x] **4.3.2** Build mobile-optimized attendance view:
   ```blade
   <div class="space-y-6">
       <flux:heading size="xl">Riwayat Kehadiran</flux:heading>
@@ -312,7 +312,7 @@ resources/views/
   </div>
   ```
 
-- [ ] **4.3.3** Implement filtering logic:
+- [x] **4.3.3** Implement filtering logic:
   ```php
   public function getRiwayatProperty()
   {
@@ -362,18 +362,18 @@ resources/views/
   }
   ```
 
-- [ ] **4.3.4** Test attendance history on mobile devices
+- [x] **4.3.4** Test attendance history on mobile devices
 
 ---
 
 ## Task 4.4: Grade history view (Mobile-first)
 
-- [ ] **4.4.1** Create Livewire component:
+- [x] **4.4.1** Create Livewire component:
   ```bash
   php artisan make:livewire Student/RiwayatNilai
   ```
 
-- [ ] **4.4.2** Build mobile-optimized grade view:
+- [x] **4.4.2** Build mobile-optimized grade view:
   ```blade
   <div class="space-y-6">
       <flux:heading size="xl">Riwayat Nilai</flux:heading>
@@ -472,7 +472,7 @@ resources/views/
   </div>
   ```
 
-- [ ] **4.4.3** Implement data calculations:
+- [x] **4.4.3** Implement data calculations:
   ```php
   public function getSummaryPerMapelProperty()
   {
@@ -496,13 +496,13 @@ resources/views/
   }
   ```
 
-- [ ] **4.4.4** Test grade history on mobile devices
+- [x] **4.4.4** Test grade history on mobile devices
 
 ---
 
 ## Task 4.5: Permissions and access control
 
-- [ ] **4.5.1** Create policy for `DetailAktivitas`:
+- [x] **4.5.1** Create policy for `DetailAktivitas`:
   ```bash
   php artisan make:policy DetailAktivitasPolicy --model=DetailAktivitas
   ```
@@ -528,7 +528,7 @@ resources/views/
   }
   ```
 
-- [ ] **4.5.2** Add middleware to student routes:
+- [x] **4.5.2** Add middleware to student routes:
   ```php
   Route::middleware(['auth', 'role:student'])->prefix('student')->group(function () {
       Route::get('/dashboard', Dashboard::class)->name('student.dashboard');
@@ -537,7 +537,7 @@ resources/views/
   });
   ```
 
-- [ ] **4.5.3** Add data scoping in Livewire components:
+- [x] **4.5.3** Add data scoping in Livewire components:
   ```php
   // Ensure student can only see their own data
   public function mount()
@@ -548,85 +548,78 @@ resources/views/
   }
   ```
 
-- [ ] **4.5.4** Test unauthorized access attempts:
+- [x] **4.5.4** Test unauthorized access attempts:
   - Student trying to access other student's data via URL manipulation
   - Student trying to access teacher/admin routes
   - Verify 403/404 errors for unauthorized access
 
 ---
 
-## Task 4.6: Progressive Web App (PWA) features (Optional)
+## Task 4.6: Progressive Web App (PWA) features
 
-- [ ] **4.6.1** Add PWA manifest for install prompt:
-  ```json
-  {
-    "name": "SIPPEL - Student Portal",
-    "short_name": "SIPPEL",
-    "start_url": "/student/dashboard",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#3b82f6",
-    "icons": [
-      {
-        "src": "/icon-192.png",
-        "sizes": "192x192",
-        "type": "image/png"
-      },
-      {
-        "src": "/icon-512.png",
-        "sizes": "512x512",
-        "type": "image/png"
-      }
-    ]
-  }
-  ```
+- [x] **4.6.1** Add PWA manifest for install prompt:
+  - Created `/public/manifest-student.json` for student portal
+  - Created `/public/manifest-teacher.json` for teacher portal
+  - Added theme colors: teal (#0d9488) for student, slate (#1e293b) for teacher
+  - Configured standalone display mode with portrait orientation
 
-- [ ] **4.6.2** Add service worker for offline support (basic):
-  - Cache static assets
-  - Fallback page for offline access
-  - Test install on mobile devices
+- [x] **4.6.2** Add service worker for offline support:
+  - Created `/public/sw-student.js` for student portal
+  - Created `/public/sw-teacher.js` for teacher portal
+  - Network-first strategy with cache fallback
+  - Static asset caching for CSS, JS, images, fonts
+  - Created `/public/offline.html` fallback page
+  - Skips Livewire and API requests
 
-- [ ] **4.6.3** Test PWA installation on iOS and Android
+- [x] **4.6.3** Add PWA meta tags to layouts:
+  - Added `theme-color`, `apple-mobile-web-app-capable` meta tags
+  - Added manifest link and apple-touch-icon
+  - Service worker registration script in both layouts
+
+- [x] **4.6.4** Create app icons:
+  - Created SVG icons at `/public/icons/`
+  - Student icons: teal background (#0d9488)
+  - Teacher icons: slate background (#1e293b)
 
 ---
 
 ## ✅ Phase 4 Completion Checklist
 
 ### Routes & Layout
-- [ ] Student routes defined in routes/web.php
-- [ ] Student base layout created (resources/views/layouts/student.blade.php)
-- [ ] Navigation layout created with Flux UI (sidebar + header)
-- [ ] Flux header with mobile toggle implemented
-- [ ] Collapsible sidebar for mobile working
-- [ ] User profile dropdown with logout working
+- [x] Student routes defined in routes/web.php
+- [x] Student base layout created (resources/views/layouts/student.blade.php)
+- [x] Navigation layout created with Flux UI (sidebar + header)
+- [x] Flux header with mobile toggle implemented
+- [x] Collapsible sidebar for mobile working
+- [x] User profile dropdown with logout working
 
 ### Livewire Components
-- [ ] Livewire component directory structure created
-- [ ] Student dashboard with mobile-first stat cards
-- [ ] Attendance history page with card-based layout
-- [ ] Grade history page with color-coded badges
-- [ ] Profile page (optional)
+- [x] Livewire component directory structure created
+- [x] Student dashboard with mobile-first stat cards
+- [x] Attendance history page with card-based layout
+- [x] Grade history page with color-coded badges
+- [x] Profile page (optional)
 
 ### Data & Features
-- [ ] Summary statistics by subject implemented
-- [ ] All filters working properly with live updates
-- [ ] Color coding and visual indicators (badges, stars)
-- [ ] Teacher feedback/notes visible to students
-- [ ] Performance optimized (< 10 queries per page with eager loading)
+- [x] Summary statistics by subject implemented
+- [x] All filters working properly with live updates
+- [x] Color coding and visual indicators (badges, stars)
+- [x] Teacher feedback/notes visible to students
+- [x] Performance optimized (< 10 queries per page with eager loading)
 
 ### Security & Access Control
-- [ ] DetailAktivitas policy created and applied
-- [ ] Policies prevent unauthorized access
-- [ ] Student can only see their own data
-- [ ] Cross-role access restrictions verified
-- [ ] Middleware protecting student routes tested
+- [x] DetailAktivitas policy created and applied
+- [x] Policies prevent unauthorized access
+- [x] Student can only see their own data
+- [x] Cross-role access restrictions verified
+- [x] Middleware protecting student routes tested
 
 ### Testing
 - [ ] Mobile responsiveness tested on actual devices (iOS, Android)
 - [ ] Touch targets verified (44px minimum)
-- [ ] Student authentication flow tested
-- [ ] Data scoping tested (can't see other students' data)
-- [ ] PWA features implemented (optional)
+- [x] Student authentication flow tested
+- [x] Data scoping tested (can't see other students' data)
+- [x] PWA features implemented
 
 ---
 
@@ -645,7 +638,7 @@ Phase 4 is complete when:
 10. ✅ Interface works smoothly on mobile devices (iOS, Android)
 11. ✅ Touch targets are large enough (44px minimum)
 12. ✅ Performance is acceptable (< 10 queries per page)
-13. ✅ PWA installable on mobile home screen (optional)
+13. ✅ PWA installable on mobile home screen
 
 ---
 

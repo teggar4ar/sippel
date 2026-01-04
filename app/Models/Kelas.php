@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Kelas extends Model
+final class Kelas extends Model
 {
     use SoftDeletes;
 
@@ -65,6 +67,6 @@ class Kelas extends Model
      */
     public function getNamaLengkapAttribute(): string
     {
-        return $this->tingkat_kelas . $this->grup_kelas;
+        return $this->tingkat_kelas.$this->grup_kelas;
     }
 }

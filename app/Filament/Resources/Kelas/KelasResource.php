@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Kelas;
 
 use App\Filament\Resources\Kelas\Pages\CreateKelas;
@@ -17,13 +19,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
-class KelasResource extends Resource
+final class KelasResource extends Resource
 {
     protected static ?string $model = Kelas::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
-    protected static ?string $recordTitleAttribute = 'nama_lengkap';
 
     protected static ?int $navigationSort = 2;
 
@@ -33,7 +33,26 @@ class KelasResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Kelas';
 
-    public static function getNavigationGroup(): ?string
+    /**
+     * Get the attributes that can be searched globally.
+     *
+     * @return array<string>
+     */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['tingkat_kelas', 'grup_kelas'];
+    }
+
+    /**
+     * Get the title for a global search result.
+     */
+    public static function getGlobalSearchResultTitle(\Illuminate\Database\Eloquent\Model $record): string
+    {
+        /** @var Kelas $record */
+        return $record->nama_lengkap;
+    }
+
+    public static function getNavigationGroup(): string
     {
         return 'Master Data';
     }
@@ -41,6 +60,7 @@ class KelasResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         $user = Auth::user();
+
         /** @var \App\Models\User|null $user */
         return Auth::check() && $user && $user->hasRole('admin');
     }
@@ -48,6 +68,7 @@ class KelasResource extends Resource
     public static function canAccess(): bool
     {
         $user = Auth::user();
+
         /** @var \App\Models\User|null $user */
         return Auth::check() && $user && $user->hasRole('admin');
     }
@@ -76,6 +97,15 @@ class KelasResource extends Resource
             'create' => CreateKelas::route('/create'),
             'edit' => EditKelas::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * Eager load relationships to prevent N+1 queries
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['waliKelas', 'tahunAjaran']);
     }
 
     public static function getRecordRouteBindingEloquentQuery(): Builder

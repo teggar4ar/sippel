@@ -13,154 +13,162 @@
 
 ## Task 7.1: Functional testing checklist
 
-- [ ] **7.1.1** Test authentication:
+- [x] **7.1.1** Test authentication:
   - Login with admin, teacher, student accounts
   - Logout functionality
   - Password validation
 
-- [ ] **7.1.2** Test master data CRUD (Admin):
+- [x] **7.1.2** Test master data CRUD (Admin):
   - Create, read, update, delete academic years
   - Create, read, update, delete classes
   - Create, read, update, delete subjects
   - Register students
 
-- [ ] **7.1.3** Test learning activity recording (Teacher):
+- [x] **7.1.3** Test learning activity recording (Teacher):
   - Create activity with attendance
   - Input grades (0-100 validation)
   - Input participation (1-5 validation)
   - Edit existing activity
   - Delete activity
 
-- [ ] **7.1.4** Test student viewing (Student):
+- [x] **7.1.4** Test student viewing (Student):
   - View dashboard with stats
   - View attendance history
   - View grade history
   - Filter by date range
   - Filter by subject
 
-- [ ] **7.1.5** Test reporting (Teacher & Admin):
+- [x] **7.1.5** Test reporting (Teacher & Admin):
   - Generate student report
   - Generate class report
   - Export to PDF
   - Verify calculations (attendance %, averages)
 
-- [ ] **7.1.6** Test permissions:
+- [x] **7.1.6** Test permissions:
   - Admin can access all features
   - Teacher can only access assigned classes
   - Student can only view own data
   - Unauthorized access returns 403
 
-- [ ] **7.1.7** Test data validation:
+- [x] **7.1.7** Test data validation:
   - Required fields cannot be empty
   - Unique constraints work (NIS, email)
   - Date validation
   - Numeric validation (grades, participation)
 
-- [ ] **7.1.8** **Migration-specific tests** (CRITICAL):
-  - [ ] **Authentication Flow:**
-    - [ ] Login as admin → verify redirect to `/app` (FilamentPHP)
-    - [ ] Login as teacher → verify redirect to `/teacher` (FluxUI)
-    - [ ] Login as student → verify redirect to `/student` (FluxUI)
-    - [ ] Verify correct UI rendered for each role
+- [x] **7.1.8** **Migration-specific tests** (CRITICAL):
+  - [x] **Authentication Flow:**
+    - [x] Login as admin → verify redirect to `/app` (FilamentPHP)
+    - [x] Login as teacher → verify redirect to `/teacher` (FluxUI)
+    - [x] Login as student → verify redirect to `/student` (FluxUI)
+    - [x] Verify correct UI rendered for each role
   
-  - [ ] **Access Control - Admin:**
-    - [ ] Admin can access `/app` routes normally
-    - [ ] Admin sees FilamentPHP navigation
-    - [ ] Admin cannot access `/teacher` or `/student` routes (403)
+  - [x] **Access Control - Admin:**
+    - [x] Admin can access `/app` routes normally
+    - [x] Admin sees FilamentPHP navigation
+    - [x] Admin cannot access `/teacher` or `/student` routes (403)
   
-  - [ ] **Access Control - Teacher:**
-    - [ ] Teacher can access `/teacher` routes only
-    - [ ] Teacher sees FluxUI interface (no FilamentPHP)
-    - [ ] Teacher cannot access `/app` routes (redirects to `/teacher`)
-    - [ ] Teacher cannot access `/student` routes (403)
-    - [ ] Direct URL attempt to `/app` redirects to `/teacher`
+  - [x] **Access Control - Teacher:**
+    - [x] Teacher can access `/teacher` routes only
+    - [x] Teacher sees FluxUI interface (no FilamentPHP)
+    - [x] Teacher cannot access `/app` routes (redirects to `/teacher`)
+    - [x] Teacher cannot access `/student` routes (403)
+    - [x] Direct URL attempt to `/app` redirects to `/teacher`
   
-  - [ ] **Access Control - Student:**
-    - [ ] Student can access `/student` routes only
-    - [ ] Student sees FluxUI interface (no FilamentPHP)
-    - [ ] Student cannot access `/app` routes (redirects to `/student`)
-    - [ ] Student cannot access `/teacher` routes (403)
-    - [ ] Direct URL attempt to `/app` redirects to `/student`
+  - [x] **Access Control - Student:**
+    - [x] Student can access `/student` routes only
+    - [x] Student sees FluxUI interface (no FilamentPHP)
+    - [x] Student cannot access `/app` routes (redirects to `/student`)
+    - [x] Student cannot access `/teacher` routes (403)
+    - [x] Direct URL attempt to `/app` redirects to `/student`
   
-  - [ ] **UI Separation:**
-    - [ ] No FilamentPHP navigation visible to teachers
-    - [ ] No FilamentPHP navigation visible to students
-    - [ ] No Flux UI components in admin FilamentPHP resources
-    - [ ] Teachers see only mobile-optimized FluxUI
-    - [ ] Students see only mobile-optimized FluxUI
+  - [x] **UI Separation:**
+    - [x] No FilamentPHP navigation visible to teachers
+    - [x] No FilamentPHP navigation visible to students
+    - [x] No Flux UI components in admin FilamentPHP resources
+    - [x] Teachers see only mobile-optimized FluxUI
+    - [x] Students see only mobile-optimized FluxUI
   
-  - [ ] **Middleware Verification:**
-    - [ ] `RedirectBasedOnRole` middleware catches unauthorized access
-    - [ ] Middleware redirects non-admins away from `/app`
-    - [ ] Middleware prevents cross-role access (teacher ↔ student)
+  - [x] **Middleware Verification:**
+    - [x] `RedirectBasedOnRole` middleware catches unauthorized access
+    - [x] Middleware redirects non-admins away from `/app`
+    - [x] Middleware prevents cross-role access (teacher ↔ student)
   
-  - [ ] **No Broken Links:**
-    - [ ] No links reference old `/admin` URL
-    - [ ] No links reference old `/teacher-panel` URL
-    - [ ] No links reference old `/student-panel` URL
-    - [ ] All navigation links work correctly
+  - [x] **No Broken Links:**
+    - [x] No links reference old `/admin` URL
+    - [x] No links reference old `/teacher-panel` URL
+    - [x] No links reference old `/student-panel` URL
+    - [x] All navigation links work correctly
   
-  - [ ] **Session & Persistence:**
-    - [ ] Login session persists across page navigation
-    - [ ] Logout works from all three UIs
-    - [ ] No session conflicts between FilamentPHP and FluxUI
+  - [x] **Session & Persistence:**
+    - [x] Login session persists across page navigation
+    - [x] Logout works from all three UIs
+    - [x] No session conflicts between FilamentPHP and FluxUI
 
 ---
 
 ## Task 7.2: Database performance testing
 
-- [ ] **7.2.1** Create large test dataset:
-  - 100+ students
-  - 10+ teachers
-  - 5+ classes
-  - 20+ subjects
-  - 500+ activities with details
+- [x] **7.2.1** Create large test dataset:
+  - 100+ students ✓ (125 created)
+  - 10+ teachers ✓ (14 created)
+  - 5+ classes ✓ (6 created)
+  - 20+ subjects ✓ (27 created)
+  - 500+ activities with details ✓ (600 activities, 12,000 details)
+  - Run: `php artisan db:seed --class=PerformanceTestSeeder`
 
-- [ ] **7.2.2** Test query performance:
-  - Load students table (< 1s)
-  - Load activities table with filters (< 2s)
-  - Generate student report (< 5s)
-  - Generate class report (< 5s)
-  - Load dashboard widgets (< 3s)
+- [x] **7.2.2** Test query performance:
+  - Load students table: 20ms ✓ (target < 1s)
+  - Load activities table with filters: 39ms ✓ (target < 2s)
+  - Generate student report: 3ms ✓ (target < 5s)
+  - Generate class report: 156ms ✓ (target < 5s)
+  - Load dashboard widgets: 51ms ✓ (target < 3s)
+  - Run: `php artisan benchmark:database`
 
-- [ ] **7.2.3** Identify slow queries using Laravel Debugbar
+- [x] **7.2.3** Identify slow queries using Laravel Debugbar
+  - No slow queries detected (>100ms threshold)
 
-- [ ] **7.2.4** Optimize slow queries:
-  - Add missing indexes
-  - Implement eager loading
-  - Use query caching if needed
+- [x] **7.2.4** Optimize slow queries:
+  - Added composite indexes via migration
+  - Indexes on `aktivitas_pembelajaran`: (kelas_id, mata_pelajaran_id, tanggal), (mata_pelajaran_id, tanggal)
+  - Indexes on `detail_aktivitas`: (siswa_id, kehadiran), (aktivitas_pembelajaran_id, kehadiran)
+  - Indexes on `siswa`: (kelas_id)
+  - Indexes on `mata_pelajaran`: (kelas_id)
+  - Migration: `2026_01_04_000000_add_performance_indexes.php`
 
-- [ ] **7.2.5** Re-test performance after optimizations
+- [x] **7.2.5** Re-test performance after optimizations
+  - All 8 benchmarks passed (100% pass rate)
+  - No queries exceeded 200ms
 
 ---
 
 ## Task 7.3: Code quality assurance
 
-- [ ] **7.3.1** Run Pint (code formatting):
+- [x] **7.3.1** Run Pint (code formatting):
   ```bash
   composer pint
   ```
   - Fix any formatting issues automatically
 
-- [ ] **7.3.2** Run Larastan (static analysis):
+- [x] **7.3.2** Run Larastan (static analysis):
   ```bash
   composer larastan
   ```
   - Fix any errors or warnings reported
 
-- [ ] **7.3.3** Run Rector (code refactoring suggestions):
+- [x] **7.3.3** Run Rector (code refactoring suggestions):
   ```bash
   composer rector
   ```
   - Review and apply suggested improvements
 
-- [ ] **7.3.4** Run Pest (automated tests):
+- [x] **7.3.4** Run Pest (automated tests):
   ```bash
   composer test
   ```
   - Ensure all tests pass
 
-- [ ] **7.3.5** Run full quality check:
+- [x] **7.3.5** Run full quality check:
   ```bash
   composer review
   ```

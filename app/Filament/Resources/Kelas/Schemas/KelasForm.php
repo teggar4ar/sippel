@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Kelas\Schemas;
 
 use App\Models\TahunAjaran;
-use App\Models\User;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Get;
 use Filament\Schemas\Schema;
 
-class KelasForm
+final class KelasForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -30,9 +30,7 @@ class KelasForm
 
                 Select::make('grup_kelas')
                     ->label('Grup Kelas')
-                    ->options(function () {
-                        return collect(range('A', 'Z'))->mapWithKeys(fn($letter) => [$letter => $letter])->toArray();
-                    })
+                    ->options(fn () => collect(range('A', 'Z'))->mapWithKeys(fn ($letter): array => [$letter => $letter])->toArray())
                     ->required()
                     ->native(false)
                     ->searchable()
@@ -41,15 +39,11 @@ class KelasForm
 
                 Select::make('tahun_ajaran_id')
                     ->label('Tahun Ajaran')
-                    ->options(function () {
-                        return TahunAjaran::query()
-                            ->get()
-                            ->mapWithKeys(fn($ta) => [$ta->id => $ta->nama_tahun . ' - ' . $ta->semester])
-                            ->toArray();
-                    })
-                    ->default(function () {
-                        return TahunAjaran::where('status', true)->first()?->id;
-                    })
+                    ->options(fn () => TahunAjaran::query()
+                        ->get()
+                        ->mapWithKeys(fn ($ta): array => [$ta->id => $ta->nama_tahun.' - '.$ta->semester])
+                        ->toArray())
+                    ->default(fn () => TahunAjaran::where('status', true)->first()?->id)
                     ->required()
                     ->native(false)
                     ->searchable()
@@ -62,7 +56,7 @@ class KelasForm
                     ->relationship(
                         name: 'waliKelas',
                         titleAttribute: 'name',
-                        modifyQueryUsing: fn($query) => $query->role('teacher')
+                        modifyQueryUsing: fn ($query) => $query->role('teacher')
                     )
                     ->searchable(['name', 'email'])
                     ->preload()

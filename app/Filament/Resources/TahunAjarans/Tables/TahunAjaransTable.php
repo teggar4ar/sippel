@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\TahunAjarans\Tables;
 
 use App\Models\TahunAjaran;
@@ -18,7 +20,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 
-class TahunAjaransTable
+final class TahunAjaransTable
 {
     public static function configure(Table $table): Table
     {
@@ -32,7 +34,7 @@ class TahunAjaransTable
                 TextColumn::make('semester')
                     ->label('Semester')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Ganjil' => 'success',
                         'Genap' => 'info',
                         default => 'gray',
@@ -73,7 +75,7 @@ class TahunAjaransTable
                                 ->update(['status' => false]);
                         }
                     })
-                    ->afterStateUpdated(function ($state) {
+                    ->afterStateUpdated(function ($state): void {
                         if ($state) {
                             Notification::make()
                                 ->success()
@@ -117,7 +119,7 @@ class TahunAjaransTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make()
-                    ->before(function (DeleteAction $action, TahunAjaran $record) {
+                    ->before(function (DeleteAction $action, TahunAjaran $record): void {
                         if ($record->status) {
                             Notification::make()
                                 ->danger()
@@ -138,7 +140,7 @@ class TahunAjaransTable
                         ->modalHeading('Aktifkan Tahun Ajaran')
                         ->modalDescription('Tindakan ini akan menonaktifkan tahun ajaran lain yang sedang aktif dan mengaktifkan tahun ajaran yang dipilih.')
                         ->modalSubmitActionLabel('Ya, Aktifkan')
-                        ->action(function (Collection $records) {
+                        ->action(function (Collection $records): void {
                             // Check if trying to activate more than one
                             if ($records->count() > 1) {
                                 Notification::make()
@@ -146,6 +148,7 @@ class TahunAjaransTable
                                     ->title('Gagal')
                                     ->body('Hanya dapat mengaktifkan satu tahun ajaran pada satu waktu.')
                                     ->send();
+
                                 return;
                             }
 
@@ -168,13 +171,13 @@ class TahunAjaransTable
                         ->label('Nonaktifkan')
                         ->icon('heroicon-o-x-circle')
                         ->requiresConfirmation()
-                        ->action(fn(Collection $records) => $records->each->update(['status' => false]))
+                        ->action(fn (Collection $records) => $records->each->update(['status' => false]))
                         ->deselectRecordsAfterCompletion()
                         ->color('danger'),
 
                     DeleteBulkAction::make()
-                        ->before(function (DeleteBulkAction $action, Collection $records) {
-                            $activeRecords = $records->filter(fn($record) => $record->status);
+                        ->before(function (DeleteBulkAction $action, Collection $records): void {
+                            $activeRecords = $records->filter(fn ($record) => $record->status);
 
                             if ($activeRecords->isNotEmpty()) {
                                 Notification::make()
@@ -188,8 +191,8 @@ class TahunAjaransTable
                         }),
 
                     ForceDeleteBulkAction::make()
-                        ->before(function (ForceDeleteBulkAction $action, Collection $records) {
-                            $activeRecords = $records->filter(fn($record) => $record->status);
+                        ->before(function (ForceDeleteBulkAction $action, Collection $records): void {
+                            $activeRecords = $records->filter(fn ($record) => $record->status);
 
                             if ($activeRecords->isNotEmpty()) {
                                 Notification::make()

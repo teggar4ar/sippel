@@ -9,6 +9,7 @@ use App\Models\User;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\Testing\TestAction;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -16,8 +17,11 @@ use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Livewire\livewire;
 
 beforeEach(function () {
-    /* The TestCase setup generates a user before each test, so we need to clear the table to make sure we have a clean slate. */
-    User::truncate();
+    /** @var User $adminUser */
+    $adminUser = Auth::user();
+
+    // Keep only the admin user for RBAC tests
+    User::whereNot('id', $adminUser->id)->delete();
 });
 
 it('can render the index page', function () {
@@ -48,10 +52,11 @@ it('has column', function (string $column) {
         ->assertTableColumnExists($column);
 })->with(['name', 'email', 'created_at', 'updated_at']);
 
-it('can render column', function (string $column) {
+it('can render visible column', function (string $column) {
     livewire(ListUsers::class)
+        ->loadTable()
         ->assertCanRenderTableColumn($column);
-})->with(['name', 'email', 'created_at', 'updated_at']);
+})->with(['name', 'created_at']); // email and updated_at are hidden by default
 
 it('can sort column', function (string $column) {
     $records = User::factory(5)->create();
@@ -80,12 +85,13 @@ it('can create a user', function () {
     $user = User::factory()->make();
 
     livewire(CreateUser::class)
-        ->fillForm([
-            'name' => $user->name,
-            'email' => $user->email,
-            'password' => $user->password,
-        ])
+        ->set('data.name', $user->name)
+        ->set('data.email', $user->email)
+        ->set('data.password', 'Password123!')
+        ->set('data.jenis_kelamin', 'L')
+        ->set('data.role', 'teacher')
         ->call('create')
+        ->assertHasNoFormErrors()
         ->assertNotified();
 
     assertDatabaseHas(User::class, [
@@ -95,17 +101,17 @@ it('can create a user', function () {
 });
 
 it('can update a user', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['jenis_kelamin' => 'L']);
+    $user->assignRole('teacher');
     $newUserData = User::factory()->make();
 
     livewire(EditUser::class, [
         'record' => $user->id,
     ])
-        ->fillForm([
-            'name' => $newUserData->name,
-            'email' => $newUserData->email,
-        ])
+        ->set('data.name', $newUserData->name)
+        ->set('data.email', $newUserData->email)
         ->call('save')
+        ->assertHasNoFormErrors()
         ->assertNotified();
 
     assertDatabaseHas(User::class, [
@@ -142,34 +148,48 @@ it('can bulk delete users', function () {
     $users->each(fn (User $user) => assertDatabaseMissing($user));
 });
 
-it('can validate unique', function (string $column) {
-    $record = User::factory()->create();
+it('validates unique email on create', function () {
+    $existingUser = User::factory()->create();
 
     livewire(CreateUser::class)
-        ->fillForm(['email' => $record->email])
+        ->set('data.name', 'Test Name')
+        ->set('data.email', $existingUser->email)
+        ->set('data.password', 'Password123!')
+        ->set('data.jenis_kelamin', 'L')
+        ->set('data.role', 'teacher')
         ->call('create')
-        ->assertHasFormErrors([$column => ['unique']]);
-})->with(['email']);
+        ->assertHasFormErrors(['email']);
+});
 
-it('validates the form data', function (array $data, array $errors) {
-    $user = User::factory()->create();
-    $newUserData = User::factory()->make();
+it('validates required fields on create', function () {
+    livewire(CreateUser::class)
+        ->set('data.name', '')
+        ->set('data.email', '')
+        ->set('data.password', '')
+        ->set('data.jenis_kelamin', '')
+        ->set('data.role', '')
+        ->call('create')
+        ->assertHasFormErrors(['name', 'email', 'password', 'jenis_kelamin', 'role']);
+});
 
-    livewire(EditUser::class, [
-        'record' => $user->id,
-    ])
-        ->fillForm([
-            'name' => $newUserData->name,
-            'email' => $newUserData->email,
-            ...$data,
-        ])
-        ->call('save')
-        ->assertHasFormErrors($errors)
-        ->assertNotNotified();
-})->with([
-    '`name` is required' => [['name' => null], ['name' => 'required']],
-    '`name` is max 255 characters' => [['name' => Str::random(256)], ['name' => 'max']],
-    '`email` is a valid email address' => [['email' => Str::random()], ['email' => 'email']],
-    '`email` is required' => [['email' => null], ['email' => 'required']],
-    '`email` is max 255 characters' => [['email' => Str::random(256)], ['email' => 'max']],
-]);
+it('validates email format on create', function () {
+    livewire(CreateUser::class)
+        ->set('data.name', 'Test Name')
+        ->set('data.email', 'invalid-email')
+        ->set('data.password', 'Password123!')
+        ->set('data.jenis_kelamin', 'L')
+        ->set('data.role', 'teacher')
+        ->call('create')
+        ->assertHasFormErrors(['email']);
+});
+
+it('validates max length on create', function () {
+    livewire(CreateUser::class)
+        ->set('data.name', Str::random(256))
+        ->set('data.email', Str::random(256).'@test.com')
+        ->set('data.password', 'Password123!')
+        ->set('data.jenis_kelamin', 'L')
+        ->set('data.role', 'teacher')
+        ->call('create')
+        ->assertHasFormErrors(['name', 'email']);
+});

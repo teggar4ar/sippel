@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('kelas', function (Blueprint $table) {
+        Schema::create('kelas', function (Blueprint $table): void {
             $table->id();
             $table->tinyInteger('tingkat_kelas'); // 7, 8, or 9 for junior high
             $table->char('grup_kelas', 1); // A, B, C, etc.

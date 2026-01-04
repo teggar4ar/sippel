@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\TahunAjarans;
 
 use App\Filament\Resources\TahunAjarans\Pages\CreateTahunAjaran;
@@ -17,7 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
-class TahunAjaranResource extends Resource
+final class TahunAjaranResource extends Resource
 {
     protected static ?string $model = TahunAjaran::class;
 
@@ -33,7 +35,7 @@ class TahunAjaranResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Tahun Ajaran';
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string
     {
         return 'Master Data';
     }
@@ -41,6 +43,7 @@ class TahunAjaranResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         $user = Auth::user();
+
         /** @var \App\Models\User|null $user */
         return Auth::check() && $user && $user->hasRole('admin');
     }
@@ -48,6 +51,7 @@ class TahunAjaranResource extends Resource
     public static function canAccess(): bool
     {
         $user = Auth::user();
+
         /** @var \App\Models\User|null $user */
         return Auth::check() && $user && $user->hasRole('admin');
     }

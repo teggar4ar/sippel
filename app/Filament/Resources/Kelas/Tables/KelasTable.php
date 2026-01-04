@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Kelas\Tables;
 
 use App\Models\TahunAjaran;
@@ -13,9 +15,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
-class KelasTable
+final class KelasTable
 {
     public static function configure(Table $table): Table
     {
@@ -52,7 +53,7 @@ class KelasTable
                 TextColumn::make('tahunAjaran.semester')
                     ->label('Semester')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Ganjil' => 'success',
                         'Genap' => 'info',
                         default => 'gray',
@@ -94,10 +95,8 @@ class KelasTable
                     ->searchable()
                     ->preload()
                     ->native(false)
-                    ->getOptionLabelFromRecordUsing(fn(TahunAjaran $record) => "{$record->nama_tahun} - {$record->semester}")
-                    ->default(function () {
-                        return TahunAjaran::where('status', true)->first()?->id;
-                    }),
+                    ->getOptionLabelFromRecordUsing(fn (TahunAjaran $record): string => "{$record->nama_tahun} - {$record->semester}")
+                    ->default(fn () => TahunAjaran::where('status', true)->first()?->id),
 
                 TrashedFilter::make(),
             ])

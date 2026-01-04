@@ -1,47 +1,45 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
-class UserSeeder extends Seeder
+final class UserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * Creates an admin user with a randomly generated password.
      */
     public function run(): void
     {
+        // Generate a secure random password
+        $password = Str::random(12);
+
         // Create Admin user
         $admin = User::create([
             'name' => 'Administrator',
             'email' => 'admin@sippel.sch.id',
-            'password' => Hash::make('admin123'),
+            'password' => Hash::make($password),
             'jenis_kelamin' => 'L',
             'email_verified_at' => now(),
         ]);
         $admin->assignRole('admin');
 
-        // Create Teacher user
-        $teacher = User::create([
-            'name' => 'Guru Contoh',
-            'email' => 'teacher@sippel.sch.id',
-            'password' => Hash::make('teacher123'),
-            'jenis_kelamin' => 'L',
-            'email_verified_at' => now(),
-        ]);
-        $teacher->assignRole('teacher');
-
-        // Create Student user
-        $student = User::create([
-            'name' => 'Siswa Contoh',
-            'email' => 'student@sippel.sch.id',
-            'password' => Hash::make('student123'),
-            'jenis_kelamin' => 'L',
-            'email_verified_at' => now(),
-        ]);
-        $student->assignRole('student');
+        // Display credentials to console
+        $this->command->newLine();
+        $this->command->info('╔══════════════════════════════════════════════════════════╗');
+        $this->command->info('║           ADMIN CREDENTIALS (SAVE THIS!)                 ║');
+        $this->command->info('╠══════════════════════════════════════════════════════════╣');
+        $this->command->info('║  Email    : admin@sippel.sch.id                          ║');
+        $this->command->info('║  Password : '.mb_str_pad($password, 44).'║');
+        $this->command->info('╚══════════════════════════════════════════════════════════╝');
+        $this->command->newLine();
+        $this->command->warn('⚠️  Please save this password securely. It cannot be recovered!');
+        $this->command->newLine();
     }
 }

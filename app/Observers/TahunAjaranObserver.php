@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Observers;
 
 use App\Models\TahunAjaran;
 use Illuminate\Validation\ValidationException;
 
-class TahunAjaranObserver
+final class TahunAjaranObserver
 {
     /**
      * Handle the TahunAjaran "creating" event.
