@@ -11,6 +11,7 @@ use App\Observers\SiswaObserver;
 use App\Observers\TahunAjaranObserver;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as LoginResponseContract;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 final class AppServiceProvider extends ServiceProvider
@@ -23,6 +24,11 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Force HTTPS when behind a proxy (ngrok, cloudflare, etc.)
+        if ($this->app->environment('local') && request()->header('X-Forwarded-Proto') === 'https') {
+            URL::forceScheme('https');
+        }
+
         $this->configureTable();
 
         // Register model observers
