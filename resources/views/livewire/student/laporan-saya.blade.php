@@ -10,8 +10,12 @@
         <div class="bg-white dark:bg-teal-900/30 rounded-xl shadow-sm border border-teal-200 dark:border-teal-800 overflow-hidden p-3">
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <label class="block text-[10px] font-medium text-teal-600 dark:text-teal-400 mb-1">Tahun Ajaran</label>
-                    <select wire:model.live="tahunAjaranId" class="w-full text-xs rounded-lg border-teal-200 dark:border-teal-700 dark:bg-teal-900 focus:border-teal-500 focus:ring-teal-500">
+                    <flux:select
+                        wire:model.live="tahunAjaranId"
+                        label="Tahun Ajaran"
+                        size="sm"
+                        class="border-teal-200 dark:border-teal-700 focus:border-teal-500 focus:outline-none focus:ring-0"
+                    >
                         <option value="">Pilih</option>
                         @foreach($this->tahunAjaranList as $ta)
                             <option value="{{ $ta->id }}">
@@ -19,16 +23,20 @@
                                 @if($ta->status) (Aktif) @endif
                             </option>
                         @endforeach
-                    </select>
+                    </flux:select>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-medium text-teal-600 dark:text-teal-400 mb-1">Mata Pelajaran</label>
-                    <select wire:model.live="mataPelajaranId" class="w-full text-xs rounded-lg border-teal-200 dark:border-teal-700 dark:bg-teal-900 focus:border-teal-500 focus:ring-teal-500">
+                    <flux:select
+                        wire:model.live="mataPelajaranId"
+                        label="Mata Pelajaran"
+                        size="sm"
+                        class="border-teal-200 dark:border-teal-700 focus:border-teal-500 focus:outline-none focus:ring-0"
+                    >
                         <option value="">Semua</option>
                         @foreach($this->mataPelajaranList as $mapel)
                             <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
                         @endforeach
-                    </select>
+                    </flux:select>
                 </div>
             </div>
         </div>

@@ -58,7 +58,12 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {{-- Kelas Selection --}}
                 <div>
-                    <flux:select wire:model.live="kelasId" label="Kelas Perwalian" placeholder="Pilih kelas...">
+                    <flux:select
+                        wire:model.live="kelasId"
+                        label="Kelas Perwalian"
+                        placeholder="Pilih kelas..."
+                        class="focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                    >
                         <option value="">Pilih Kelas</option>
                         @foreach($this->kelasWali as $kelas)
                             <option value="{{ $kelas->id }}">
@@ -71,7 +76,12 @@
 
                 {{-- Tahun Ajaran Selection --}}
                 <div>
-                    <flux:select wire:model.live="tahunAjaranId" label="Tahun Ajaran" placeholder="Pilih tahun ajaran...">
+                    <flux:select
+                        wire:model.live="tahunAjaranId"
+                        label="Tahun Ajaran"
+                        placeholder="Pilih tahun ajaran..."
+                        class="focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                    >
                         <option value="">Pilih Tahun Ajaran</option>
                         @foreach($this->tahunAjaranList as $ta)
                             <option value="{{ $ta->id }}">
@@ -85,7 +95,13 @@
                 @if($reportType === 'student')
                     {{-- Siswa Selection (for student report) --}}
                     <div class="sm:col-span-2">
-                        <flux:select wire:model.live="siswaId" label="Siswa" placeholder="Pilih siswa..." :disabled="!$kelasId">
+                        <flux:select
+                            wire:model.live="siswaId"
+                            label="Siswa"
+                            placeholder="Pilih siswa..."
+                            :disabled="!$kelasId"
+                            class="focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                        >
                             <option value="">{{ $kelasId ? 'Pilih Siswa' : 'Pilih kelas terlebih dahulu' }}</option>
                             @foreach($this->siswaList as $siswa)
                                 <option value="{{ $siswa->id }}">
@@ -97,7 +113,13 @@
                 @else
                     {{-- Mata Pelajaran Selection (for class report) --}}
                     <div>
-                        <flux:select wire:model.live="mataPelajaranId" label="Mata Pelajaran" placeholder="Pilih mata pelajaran..." :disabled="!$kelasId">
+                        <flux:select
+                            wire:model.live="mataPelajaranId"
+                            label="Mata Pelajaran"
+                            placeholder="Pilih mata pelajaran..."
+                            :disabled="!$kelasId"
+                            class="focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                        >
                             <option value="">{{ $kelasId ? 'Pilih Mata Pelajaran' : 'Pilih kelas terlebih dahulu' }}</option>
                             @foreach($this->mataPelajaranList as $mapel)
                                 <option value="{{ $mapel->id }}">
@@ -109,7 +131,11 @@
 
                     {{-- Sort By (for class report) --}}
                     <div>
-                        <flux:select wire:model.live="sortBy" label="Urutkan Berdasarkan">
+                        <flux:select
+                            wire:model.live="sortBy"
+                            label="Urutkan Berdasarkan"
+                            class="focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                        >
                             <option value="nilai">Nilai (Tertinggi)</option>
                             <option value="nilai_asc">Nilai (Terendah)</option>
                             <option value="kehadiran">Kehadiran (Tertinggi)</option>

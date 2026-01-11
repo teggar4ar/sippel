@@ -8,6 +8,7 @@ use App\Models\AktivitasPembelajaran;
 use App\Models\MataPelajaran;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -222,6 +223,7 @@ final class ListAktivitas extends Component
 
         if ($aktivitas) {
             $aktivitas->delete();
+            Cache::forget('teacher_dashboard_stats_'.Auth::id());
             session()->flash('success', 'Aktivitas berhasil dihapus.');
         }
 

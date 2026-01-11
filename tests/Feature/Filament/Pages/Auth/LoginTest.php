@@ -26,12 +26,11 @@ test('an unauthenticated user can not access the admin panel', function (): void
 
 test('an unauthenticated user can login', function (): void {
     Auth::logout();
+    Filament::auth()->logout();
 
     livewire(Login::class)
-        ->fillForm([
-            'email' => config('app.default_user.email'),
-            'password' => config('app.default_user.password'),
-        ])
+        ->set('data.email', config('app.default_user.email'))
+        ->set('data.password', config('app.default_user.password'))
         ->call('authenticate')
         ->assertHasNoFormErrors();
 });

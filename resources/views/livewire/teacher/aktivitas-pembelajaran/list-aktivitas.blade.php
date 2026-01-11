@@ -70,12 +70,15 @@
         <div class="p-3">
             {{-- Search row --}}
             <div class="flex gap-2">
-                <div class="flex-1 relative">
-                    <flux:icon name="magnifying-glass" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input wire:model.live.debounce.300ms="search"
-                           type="search"
-                           placeholder="Cari topik..."
-                           class="w-full h-10 pl-9 pr-3 text-sm rounded-lg border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:ring-blue-500">
+                <div class="flex-1">
+                    <flux:input
+                        wire:model.live.debounce.300ms="search"
+                        type="text"
+                        inputmode="search"
+                        placeholder="Cari topik..."
+                        icon="magnifying-glass"
+                        class:input="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                    />
                 </div>
                 @if($filterMapel || $filterTanggal || $filterPeriode || $search)
                     <button wire:click="clearFilters"
@@ -88,17 +91,21 @@
 
             {{-- Filter row --}}
             <div class="grid grid-cols-2 gap-2 mt-2">
-                <select wire:model.live="filterMapel"
-                        class="w-full h-10 px-3 text-sm rounded-lg border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:ring-blue-500">
+                <flux:select
+                    wire:model.live="filterMapel"
+                    class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                >
                     <option value="">Semua Mapel</option>
                     @foreach($this->mataPelajaran as $mapel)
                         <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
                     @endforeach
-                </select>
-                <input wire:model.live="filterTanggal"
-                       type="date"
-                       class="w-full h-10 px-3 text-sm rounded-lg border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                       {{ $filterPeriode ? 'disabled' : '' }}>
+                </flux:select>
+                <flux:input
+                    wire:model.live="filterTanggal"
+                    type="date"
+                    :disabled="$filterPeriode"
+                    class:input="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                />
             </div>
         </div>
 
@@ -110,12 +117,15 @@
                 </p>
                 <div class="flex items-center gap-1.5">
                     <span class="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">Per halaman:</span>
-                    <select wire:model.live="perPage"
-                            class="text-xs border-0 bg-transparent text-slate-600 dark:text-slate-300 focus:ring-0 py-0 pr-6 cursor-pointer">
+                    <flux:select
+                        wire:model.live="perPage"
+                        size="xs"
+                        class="text-xs border-transparent bg-transparent text-slate-600 dark:text-slate-300 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-transparent"
+                    >
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
-                    </select>
+                    </flux:select>
                 </div>
             </div>
         @endif

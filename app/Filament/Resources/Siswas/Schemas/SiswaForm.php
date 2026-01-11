@@ -36,7 +36,7 @@ final class SiswaForm
                                     }
                                 })
                                 ->dehydrated(false)
-                                ->visible(fn(string $operation): bool => $operation === 'create'),
+                                ->visible(fn (string $operation): bool => $operation === 'create'),
 
                             TextInput::make('nis')
                                 ->label('NIS (Nomor Induk Siswa)')
@@ -46,13 +46,13 @@ final class SiswaForm
                                 ->unique(ignoreRecord: true)
                                 ->placeholder('Contoh: 0012345678')
                                 ->helperText(
-                                    fn($get): string => $get('use_temporary_nis')
+                                    fn ($get): string => $get('use_temporary_nis')
                                         ? 'NIS sementara telah digenerate. Dapat diubah nanti.'
                                         : 'NIS harus 10 digit angka dan unik'
                                 )
                                 ->mask('9999999999')
                                 ->rules(['regex:/^\d{10}$/'])
-                                ->disabled(fn($get): bool => (bool) $get('use_temporary_nis'))
+                                ->disabled(fn ($get): bool => (bool) $get('use_temporary_nis'))
                                 ->dehydrated(),
                         ]),
 
@@ -83,9 +83,9 @@ final class SiswaForm
                             TextInput::make('user.password')
                                 ->label('Password')
                                 ->password()
-                                ->required(fn(string $operation): bool => $operation === 'create')
+                                ->required(fn (string $operation): bool => $operation === 'create')
                                 ->minLength(8)
-                                ->dehydrated(fn($state): bool => filled($state))
+                                ->dehydrated(fn ($state): bool => filled($state))
                                 ->placeholder('Minimal 8 karakter')
                                 ->helperText('Kosongkan jika tidak ingin mengubah password'),
 
@@ -109,12 +109,12 @@ final class SiswaForm
                                 ->relationship(
                                     'kelas',
                                     'id',
-                                    fn($query) => $query->whereHas('tahunAjaran', function ($q): void {
+                                    fn ($query) => $query->whereHas('tahunAjaran', function ($q): void {
                                         $q->where('status', true);
                                     })
                                 )
                                 ->getOptionLabelFromRecordUsing(
-                                    fn(Kelas $record): string => "{$record->tingkat_kelas}{$record->grup_kelas} - {$record->tahunAjaran->nama_tahun} {$record->tahunAjaran->semester}"
+                                    fn (Kelas $record): string => "{$record->tingkat_kelas}{$record->grup_kelas} - {$record->tahunAjaran->nama_tahun} {$record->tahunAjaran->semester}"
                                 )
                                 ->searchable()
                                 ->preload()
@@ -138,7 +138,7 @@ final class SiswaForm
             // Format: 9 + timestamp last 5 digits + 4 random digits
             $timestamp = mb_substr((string) time(), -5);
             $random = mb_str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
-            $nis = '9' . $timestamp . $random;
+            $nis = '9'.$timestamp.$random;
         } while (Siswa::where('nis', $nis)->exists());
 
         return $nis;

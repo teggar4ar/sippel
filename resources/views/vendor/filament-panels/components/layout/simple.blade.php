@@ -132,8 +132,8 @@
                     <div style="width: 100%; max-width: 24rem;">
                         <div class="login-card">
                             <div style="text-align: center; margin-bottom: 1.5rem;">
-                                <h2 style="font-size: 1.25rem; font-weight: 600; color: #111827; margin: 0;">Masuk ke Akun</h2>
-                                <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">Silakan masukkan kredensial Anda</p>
+                                <h2 class="text-xl font-semibold text-gray-900 dark:text-white m-0">Masuk ke Akun</h2>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Silakan masukkan kredensial Anda</p>
                             </div>
                             {{ $slot }}
                         </div>
