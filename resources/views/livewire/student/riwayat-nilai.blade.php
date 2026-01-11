@@ -34,23 +34,37 @@
 
     {{-- Filters - Compact --}}
     <div class="bg-white dark:bg-teal-900/30 rounded-xl shadow-sm border border-teal-200 dark:border-teal-800 overflow-hidden p-3">
-        <div class="grid grid-cols-3 gap-2">
-            <div>
-                <label class="block text-[10px] font-medium text-teal-600 dark:text-teal-400 mb-1">Mapel</label>
-                <select wire:model.live="filterMapel" class="w-full text-xs rounded-lg border-teal-200 dark:border-teal-700 dark:bg-teal-900 focus:border-teal-500 focus:ring-teal-500">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div class="col-span-2 sm:col-span-1">
+                <flux:select
+                    wire:model.live="filterMapel"
+                    label="Mapel"
+                    size="sm"
+                    class="border-teal-200 dark:border-teal-700 focus:border-teal-500 focus:outline-none focus:ring-0"
+                >
                     <option value="">Semua</option>
                     @foreach($mataPelajaran as $mapel)
                         <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
                     @endforeach
-                </select>
+                </flux:select>
             </div>
             <div>
-                <label class="block text-[10px] font-medium text-teal-600 dark:text-teal-400 mb-1">Dari</label>
-                <input wire:model.live="filterDariTanggal" type="date" class="w-full text-xs rounded-lg border-teal-200 dark:border-teal-700 dark:bg-teal-900 focus:border-teal-500 focus:ring-teal-500">
+                <flux:input
+                    wire:model.live="filterDariTanggal"
+                    type="date"
+                    label="Dari"
+                    size="sm"
+                    class:input="border-teal-200 dark:border-teal-700 focus:border-teal-500 focus:outline-none focus:ring-0"
+                />
             </div>
             <div>
-                <label class="block text-[10px] font-medium text-teal-600 dark:text-teal-400 mb-1">Sampai</label>
-                <input wire:model.live="filterSampaiTanggal" type="date" class="w-full text-xs rounded-lg border-teal-200 dark:border-teal-700 dark:bg-teal-900 focus:border-teal-500 focus:ring-teal-500">
+                <flux:input
+                    wire:model.live="filterSampaiTanggal"
+                    type="date"
+                    label="Sampai"
+                    size="sm"
+                    class:input="border-teal-200 dark:border-teal-700 focus:border-teal-500 focus:outline-none focus:ring-0"
+                />
             </div>
         </div>
     </div>

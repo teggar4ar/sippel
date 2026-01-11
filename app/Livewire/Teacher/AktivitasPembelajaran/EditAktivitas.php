@@ -9,6 +9,7 @@ use App\Models\DetailAktivitas;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -151,6 +152,8 @@ final class EditAktivitas extends Component
                 ->whereNotIn('siswa_id', array_keys($this->detailAktivitas))
                 ->delete();
         });
+
+        Cache::forget('teacher_dashboard_stats_'.Auth::id());
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil diperbarui!');
 
