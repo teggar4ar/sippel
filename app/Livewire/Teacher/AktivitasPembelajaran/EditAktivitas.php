@@ -118,40 +118,46 @@ final class EditAktivitas extends Component
     {
         $this->validate();
 
-        DB::transaction(function (): void {
-            // Update activity
-            $this->aktivitas->update([
-                'tanggal' => $this->tanggal,
-                'topik' => $this->topik,
-                'catatan' => $this->catatan !== '' && $this->catatan !== '0' ? $this->catatan : null,
-                'mata_pelajaran_id' => $this->mata_pelajaran_id,
-                'kelas_id' => $this->kelas_id,
-            ]);
+        try {
+            DB::transaction(function (): void {
+                // Update activity
+                $this->aktivitas->update([
+                    'tanggal' => $this->tanggal,
+                    'topik' => $this->topik,
+                    'catatan' => $this->catatan !== '' && $this->catatan !== '0' ? $this->catatan : null,
+                    'mata_pelajaran_id' => $this->mata_pelajaran_id,
+                    'kelas_id' => $this->kelas_id,
+                ]);
 
-            // Update or create detail records
-            foreach ($this->detailAktivitas as $siswaId => $detail) {
-                // Clear nilai and partisipasi if student is not present
-                $isHadir = mb_strtolower((string) $detail['kehadiran']) === 'hadir';
+                // Update or create detail records
+                foreach ($this->detailAktivitas as $siswaId => $detail) {
+                    // Clear nilai and partisipasi if student is not present
+                    $isHadir = mb_strtolower((string) $detail['kehadiran']) === 'hadir';
 
-                DetailAktivitas::updateOrCreate(
-                    [
-                        'aktivitas_pembelajaran_id' => $this->aktivitas->id,
-                        'siswa_id' => $siswaId,
-                    ],
-                    [
-                        'kehadiran' => $detail['kehadiran'],
-                        'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
-                        'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
-                        'catatan' => $detail['catatan'] ?: null,
-                    ]
-                );
-            }
+                    DetailAktivitas::updateOrCreate(
+                        [
+                            'aktivitas_pembelajaran_id' => $this->aktivitas->id,
+                            'siswa_id' => $siswaId,
+                        ],
+                        [
+                            'kehadiran' => $detail['kehadiran'],
+                            'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
+                            'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
+                            'catatan' => $detail['catatan'] ?: null,
+                        ]
+                    );
+                }
 
-            // Remove records for students no longer in the list
-            DetailAktivitas::where('aktivitas_pembelajaran_id', $this->aktivitas->id)
-                ->whereNotIn('siswa_id', array_keys($this->detailAktivitas))
-                ->delete();
-        });
+                // Remove records for students no longer in the list
+                DetailAktivitas::where('aktivitas_pembelajaran_id', $this->aktivitas->id)
+                    ->whereNotIn('siswa_id', array_keys($this->detailAktivitas))
+                    ->delete();
+            });
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal memperbarui data. Silakan coba lagi.');
+
+            return;
+        }
 
         Cache::forget('teacher_dashboard_stats_'.Auth::id());
 

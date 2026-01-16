@@ -8,9 +8,20 @@ use App\Models\User;
 use Filament\Auth\Pages\Login as BasePage;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 final class Login extends BasePage
 {
+    /**
+     * Override to show Indonesian error message for failed login.
+     */
+    protected function throwFailureValidationException(): never
+    {
+        throw ValidationException::withMessages([
+            'data.email' => __('Email atau kata sandi salah.'),
+        ]);
+    }
+
     /**
      * Custom heading for login page.
      */

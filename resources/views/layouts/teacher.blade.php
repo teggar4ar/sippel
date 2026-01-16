@@ -68,7 +68,7 @@
                     </div>
                 </div>
                 <button onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                        class="flex items-center gap-2 w-full mt-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700/80 rounded-lg transition-colors">
+                        class="flex items-center gap-2 w-full mt-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700/80 rounded-lg transition-colors cursor-pointer">
                     <flux:icon name="arrow-right-start-on-rectangle" variant="outline" class="w-4 h-4" />
                     Keluar
                 </button>

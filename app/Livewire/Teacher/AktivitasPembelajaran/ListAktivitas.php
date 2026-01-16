@@ -222,9 +222,13 @@ final class ListAktivitas extends Component
         $aktivitas = AktivitasPembelajaran::where('guru_id', Auth::id())->find($this->deleteId);
 
         if ($aktivitas) {
-            $aktivitas->delete();
-            Cache::forget('teacher_dashboard_stats_'.Auth::id());
-            session()->flash('success', 'Aktivitas berhasil dihapus.');
+            try {
+                $aktivitas->delete();
+                Cache::forget('teacher_dashboard_stats_'.Auth::id());
+                session()->flash('success', 'Aktivitas berhasil dihapus.');
+            } catch (\Exception $e) {
+                session()->flash('error', 'Gagal menghapus aktivitas. Silakan coba lagi.');
+            }
         }
 
         $this->closeDeleteModal();

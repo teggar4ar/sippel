@@ -301,9 +301,13 @@
                 </flux:button>
                 <flux:button
                     wire:click="deleteAktivitas"
+                    wire:loading.attr="disabled"
                     variant="danger"
                     class="flex-1">
-                    Hapus
+                    <flux:icon wire:loading.remove wire:target="deleteAktivitas" name="trash" class="size-4" />
+                    <flux:icon wire:loading wire:target="deleteAktivitas" name="arrow-path" class="size-4 animate-spin" />
+                    <span wire:loading.remove wire:target="deleteAktivitas">Hapus</span>
+                    <span wire:loading wire:target="deleteAktivitas">Menghapus...</span>
                 </flux:button>
             </div>
         </div>

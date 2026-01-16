@@ -134,32 +134,38 @@ final class CreateAktivitas extends Component
 
         $userId = Auth::id();
 
-        DB::transaction(function () use ($userId): void {
-            // Create the activity
-            $aktivitas = AktivitasPembelajaran::create([
-                'tanggal' => $this->tanggal,
-                'topik' => $this->topik,
-                'catatan' => $this->catatan !== '' && $this->catatan !== '0' ? $this->catatan : null,
-                'mata_pelajaran_id' => $this->mata_pelajaran_id,
-                'kelas_id' => $this->kelas_id,
-                'guru_id' => $userId,
-            ]);
-
-            // Create detail records for each student
-            foreach ($this->detailAktivitas as $siswaId => $detail) {
-                // Clear nilai and partisipasi if student is not present
-                $isHadir = mb_strtolower((string) $detail['kehadiran']) === 'hadir';
-
-                DetailAktivitas::create([
-                    'aktivitas_pembelajaran_id' => $aktivitas->id,
-                    'siswa_id' => $siswaId,
-                    'kehadiran' => $detail['kehadiran'],
-                    'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
-                    'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
-                    'catatan' => $detail['catatan'] ?: null,
+        try {
+            DB::transaction(function () use ($userId): void {
+                // Create the activity
+                $aktivitas = AktivitasPembelajaran::create([
+                    'tanggal' => $this->tanggal,
+                    'topik' => $this->topik,
+                    'catatan' => $this->catatan !== '' && $this->catatan !== '0' ? $this->catatan : null,
+                    'mata_pelajaran_id' => $this->mata_pelajaran_id,
+                    'kelas_id' => $this->kelas_id,
+                    'guru_id' => $userId,
                 ]);
-            }
-        });
+
+                // Create detail records for each student
+                foreach ($this->detailAktivitas as $siswaId => $detail) {
+                    // Clear nilai and partisipasi if student is not present
+                    $isHadir = mb_strtolower((string) $detail['kehadiran']) === 'hadir';
+
+                    DetailAktivitas::create([
+                        'aktivitas_pembelajaran_id' => $aktivitas->id,
+                        'siswa_id' => $siswaId,
+                        'kehadiran' => $detail['kehadiran'],
+                        'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
+                        'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
+                        'catatan' => $detail['catatan'] ?: null,
+                    ]);
+                }
+            });
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal menyimpan data. Silakan coba lagi.');
+
+            return;
+        }
 
         Cache::forget('teacher_dashboard_stats_'.$userId);
 

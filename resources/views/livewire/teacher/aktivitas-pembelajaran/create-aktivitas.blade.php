@@ -109,10 +109,14 @@
         {{-- Step 1 action button --}}
         <div class="sticky bottom-0 -mx-4 px-4 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 lg:relative lg:mx-0 lg:px-0 lg:border-0 lg:bg-transparent">
             <button wire:click="nextStep"
+                    wire:loading.attr="disabled"
+                    wire:loading.class="opacity-50 cursor-not-allowed"
                     class="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     {{ !$mata_pelajaran_id ? 'disabled' : '' }}>
-                <span>Lanjut ke Absensi</span>
-                <flux:icon name="arrow-right" class="w-4 h-4" />
+                <span wire:loading.remove wire:target="nextStep">Lanjut ke Absensi</span>
+                <span wire:loading wire:target="nextStep">Memproses...</span>
+                <flux:icon wire:loading.remove wire:target="nextStep" name="arrow-right" class="w-4 h-4" />
+                <flux:icon wire:loading wire:target="nextStep" name="arrow-path" class="w-4 h-4 animate-spin" />
             </button>
         </div>
 
@@ -313,15 +317,21 @@
         <div class="sticky bottom-0 -mx-4 px-4 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 lg:relative lg:mx-0 lg:px-0 lg:border-0 lg:bg-transparent">
             <div class="flex gap-2">
                 <button wire:click="previousStep"
+                        wire:loading.attr="disabled"
+                        wire:loading.class="opacity-50 cursor-not-allowed"
                         class="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-xl transition-colors">
                     <flux:icon name="arrow-left" class="w-4 h-4" />
                     <span>Kembali</span>
                 </button>
                 <button wire:click="save"
+                        wire:loading.attr="disabled"
+                        wire:loading.class="opacity-50 cursor-not-allowed"
                         class="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         {{ $this->siswaList->isEmpty() ? 'disabled' : '' }}>
-                    <flux:icon name="check" class="w-4 h-4" />
-                    <span>Simpan</span>
+                    <flux:icon wire:loading.remove wire:target="save" name="check" class="w-4 h-4" />
+                    <flux:icon wire:loading wire:target="save" name="arrow-path" class="w-4 h-4 animate-spin" />
+                    <span wire:loading.remove wire:target="save">Simpan</span>
+                    <span wire:loading wire:target="save">Menyimpan...</span>
                 </button>
             </div>
         </div>

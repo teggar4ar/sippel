@@ -267,11 +267,14 @@
             </flux:button>
             <flux:button
                 wire:click="save"
+                wire:loading.attr="disabled"
                 variant="primary"
-                icon="check"
                 class="flex-1 h-12 text-base"
                 :disabled="$this->siswaList->isEmpty()">
-                Simpan Perubahan
+                <flux:icon wire:loading.remove wire:target="save" name="check" class="size-5" />
+                <flux:icon wire:loading wire:target="save" name="arrow-path" class="size-5 animate-spin" />
+                <span wire:loading.remove wire:target="save">Simpan Perubahan</span>
+                <span wire:loading wire:target="save">Menyimpan...</span>
             </flux:button>
         </div>
     </div>
