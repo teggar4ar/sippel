@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\TahunAjaranFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class TahunAjaran extends Model
 {
-    use SoftDeletes;
+    /** @use HasFactory<TahunAjaranFactory> */
+    use HasFactory, SoftDeletes;
 
     protected $table = 'tahun_ajaran';
 
