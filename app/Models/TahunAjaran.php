@@ -46,4 +46,46 @@ final class TahunAjaran extends Model
     {
         return $this->hasMany(Laporan::class);
     }
+
+    /**
+     * Get the currently active TahunAjaran
+     */
+    public static function getActive(): ?self
+    {
+        return self::where('status', true)->first();
+    }
+
+    /**
+     * Check if this is an odd semester (Ganjil)
+     */
+    public function isGanjil(): bool
+    {
+        return $this->semester === 'Ganjil';
+    }
+
+    /**
+     * Check if this is an even semester (Genap)
+     */
+    public function isGenap(): bool
+    {
+        return $this->semester === 'Genap';
+    }
+
+    /**
+     * Get the next academic year name (e.g., "2024/2025" -> "2025/2026")
+     */
+    public function getNextNamaTahun(): string
+    {
+        // Parse current year name (format: "2024/2025")
+        $parts = explode('/', $this->nama_tahun);
+        if (count($parts) === 2) {
+            $startYear = (int) $parts[0] + 1;
+            $endYear = (int) $parts[1] + 1;
+
+            return $startYear.'/'.$endYear;
+        }
+
+        // Fallback: just return current name
+        return $this->nama_tahun;
+    }
 }

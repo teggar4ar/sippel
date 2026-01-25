@@ -114,7 +114,7 @@ final class SiswaForm
                                     })
                                 )
                                 ->getOptionLabelFromRecordUsing(
-                                    fn (Kelas $record): string => "{$record->tingkat_kelas}{$record->grup_kelas} - {$record->tahunAjaran->nama_tahun} {$record->tahunAjaran->semester}"
+                                    fn (Kelas $record): string => "{$record->tingkat_kelas}{$record->grup_kelas} - {$record->tahunAjaran?->nama_tahun} {$record->tahunAjaran?->semester}"
                                 )
                                 ->searchable()
                                 ->preload()

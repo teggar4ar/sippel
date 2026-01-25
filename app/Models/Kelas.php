@@ -72,4 +72,24 @@ final class Kelas extends Model
     {
         return $this->tingkat_kelas.$this->grup_kelas;
     }
+
+    /**
+     * Get the next grade level (7→8, 8→9, 9→null for graduating)
+     */
+    public function getNextTingkatKelas(): ?int
+    {
+        if ($this->tingkat_kelas >= 9) {
+            return null; // Graduating class
+        }
+
+        return $this->tingkat_kelas + 1;
+    }
+
+    /**
+     * Check if this is a graduating class (grade 9)
+     */
+    public function isGraduating(): bool
+    {
+        return $this->tingkat_kelas === 9;
+    }
 }

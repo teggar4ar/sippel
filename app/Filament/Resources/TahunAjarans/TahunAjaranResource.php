@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\TahunAjarans;
 
-use App\Filament\Resources\TahunAjarans\Pages\CreateTahunAjaran;
 use App\Filament\Resources\TahunAjarans\Pages\EditTahunAjaran;
 use App\Filament\Resources\TahunAjarans\Pages\ListTahunAjarans;
 use App\Filament\Resources\TahunAjarans\Schemas\TahunAjaranForm;
@@ -56,6 +55,13 @@ final class TahunAjaranResource extends Resource
         return Auth::check() && $user && $user->hasRole('admin');
     }
 
+    public static function canCreate(): bool
+    {
+        // Only allow creation when no tahun ajaran exists (first-time setup)
+        // After initial setup, use Ganti Semester or Kenaikan Kelas instead
+        return ! TahunAjaran::exists();
+    }
+
     public static function form(Schema $schema): Schema
     {
         return TahunAjaranForm::configure($schema);
@@ -77,7 +83,7 @@ final class TahunAjaranResource extends Resource
     {
         return [
             'index' => ListTahunAjarans::route('/'),
-            'create' => CreateTahunAjaran::route('/create'),
+            'create' => Pages\CreateTahunAjaran::route('/create'),
             'edit' => EditTahunAjaran::route('/{record}/edit'),
         ];
     }
