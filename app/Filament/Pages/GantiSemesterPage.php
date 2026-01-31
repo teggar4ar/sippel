@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Resources\TahunAjarans\TahunAjaranResource;
 use App\Models\Kelas;
+use App\Models\MataPelajaran;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
 use App\Models\User;
@@ -117,6 +118,7 @@ final class GantiSemesterPage extends Page implements HasForms
                                             'Genap' => 'Genap',
                                         ])
                                         ->required()
+                                        ->native(false)
                                         ->disabled()
                                         ->dehydrated(),
                                     DatePicker::make('tanggalMulai')
@@ -138,6 +140,7 @@ final class GantiSemesterPage extends Page implements HasForms
                                 $fields[] = Select::make("waliKelasAssignments.{$kelas->id}")
                                     ->label("Wali Kelas {$kelas->tingkat_kelas} {$kelas->grup_kelas}")
                                     ->options(User::role('teacher')->pluck('name', 'id'))
+                                    ->native(false)
                                     ->searchable()
                                     ->preload()
                                     ->required();
@@ -229,6 +232,23 @@ final class GantiSemesterPage extends Page implements HasForms
                     $newKelasId = $kelasMapping[$oldKelas->id];
                     Siswa::where('kelas_id', $oldKelas->id)
                         ->update(['kelas_id' => $newKelasId]);
+                }
+
+                // 5. Migrate mata pelajaran to new classes
+                foreach ($this->currentClasses as $oldKelas) {
+                    $newKelasId = $kelasMapping[$oldKelas->id];
+                    
+                    // Get all mata pelajaran from old class
+                    $oldMataPelajaran = MataPelajaran::where('kelas_id', $oldKelas->id)->get();
+                    
+                    // Create new mata pelajaran for each subject in the new class
+                    foreach ($oldMataPelajaran as $mapel) {
+                        MataPelajaran::create([
+                            'nama_mapel' => $mapel->nama_mapel,
+                            'guru_id' => $mapel->guru_id,
+                            'kelas_id' => $newKelasId,
+                        ]);
+                    }
                 }
             });
 

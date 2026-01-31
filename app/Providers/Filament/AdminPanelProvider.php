@@ -52,6 +52,7 @@ final class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue,
             ])
+            ->favicon(asset('favicon-removebg.png'))
             ->navigationGroups([
                 'Master Data',
                 'Manajemen',

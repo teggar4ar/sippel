@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'SIPPEL - Portal Guru' }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon-removebg.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon-removebg.png') }}">
 
     {{-- PWA Meta Tags --}}
     <meta name="theme-color" content="#1e293b">

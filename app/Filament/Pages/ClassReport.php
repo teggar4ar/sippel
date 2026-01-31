@@ -166,6 +166,7 @@ final class ClassReport extends Page implements HasForms
         return [
             Select::make('tahun_ajaran_id')
                 ->label('Tahun Ajaran')
+                ->native(false)
                 ->options(
                     TahunAjaran::orderByDesc('status')
                         ->orderByDesc('id')
@@ -184,6 +185,7 @@ final class ClassReport extends Page implements HasForms
 
             Select::make('kelas_id')
                 ->label('Pilih Kelas')
+                ->native(false)
                 ->options(function (Get $get): array {
                     /** @var int|null $tahunAjaranId */
                     $tahunAjaranId = $get('tahun_ajaran_id');
@@ -208,6 +210,7 @@ final class ClassReport extends Page implements HasForms
 
             Select::make('mata_pelajaran_id')
                 ->label('Mata Pelajaran')
+                ->native(false)
                 ->options(function (Get $get): array {
                     /** @var int|null $kelasId */
                     $kelasId = $get('kelas_id');
@@ -229,6 +232,7 @@ final class ClassReport extends Page implements HasForms
 
             Select::make('sort_by')
                 ->label('Urutkan Berdasarkan')
+                ->native(false)
                 ->options([
                     'nilai' => 'Nilai (Tertinggi)',
                     'nilai_asc' => 'Nilai (Terendah)',

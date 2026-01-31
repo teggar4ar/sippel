@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/app/login');
 
+// Lightweight health check for Cloud Run and local smoke tests
+Route::get('/health', fn () => response()->json(['status' => 'ok']));
+
 // API endpoint for checking role authorization (used by bfcache guard)
 Route::get('/app/api/check-role', function () {
     if (! Auth::check()) {

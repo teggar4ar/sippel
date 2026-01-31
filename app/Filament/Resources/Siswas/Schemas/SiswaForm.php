@@ -92,6 +92,7 @@ final class SiswaForm
                             Select::make('user.jenis_kelamin')
                                 ->label('Jenis Kelamin')
                                 ->required()
+                                ->native(false)
                                 ->options([
                                     'L' => 'Laki-laki',
                                     'P' => 'Perempuan',

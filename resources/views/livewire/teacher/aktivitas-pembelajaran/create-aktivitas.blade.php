@@ -44,25 +44,65 @@
                     @enderror
                 </div>
 
-                {{-- Subject selection --}}
+                {{-- Tingkat Kelas --}}
                 <div>
                     <flux:select
-                        wire:model.live="mata_pelajaran_id"
-                        label="Mata Pelajaran *"
+                        wire:model.live="tingkat_kelas"
+                        label="Tingkat Kelas *"
                         label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
                         class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
                     >
-                        <option value="">Pilih mata pelajaran...</option>
-                        @foreach($this->mataPelajaran as $mapel)
-                            <option value="{{ $mapel->id }}">
-                                {{ $mapel->nama_mapel }} - {{ $mapel->kelas->nama_lengkap }}
-                            </option>
+                        <option value="">Pilih tingkat kelas...</option>
+                        @foreach($this->tingkatKelasList as $tingkat)
+                            <option value="{{ $tingkat }}">Kelas {{ $tingkat }}</option>
                         @endforeach
                     </flux:select>
-                    @error('mata_pelajaran_id')
+                    @error('tingkat_kelas')
                         <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
+
+                {{-- Grup Kelas --}}
+                @if($tingkat_kelas !== null)
+                    <div>
+                        <flux:select
+                            wire:model.live="grup_kelas"
+                            label="Grup Kelas *"
+                            label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
+                            class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                        >
+                            <option value="">Pilih grup kelas...</option>
+                            @foreach($this->grupKelasList as $grup)
+                                <option value="{{ $grup }}">{{ $grup }}</option>
+                            @endforeach
+                        </flux:select>
+                        @error('grup_kelas')
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @endif
+
+                {{-- Subject selection --}}
+                @if($grup_kelas !== null && $grup_kelas !== '')
+                    <div>
+                        <flux:select
+                            wire:model.live="mata_pelajaran_id"
+                            label="Mata Pelajaran *"
+                            label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
+                            class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                        >
+                            <option value="">Pilih mata pelajaran...</option>
+                            @foreach($this->mataPelajaran as $mapel)
+                                <option value="{{ $mapel->id }}">
+                                    {{ $mapel->nama_mapel }}
+                                </option>
+                            @endforeach
+                        </flux:select>
+                        @error('mata_pelajaran_id')
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @endif
 
                 {{-- Show selected class info --}}
                 @if($this->selectedMapel)

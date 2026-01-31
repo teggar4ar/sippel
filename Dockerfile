@@ -1,0 +1,58 @@
+FROM php:8.3-cli-alpine AS vendor
+
+WORKDIR /app
+
+RUN apk add --no-cache icu-libs libzip \
+    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev libzip-dev \
+    && docker-php-ext-install intl zip \
+    && apk del .build-deps
+
+COPY --from=composer:2.7.7 /usr/bin/composer /usr/bin/composer
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction --no-progress
+
+COPY . .
+RUN mkdir -p bootstrap/cache storage/framework/cache/data storage/framework/sessions storage/framework/views \
+    && composer dump-autoload --optimize --no-scripts
+
+FROM node:20-alpine AS assets
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+COPY --from=vendor /app/vendor /app/vendor
+RUN npm run build
+
+FROM php:8.3-fpm-alpine AS runtime
+
+WORKDIR /var/www/html
+
+RUN apk add --no-cache nginx supervisor icu-libs libpng libjpeg-turbo freetype libzip postgresql-libs \
+    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev oniguruma-dev postgresql-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) bcmath gd intl opcache pdo_mysql pdo_pgsql zip \
+    && apk del .build-deps
+
+COPY --from=vendor /app /var/www/html
+COPY --from=assets /app/public/build /var/www/html/public/build
+
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY docker/nginx-main.conf /etc/nginx/nginx.conf
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/supervisord.conf /etc/supervisord.conf
+
+RUN chmod +x /usr/local/bin/entrypoint.sh \
+    && mkdir -p /run/nginx /var/log/nginx /var/lib/nginx/tmp/client_body /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi \
+    && chown -R www-data:www-data /var/log/nginx /var/lib/nginx /run/nginx \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+EXPOSE 8080
+
+USER www-data
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

@@ -45,6 +45,7 @@ final class UserForm
                 Select::make('jenis_kelamin')
                     ->label('Jenis Kelamin')
                     ->required()
+                    ->native(false)
                     ->options([
                         'L' => 'Laki-laki',
                         'P' => 'Perempuan',
@@ -53,6 +54,7 @@ final class UserForm
 
                 Select::make('role')
                     ->label('Role')
+                    ->native(false)
                     ->options([
                         'admin' => 'Admin',
                         'teacher' => 'Guru',

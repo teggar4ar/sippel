@@ -13,7 +13,7 @@
         }
 
         body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-family: 'Times New Roman', Times, serif;
             font-size: 10px;
             line-height: 1.3;
             color: #333;
@@ -21,10 +21,12 @@
         }
 
         /* Page layout for A4 - DomPDF compatible */
+        /* A4: 210mm x 297mm = 595pt x 842pt */
+        /* Margins: 2.54cm = 72pt (1 inch) */
         .page {
             width: 100%;
-            max-width: 700px;
-            padding: 20px 25px;
+            max-width: 595px;
+            padding: 20px 72px; /* Top/bottom: 20px, Left/right: 72px (2.54cm) */
             margin: 0 auto;
             background: #fff;
         }
@@ -247,6 +249,14 @@
             border-top: 1px solid #ddd;
         }
 
+        .watermark {
+            font-size: 7px;
+            color: #999;
+            text-align: center;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
         /* Print styles */
         @media print {
             body {
@@ -290,7 +300,7 @@
     <div class="page">
         {{-- Header --}}
         <div class="header">
-            <div class="school-name">{{ config('app.name', 'SMP Islam Terpadu Al-Itqon') }}</div>
+            <div class="school-name">SMP Islam Terpadu Al-Itqon</div>
             <div class="school-address">Kp. Kandang Panjang RT. 01/06 Desa Tajurhalang Kec. Tajurhalang Kab. Bogor.</div>
             <div class="report-title">Laporan Rekap Kelas per Mata Pelajaran</div>
         </div>
@@ -442,6 +452,10 @@
 
             <div class="generated-date">
                 Dicetak pada: {{ now()->setTimezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }} WIB
+            </div>
+
+            <div class="watermark">
+                Laporan ini dibuat oleh sistem {{ config('app.name') }}
             </div>
         </div>
     </div>

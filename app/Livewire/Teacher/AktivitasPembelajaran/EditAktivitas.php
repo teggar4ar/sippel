@@ -93,10 +93,13 @@ final class EditAktivitas extends Component
         if ($value) {
             $mapel = MataPelajaran::with('kelas')->find($value);
             if ($mapel) {
-                $this->kelas_id = $mapel->kelas_id;
-                // Reload student list for new class
-                $this->detailAktivitas = [];
-                $this->loadDetailAktivitas();
+                // Only reload if the class actually changed
+                if ($this->kelas_id !== $mapel->kelas_id) {
+                    $this->kelas_id = $mapel->kelas_id;
+                    // Reload student list for new class
+                    $this->detailAktivitas = [];
+                    $this->loadDetailAktivitas();
+                }
             }
         }
     }
@@ -176,7 +179,7 @@ final class EditAktivitas extends Component
      *
      * @return array<string, mixed>
      */
-    private function rules(): array
+    protected function rules(): array
     {
         return [
             'tanggal' => 'required|date',
@@ -196,7 +199,7 @@ final class EditAktivitas extends Component
      *
      * @return array<string, string>
      */
-    private function messages(): array
+    protected function messages(): array
     {
         return [
             'tanggal.required' => 'Tanggal harus diisi.',
@@ -224,9 +227,14 @@ final class EditAktivitas extends Component
         foreach ($siswaInClass as $siswa) {
             $existing = $existingDetails->get($siswa->id);
 
+            // Normalize kehadiran to capitalized format (database stores lowercase, UI expects capitalized)
+            $kehadiran = $existing?->kehadiran 
+                ? ucfirst(strtolower($existing->kehadiran)) 
+                : 'Hadir';
+
             $this->detailAktivitas[$siswa->id] = [
                 'siswa_id' => $siswa->id,
-                'kehadiran' => $existing?->kehadiran ?? 'Hadir',
+                'kehadiran' => $kehadiran,
                 'nilai' => $existing?->nilai,
                 'partisipasi' => $existing?->partisipasi ? (int) $existing->partisipasi : null,
                 'catatan' => $existing?->catatan ?? '',

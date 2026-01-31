@@ -51,9 +51,6 @@ final class KenaikanKelasPage extends Page implements HasForms
     /** @var Collection<int, Kelas> */
     public Collection $currentClasses;
 
-    // Currently selected class for student assignment view (kept as property for view logic)
-    public ?int $selectedKelasId = null;
-
     public static function getNavigationGroup(): string
     {
         return 'Master Data';
@@ -113,11 +110,6 @@ final class KenaikanKelasPage extends Page implements HasForms
                 }
             }
             $defaults['studentDecisions'] = $decisions;
-
-            // Select first class by default
-            if ($this->currentClasses->isNotEmpty()) {
-                $this->selectedKelasId = $this->currentClasses->first()->id;
-            }
         }
         
         $this->form->fill($defaults);
@@ -143,6 +135,7 @@ final class KenaikanKelasPage extends Page implements HasForms
                                             'Genap' => 'Genap',
                                         ])
                                         ->required()
+                                        ->native(false)
                                         ->disabled()
                                         ->dehydrated(),
                                     DatePicker::make('tanggalMulai')
@@ -175,6 +168,7 @@ final class KenaikanKelasPage extends Page implements HasForms
                                     $fields[] = Select::make("waliKelasAssignments.{$key}")
                                         ->label("Wali Kelas {$tingkat}{$grup}")
                                         ->options(User::role('teacher')->pluck('name', 'id'))
+                                        ->native(false)
                                         ->searchable()
                                         ->preload()
                                         ->required();
@@ -184,11 +178,62 @@ final class KenaikanKelasPage extends Page implements HasForms
                             return [Section::make('Daftar Kelas Baru')->schema($fields)->columns(2)];
                         }),
                     Wizard\Step::make('Siswa')
-                        ->schema([
-                             ViewField::make('studentSelection')
-                                ->label('')
-                                ->view('filament.pages.kenaikan-kelas.student-selection')
-                        ]),
+                        ->schema(function () {
+                            $fields = [];
+                            
+                            // Group students by class
+                            foreach ($this->currentClasses as $kelas) {
+                                $students = $kelas->siswa->sortBy(fn ($siswa) => $siswa->user?->name ?? '');
+                                
+                                if ($students->isEmpty()) {
+                                    continue;
+                                }
+                                
+                                $studentFields = [];
+                                
+                                foreach ($students as $siswa) {
+                                    $studentFields[] = Select::make("studentDecisions.{$siswa->id}")
+                                        ->label($siswa->user?->name ?? 'Unknown' . ' (' . $siswa->nis . ')')
+                                        ->options(function () use ($kelas) {
+                                            if ($kelas->isGraduating()) {
+                                                return [
+                                                    'lulus' => '🎓 Lulus',
+                                                    'tinggal' => '🔄 Tinggal Kelas',
+                                                ];
+                                            }
+                                            
+                                            return [
+                                                'naik' => '⬆️ Naik Kelas',
+                                                'tinggal' => '🔄 Tinggal Kelas',
+                                            ];
+                                        })
+                                        ->native(false)
+                                        ->helperText(function ($get) use ($kelas, $siswa) {
+                                            $decision = $get("studentDecisions.{$siswa->id}");
+                                            
+                                            if ($decision === 'lulus') {
+                                                return '➜ Dihapus (Lulus)';
+                                            } elseif ($decision === 'naik') {
+                                                $nextTingkat = $kelas->getNextTingkatKelas();
+                                                return $nextTingkat ? "➜ Kelas {$nextTingkat}{$kelas->grup_kelas}" : '➜ -';
+                                            } elseif ($decision === 'tinggal') {
+                                                return "➜ Kelas {$kelas->tingkat_kelas}{$kelas->grup_kelas}";
+                                            }
+                                            
+                                            return null;
+                                        })
+                                        ->required();
+                                }
+                                
+                                // Add section per class
+                                $fields[] = Section::make("Kelas {$kelas->nama_lengkap}")
+                                    ->schema($studentFields)
+                                    ->columns(2)
+                                    ->collapsible();
+                            }
+                            
+                            return $fields;
+                        }),
                     Wizard\Step::make('Konfirmasi')
                         ->schema([
                             Section::make('Ringkasan')
@@ -226,88 +271,7 @@ final class KenaikanKelasPage extends Page implements HasForms
             ->statePath('data');
     }
     
-    // ... View logic properties for step 3 ...
-    public function getSelectedKelasProperty(): ?Kelas
-    {
-        if (! $this->selectedKelasId) {
-            return null;
-        }
 
-        return $this->currentClasses->firstWhere('id', $this->selectedKelasId);
-    }
-
-    public function getStudentsInSelectedKelasProperty(): Collection
-    {
-        $kelas = $this->selectedKelas;
-        if (! $kelas) {
-            return collect();
-        }
-
-        return $kelas->siswa->sortBy(fn ($siswa) => $siswa->user?->name ?? '');
-    }
-
-    public function selectKelas(int $kelasId): void
-    {
-        $this->selectedKelasId = $kelasId;
-    }
-
-    public function selectAllNaik(): void
-    {
-        if (! $this->selectedKelas) return;
-        
-        $decisions = $this->data['studentDecisions'] ?? [];
-        foreach ($this->selectedKelas->siswa as $siswa) {
-            if (! $this->selectedKelas->isGraduating()) {
-                $decisions[$siswa->id] = 'naik';
-            }
-        }
-        $this->data['studentDecisions'] = $decisions;
-        $this->form->fill($this->data); // ensure reactive update? or just set data.
-        
-        Notification::make()->title('Semua Siswa Dipilih Naik Kelas')->success()->send();
-    }
-
-    public function selectAllTinggal(): void
-    {
-        if (! $this->selectedKelas) return;
-
-        $decisions = $this->data['studentDecisions'] ?? [];
-        foreach ($this->selectedKelas->siswa as $siswa) {
-            $decisions[$siswa->id] = 'tinggal';
-        }
-        $this->data['studentDecisions'] = $decisions;
-        
-        Notification::make()->title('Semua Siswa Dipilih Tinggal Kelas')->success()->send();
-    }
-    
-    public function selectAllLulus(): void
-    {
-        if (! $this->selectedKelas || ! $this->selectedKelas->isGraduating()) return;
-
-        $decisions = $this->data['studentDecisions'] ?? [];
-        foreach ($this->selectedKelas->siswa as $siswa) {
-            $decisions[$siswa->id] = 'lulus';
-        }
-        $this->data['studentDecisions'] = $decisions;
-        
-        Notification::make()->title('Semua Siswa Dipilih Lulus')->success()->send();
-    }
-    
-    // Computed properties for summary (read from data)
-    public function getAdvancingCountProperty(): int
-    {
-        return collect($this->data['studentDecisions'] ?? [])->filter(fn ($d) => $d === 'naik')->count();
-    }
-    
-    public function getRepeatingCountProperty(): int
-    {
-        return collect($this->data['studentDecisions'] ?? [])->filter(fn ($d) => $d === 'tinggal')->count();
-    }
-    
-    public function getGraduatingCountProperty(): int
-    {
-        return collect($this->data['studentDecisions'] ?? [])->filter(fn ($d) => $d === 'lulus')->count();
-    }
 
     public function create(): void
     {

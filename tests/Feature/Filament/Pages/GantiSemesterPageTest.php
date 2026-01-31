@@ -36,7 +36,7 @@ it('can render the ganti semester page', function () {
 
     livewire(GantiSemesterPage::class)
         ->assertOk()
-        ->assertSee('Tahun Ajaran Aktif');
+        ->assertSeeHtml('Simpan & Proses');
 });
 
 it('shows error when no active tahun ajaran exists', function () {
