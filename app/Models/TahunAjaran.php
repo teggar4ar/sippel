@@ -32,6 +32,14 @@ final class TahunAjaran extends Model
     ];
 
     /**
+     * Get the currently active TahunAjaran
+     */
+    public static function getActive(): ?self
+    {
+        return self::where('status', true)->first();
+    }
+
+    /**
      * Get all classes for this academic year
      */
     public function kelas(): HasMany
@@ -45,14 +53,6 @@ final class TahunAjaran extends Model
     public function laporan(): HasMany
     {
         return $this->hasMany(Laporan::class);
-    }
-
-    /**
-     * Get the currently active TahunAjaran
-     */
-    public static function getActive(): ?self
-    {
-        return self::where('status', true)->first();
     }
 
     /**

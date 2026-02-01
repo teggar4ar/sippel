@@ -8,6 +8,7 @@ use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -92,14 +93,12 @@ final class EditAktivitas extends Component
     {
         if ($value) {
             $mapel = MataPelajaran::with('kelas')->find($value);
-            if ($mapel) {
-                // Only reload if the class actually changed
-                if ($this->kelas_id !== $mapel->kelas_id) {
-                    $this->kelas_id = $mapel->kelas_id;
-                    // Reload student list for new class
-                    $this->detailAktivitas = [];
-                    $this->loadDetailAktivitas();
-                }
+            // Only reload if the class actually changed
+            if ($mapel && $this->kelas_id !== $mapel->kelas_id) {
+                $this->kelas_id = $mapel->kelas_id;
+                // Reload student list for new class
+                $this->detailAktivitas = [];
+                $this->loadDetailAktivitas();
             }
         }
     }
@@ -156,7 +155,7 @@ final class EditAktivitas extends Component
                     ->whereNotIn('siswa_id', array_keys($this->detailAktivitas))
                     ->delete();
             });
-        } catch (\Exception $e) {
+        } catch (Exception) {
             session()->flash('error', 'Gagal memperbarui data. Silakan coba lagi.');
 
             return;
@@ -228,8 +227,8 @@ final class EditAktivitas extends Component
             $existing = $existingDetails->get($siswa->id);
 
             // Normalize kehadiran to capitalized format (database stores lowercase, UI expects capitalized)
-            $kehadiran = $existing?->kehadiran 
-                ? ucfirst(strtolower($existing->kehadiran)) 
+            $kehadiran = $existing?->kehadiran
+                ? ucfirst(mb_strtolower((string) $existing->kehadiran))
                 : 'Hadir';
 
             $this->detailAktivitas[$siswa->id] = [

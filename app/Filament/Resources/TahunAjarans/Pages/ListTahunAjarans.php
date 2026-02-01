@@ -38,14 +38,14 @@ final class ListTahunAjarans extends ListRecords
                 ->icon(Heroicon::OutlinedCalendar)
                 ->color('primary')
                 ->url(GantiSemesterPage::getUrl())
-                ->visible(fn (): bool => $activeTahunAjaran !== null && $activeTahunAjaran->isGanjil()),
+                ->visible(fn (): bool => $activeTahunAjaran instanceof TahunAjaran && $activeTahunAjaran->isGanjil()),
 
             Action::make('kenaikanKelas')
                 ->label('Kenaikan Kelas')
                 ->icon(Heroicon::OutlinedAcademicCap)
                 ->color('success')
                 ->url(KenaikanKelasPage::getUrl())
-                ->visible(fn (): bool => $activeTahunAjaran !== null && $activeTahunAjaran->isGenap()),
+                ->visible(fn (): bool => $activeTahunAjaran instanceof TahunAjaran && $activeTahunAjaran->isGenap()),
         ];
     }
 }

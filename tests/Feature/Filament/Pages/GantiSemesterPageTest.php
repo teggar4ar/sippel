@@ -7,7 +7,6 @@ use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
@@ -48,7 +47,6 @@ it('shows error when no active tahun ajaran exists', function () {
         ->assertSee('Tidak Ada Tahun Ajaran Aktif');
 });
 
-
 it('can enter data into form', function () {
     $tahunAjaran = TahunAjaran::factory()->create([
         'nama_tahun' => '2024/2025',
@@ -83,7 +81,7 @@ it('validates required fields', function () {
         'semester' => 'Ganjil',
         'status' => true,
     ]);
-    
+
     // Mount page
     livewire(GantiSemesterPage::class)
         ->fillForm([
@@ -162,8 +160,7 @@ it('prevents duplicate tahun ajaran + semester combination', function () {
             'tanggalSelesai' => '2025-06-30',
         ])
         ->call('create')
-        ->assertNotified(); 
-        // Note: validation exception catch inside the component won't show as form error if using manual notification + return
-        // but here we are catching it manually in create() method via check.
+        ->assertNotified();
+    // Note: validation exception catch inside the component won't show as form error if using manual notification + return
+    // but here we are catching it manually in create() method via check.
 });
-

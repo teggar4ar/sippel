@@ -21,7 +21,7 @@ final class TahunAjaranFactory extends Factory
         $year = fake()->year();
 
         return [
-            'nama_tahun' => $year . '/' . ($year + 1),
+            'nama_tahun' => $year.'/'.($year + 1),
             'semester' => fake()->randomElement(['Ganjil', 'Genap']),
             'tanggal_mulai' => fake()->dateTimeBetween('-1 year', 'now'),
             'tanggal_selesai' => fake()->dateTimeBetween('now', '+1 year'),

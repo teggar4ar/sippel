@@ -7,7 +7,6 @@ use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertSoftDeleted;
@@ -72,7 +71,6 @@ it('shows error when no active tahun ajaran exists', function () {
         ->assertSee('Tidak Ada Tahun Ajaran Aktif');
 });
 
-
 it('can enter data into form', function () {
     $tahunAjaran = TahunAjaran::factory()->create([
         'nama_tahun' => '2024/2025',
@@ -98,7 +96,6 @@ it('can enter data into form', function () {
         ])
         ->assertHasNoFormErrors();
 });
-
 
 it('validates required fields', function () {
     $tahunAjaran = TahunAjaran::factory()->create([
@@ -133,7 +130,7 @@ it('creates only grade 8 and 9 classes during advancement', function () {
     ]);
 
     $component = livewire(KenaikanKelasPage::class);
-    
+
     // Check initial state of waliKelasAssignments in form data
     $assignments = $component->get('data.waliKelasAssignments');
     expect($assignments)->toHaveKeys(['8_A', '9_A']);
@@ -172,7 +169,7 @@ it('can execute grade advancement', function () {
                 '8_A' => $this->teacher1->id,
                 '9_A' => $this->teacher2->id,
             ],
-            'studentDecisions' => [$siswa->id => 'naik']
+            'studentDecisions' => [$siswa->id => 'naik'],
         ])
         ->call('create')
         ->assertNotified();
@@ -223,7 +220,7 @@ it('soft deletes graduating students', function () {
                 '8_A' => $this->teacher1->id,
                 '9_A' => $this->teacher2->id, // dummy for validation
             ],
-            'studentDecisions' => [$siswa->id => 'lulus']
+            'studentDecisions' => [$siswa->id => 'lulus'],
         ])
         ->call('create')
         ->assertNotified();
@@ -234,4 +231,3 @@ it('soft deletes graduating students', function () {
 
 // Test removed: advancingCount, repeatingCount, graduatingCount computed properties no longer exist
 // The statistics are now calculated in the Placeholder field using the form data directly
-

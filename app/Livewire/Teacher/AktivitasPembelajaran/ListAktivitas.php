@@ -7,6 +7,7 @@ namespace App\Livewire\Teacher\AktivitasPembelajaran;
 use App\Models\AktivitasPembelajaran;
 use App\Models\MataPelajaran;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -226,7 +227,7 @@ final class ListAktivitas extends Component
                 $aktivitas->delete();
                 Cache::forget('teacher_dashboard_stats_'.Auth::id());
                 session()->flash('success', 'Aktivitas berhasil dihapus.');
-            } catch (\Exception $e) {
+            } catch (Exception) {
                 session()->flash('error', 'Gagal menghapus aktivitas. Silakan coba lagi.');
             }
         }

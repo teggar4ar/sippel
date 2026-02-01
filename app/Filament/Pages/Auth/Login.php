@@ -17,17 +17,6 @@ use SensitiveParameter;
 final class Login extends BasePage
 {
     /**
-     * Override to show Indonesian error message for failed login.
-     * Uses 'identifier' field name since we accept both email and NIS.
-     */
-    protected function throwFailureValidationException(): never
-    {
-        throw ValidationException::withMessages([
-            'data.identifier' => __('Email/NIS atau kata sandi salah.'),
-        ]);
-    }
-
-    /**
      * Custom heading for login page.
      */
     public function getHeading(): string
@@ -45,6 +34,17 @@ final class Login extends BasePage
         }
 
         $this->form->fill();
+    }
+
+    /**
+     * Override to show Indonesian error message for failed login.
+     * Uses 'identifier' field name since we accept both email and NIS.
+     */
+    protected function throwFailureValidationException(): never
+    {
+        throw ValidationException::withMessages([
+            'data.identifier' => __('Email/NIS atau kata sandi salah.'),
+        ]);
     }
 
     /**
@@ -76,8 +76,10 @@ final class Login extends BasePage
 
         // Check if identifier looks like NIS (numeric only)
         if ($this->looksLikeNis($identifier)) {
-            // Try to find student by NIS
-            $siswa = Siswa::where('nis', $identifier)->first();
+            // Try to find active (non-soft-deleted) student by NIS
+            $siswa = Siswa::where('nis', $identifier)
+                ->whereNull('deleted_at')
+                ->first();
 
             if ($siswa && $siswa->user) {
                 $email = $siswa->user->email;

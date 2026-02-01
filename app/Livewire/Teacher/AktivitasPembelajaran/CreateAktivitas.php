@@ -10,6 +10,7 @@ use App\Models\Kelas;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -55,14 +56,14 @@ final class CreateAktivitas extends Component
     public function tingkatKelasList()
     {
         $activeTahunAjaran = TahunAjaran::getActive();
-        
-        if (!$activeTahunAjaran) {
+
+        if (! $activeTahunAjaran instanceof TahunAjaran) {
             return collect();
         }
 
         // Get distinct tingkat kelas yang ada di tahun ajaran aktif dan guru mengajar di kelas tersebut
         return Kelas::where('tahun_ajaran_id', $activeTahunAjaran->id)
-            ->whereHas('mataPelajaran', function ($q) {
+            ->whereHas('mataPelajaran', function ($q): void {
                 $q->where('guru_id', Auth::id());
             })
             ->orderBy('tingkat_kelas')
@@ -79,15 +80,15 @@ final class CreateAktivitas extends Component
         }
 
         $activeTahunAjaran = TahunAjaran::getActive();
-        
-        if (!$activeTahunAjaran) {
+
+        if (! $activeTahunAjaran instanceof TahunAjaran) {
             return collect();
         }
 
         // Get distinct grup kelas untuk tingkat yang dipilih
         return Kelas::where('tahun_ajaran_id', $activeTahunAjaran->id)
             ->where('tingkat_kelas', $this->tingkat_kelas)
-            ->whereHas('mataPelajaran', function ($q) {
+            ->whereHas('mataPelajaran', function ($q): void {
                 $q->where('guru_id', Auth::id());
             })
             ->orderBy('grup_kelas')
@@ -100,27 +101,27 @@ final class CreateAktivitas extends Component
     public function mataPelajaran()
     {
         $activeTahunAjaran = TahunAjaran::getActive();
-        
-        if (!$activeTahunAjaran) {
+
+        if (! $activeTahunAjaran instanceof TahunAjaran) {
             return collect();
         }
 
         $query = MataPelajaran::query()
             ->where('guru_id', Auth::id())
-            ->whereHas('kelas', function ($q) use ($activeTahunAjaran) {
+            ->whereHas('kelas', function ($q) use ($activeTahunAjaran): void {
                 $q->where('tahun_ajaran_id', $activeTahunAjaran->id);
             })
             ->with('kelas');
 
         // Filter berdasarkan tingkat kelas dan grup kelas jika dipilih
         if ($this->tingkat_kelas !== null) {
-            $query->whereHas('kelas', function ($q) {
+            $query->whereHas('kelas', function ($q): void {
                 $q->where('tingkat_kelas', $this->tingkat_kelas);
             });
         }
 
         if ($this->grup_kelas !== null && $this->grup_kelas !== '') {
-            $query->whereHas('kelas', function ($q) {
+            $query->whereHas('kelas', function ($q): void {
                 $q->where('grup_kelas', $this->grup_kelas);
             });
         }
@@ -152,7 +153,7 @@ final class CreateAktivitas extends Component
         return MataPelajaran::with('kelas')->find($this->mata_pelajaran_id);
     }
 
-    public function updatedTingkatKelas($value): void
+    public function updatedTingkatKelas(): void
     {
         // Reset grup kelas dan mata pelajaran ketika tingkat kelas berubah
         $this->grup_kelas = null;
@@ -166,7 +167,7 @@ final class CreateAktivitas extends Component
         unset($this->siswaList);
     }
 
-    public function updatedGrupKelas($value): void
+    public function updatedGrupKelas(): void
     {
         // Reset mata pelajaran ketika grup kelas berubah
         $this->mata_pelajaran_id = null;
@@ -261,13 +262,13 @@ final class CreateAktivitas extends Component
                     ]);
                 }
             });
-        } catch (\Exception $e) {
+        } catch (Exception) {
             session()->flash('error', 'Gagal menyimpan data. Silakan coba lagi.');
 
             return;
         }
 
-        Cache::forget('teacher_dashboard_stats_'.$userId);
+        Cache::forget('teacher_dashboard_stats_' . $userId);
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil disimpan!');
 

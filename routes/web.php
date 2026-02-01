@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/app/login');
 
-// Lightweight health check for Cloud Run and local smoke tests
-Route::get('/health', fn () => response()->json(['status' => 'ok']));
+// Health check for Cloud Run and local smoke tests with database connectivity check
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+
+        return response()->json(['status' => 'ok', 'database' => 'connected']);
+    } catch (Exception $e) {
+        return response()->json(['status' => 'error', 'database' => 'disconnected'], 503);
+    }
+});
 
 // API endpoint for checking role authorization (used by bfcache guard)
 Route::get('/app/api/check-role', function () {

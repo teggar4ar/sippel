@@ -11,18 +11,18 @@ use App\Models\Siswa;
 use App\Models\TahunAjaran;
 use App\Models\User;
 use BackedEnum;
-use Filament\Actions\Action;
+use Exception;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Wizard;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +33,15 @@ final class GantiSemesterPage extends Page implements HasForms
 {
     use InteractsWithForms;
 
+    // Form data
+    public ?array $data = [];
+
+    // Context data
+    public ?TahunAjaran $activeTahunAjaran = null;
+
+    /** @var Collection<int, Kelas> */
+    public Collection $currentClasses;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
 
     protected static ?string $navigationLabel = 'Ganti Semester';
@@ -42,15 +51,6 @@ final class GantiSemesterPage extends Page implements HasForms
     protected static ?int $navigationSort = 2;
 
     protected string $view = 'filament.pages.ganti-semester';
-
-    // Form data
-    public ?array $data = [];
-
-    // Context data
-    public ?TahunAjaran $activeTahunAjaran = null;
-
-    /** @var Collection<int, Kelas> */
-    public Collection $currentClasses;
 
     public static function getNavigationGroup(): string
     {
@@ -76,8 +76,8 @@ final class GantiSemesterPage extends Page implements HasForms
         $this->currentClasses = collect();
         $defaults = [];
 
-        if ($this->activeTahunAjaran) {
-             // Load classes first as they are needed for schema generation
+        if ($this->activeTahunAjaran instanceof TahunAjaran) {
+            // Load classes first as they are needed for schema generation
             $this->currentClasses = Kelas::where('tahun_ajaran_id', $this->activeTahunAjaran->id)
                 ->with(['waliKelas', 'siswa'])
                 ->orderBy('tingkat_kelas')
@@ -86,7 +86,7 @@ final class GantiSemesterPage extends Page implements HasForms
 
             $defaults['namaTahun'] = $this->activeTahunAjaran->nama_tahun;
             $defaults['semester'] = $this->activeTahunAjaran->isGanjil() ? 'Genap' : 'Ganjil';
-            
+
             // Initialize wali kelas assignments
             $assignments = [];
             foreach ($this->currentClasses as $kelas) {
@@ -134,7 +134,7 @@ final class GantiSemesterPage extends Page implements HasForms
                                 ])->columns(2),
                         ]),
                     Wizard\Step::make('Wali Kelas')
-                        ->schema(function () {
+                        ->schema(function (): array {
                             $fields = [];
                             foreach ($this->currentClasses as $kelas) {
                                 $fields[] = Select::make("waliKelasAssignments.{$kelas->id}")
@@ -145,18 +145,19 @@ final class GantiSemesterPage extends Page implements HasForms
                                     ->preload()
                                     ->required();
                             }
+
                             return [Section::make('Daftar Kelas')->schema($fields)->columns(2)];
                         }),
                     Wizard\Step::make('Konfirmasi')
                         ->schema([
-                           Section::make('Ringkasan')
+                            Section::make('Ringkasan')
                                 ->schema([
                                     Placeholder::make('summary_tahun')
                                         ->label('Tahun Ajaran Baru')
-                                        ->content(fn ($get) => "{$get('namaTahun')} - Semester {$get('semester')}"),
+                                        ->content(fn ($get): string => "{$get('namaTahun')} - Semester {$get('semester')}"),
                                     Placeholder::make('summary_dates')
                                         ->label('Periode')
-                                        ->content(fn ($get) => "{$get('tanggalMulai')} s/d {$get('tanggalSelesai')}"),
+                                        ->content(fn ($get): string => "{$get('tanggalMulai')} s/d {$get('tanggalSelesai')}"),
                                     Placeholder::make('summary_classes')
                                         ->label('Jumlah Kelas')
                                         ->content($this->currentClasses->count()),
@@ -165,10 +166,10 @@ final class GantiSemesterPage extends Page implements HasForms
                                         ->content($this->getTotalStudentsProperty()),
                                     Placeholder::make('info')
                                         ->content(new HtmlString('<span class="text-warning-600 font-medium">Perhatian: Tahun ajaran lama akan dinonaktifkan. Pastikan semua data sudah benar.</span>')),
-                                ])
+                                ]),
                         ]),
                 ])
-                ->submitAction(new HtmlString('<button type="submit" class="fi-btn fi-btn-size-md fi-btn-color-primary relative grid-flow-col items-center justify-center gap-1.5 rounded-lg border border-transparent bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition duration-75 focus:ring-2 focus:ring-primary-500/50 cursor-pointer">Simpan & Proses</button>'))
+                    ->submitAction(new HtmlString('<button type="submit" class="fi-btn fi-btn-size-md fi-btn-color-primary relative grid-flow-col items-center justify-center gap-1.5 rounded-lg border border-transparent bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition duration-75 focus:ring-2 focus:ring-primary-500/50 cursor-pointer">Simpan & Proses</button>')),
             ])
             ->statePath('data');
     }
@@ -176,7 +177,7 @@ final class GantiSemesterPage extends Page implements HasForms
     public function create(): void
     {
         $data = $this->form->getState();
-        
+
         $namaTahun = $data['namaTahun'];
         $semester = $data['semester'];
         $tanggalMulai = $data['tanggalMulai'];
@@ -194,13 +195,14 @@ final class GantiSemesterPage extends Page implements HasForms
                 ->body("Tahun ajaran {$namaTahun} semester {$semester} sudah ada.")
                 ->danger()
                 ->send();
+
             return;
         }
 
         try {
-            DB::transaction(function () use ($namaTahun, $semester, $tanggalMulai, $tanggalSelesai, $waliKelasAssignments) {
+            DB::transaction(function () use ($namaTahun, $semester, $tanggalMulai, $tanggalSelesai, $waliKelasAssignments): void {
                 // 1. Deactivate current tahun ajaran
-                if ($this->activeTahunAjaran) {
+                if ($this->activeTahunAjaran instanceof TahunAjaran) {
                     $this->activeTahunAjaran->update(['status' => false]);
                 }
 
@@ -237,10 +239,10 @@ final class GantiSemesterPage extends Page implements HasForms
                 // 5. Migrate mata pelajaran to new classes
                 foreach ($this->currentClasses as $oldKelas) {
                     $newKelasId = $kelasMapping[$oldKelas->id];
-                    
+
                     // Get all mata pelajaran from old class
                     $oldMataPelajaran = MataPelajaran::where('kelas_id', $oldKelas->id)->get();
-                    
+
                     // Create new mata pelajaran for each subject in the new class
                     foreach ($oldMataPelajaran as $mapel) {
                         MataPelajaran::create([
@@ -259,7 +261,7 @@ final class GantiSemesterPage extends Page implements HasForms
                 ->send();
 
             $this->redirect(TahunAjaranResource::getUrl());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Notification::make()
                 ->title('Gagal Ganti Semester')
                 ->body('Terjadi kesalahan: '.$e->getMessage())
