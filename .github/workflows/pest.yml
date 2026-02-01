@@ -1,11 +1,11 @@
 name: Tests
 
-on: [ push ]
+on: [push]
 jobs:
   tests:
     strategy:
       matrix:
-        shard: [ 1, 2, 3, 4 ]
+        shard: [1, 2, 3, 4]
 
     name: Application Operational Test
     runs-on: ubuntu-latest
@@ -23,7 +23,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: "8.3"
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
           coverage: none
 
