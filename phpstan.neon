@@ -32,5 +32,3 @@ parameters:
         - '#Using nullsafe property access .* on left side of \?\? is unnecessary#'
         # Livewire computed property return type
         - '#should return .* but returns Illuminate\\Database\\Eloquent\\Model\|null#'
-        # Livewire validation methods (rules, messages) are called via Livewire magic
-        - '#Method App\\Livewire\\.*::(rules|messages)\(\) is unused#'

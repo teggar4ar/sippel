@@ -161,7 +161,7 @@ final class EditAktivitas extends Component
             return;
         }
 
-        Cache::forget('teacher_dashboard_stats_' . Auth::id());
+        Cache::forget('teacher_dashboard_stats_'.Auth::id());
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil diperbarui!');
 
