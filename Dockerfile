@@ -39,18 +39,29 @@ RUN apk add --no-cache nginx supervisor icu-libs libpng libjpeg-turbo freetype l
 
 COPY --from=vendor /app /var/www/html
 COPY --from=assets /app/public/build /var/www/html/public/build
+COPY --from=assets /app/public/favicon*.{png,ico} /var/www/html/public/
+COPY --from=assets /app/public/icons /var/www/html/public/icons
+COPY --from=assets /app/public/manifest-*.json /var/www/html/public/
+COPY --from=assets /app/public/sw-*.js /var/www/html/public/
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/nginx-main.conf /etc/nginx/nginx.conf
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf.template
 COPY docker/supervisord.conf /etc/supervisord.conf
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
+    && apk add --no-cache gettext \
     && mkdir -p /run/nginx /var/log/nginx /var/lib/nginx/tmp/client_body /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi \
     && chown -R www-data:www-data /var/log/nginx /var/lib/nginx /run/nginx \
-    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && PORT=8080 envsubst '${PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf \
+    && rm /etc/nginx/conf.d/default.conf.template
 
-EXPOSE 8080
+# Use ARG for build-time PORT, ENV for runtime
+ARG PORT=8080
+ENV PORT=${PORT}
+
+EXPOSE ${PORT}
 
 USER www-data
 

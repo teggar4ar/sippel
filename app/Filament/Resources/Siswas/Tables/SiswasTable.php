@@ -53,6 +53,7 @@ final class SiswasTable
                 TextColumn::make('kelas.nama_lengkap')
                     ->label('Kelas')
                     ->sortable(query: fn ($query, $direction) => $query
+                        ->select('siswa.*')
                         ->leftJoin('kelas', 'siswa.kelas_id', '=', 'kelas.id')
                         ->orderBy('kelas.tingkat_kelas', $direction)
                         ->orderBy('kelas.grup_kelas', $direction))

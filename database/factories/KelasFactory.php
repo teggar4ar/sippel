@@ -21,7 +21,7 @@ final class KelasFactory extends Factory
     public function definition(): array
     {
         return [
-            'tingkat_kelas' => fake()->randomElement(['7', '8', '9', '10', '11', '12']),
+            'tingkat_kelas' => fake()->randomElement(['7', '8', '9']),
             'grup_kelas' => fake()->randomElement(['A', 'B', 'C', 'D']),
             'tahun_ajaran_id' => TahunAjaran::factory(),
             'wali_kelas_id' => User::factory(),

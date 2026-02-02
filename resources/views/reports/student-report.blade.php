@@ -257,8 +257,8 @@
     <div class="page">
         {{-- Header --}}
         <div class="header">
-            <div class="school-name">SMP Islam Terpadu Al-Itqon</div>
-            <div class="school-address">Kp. Kandang Panjang RT. 01/06 Desa Tajurhalang Kec. Tajurhalang Kab. Bogor.</div>
+            <div class="school-name">{{ config('app.school_name', 'SMP Islam Terpadu Al-Itqon') }}</div>
+            <div class="school-address">{{ config('app.school_address', 'Kp. Kandang Panjang RT. 01/06 Desa Tajurhalang Kec. Tajurhalang Kab. Bogor.') }}</div>
             <div class="report-title">Laporan Perkembangan Belajar Siswa</div>
         </div>
 

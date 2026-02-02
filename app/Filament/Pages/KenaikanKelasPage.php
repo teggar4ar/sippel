@@ -353,11 +353,18 @@ final class KenaikanKelasPage extends Page implements HasForms
                             }
                         }
                     } elseif ($decision === 'tinggal') {
-                        // Stay in same grade -> look for new class with same grade
+                        // Stay in same grade -> ensure there is a new class with same grade & group
                         $newKelasKey = $currentKelas->tingkat_kelas.'_'.$currentKelas->grup_kelas;
-                        if (isset($newKelasMap[$newKelasKey])) {
-                            $siswa->update(['kelas_id' => $newKelasMap[$newKelasKey]]);
+                        if (! isset($newKelasMap[$newKelasKey])) {
+                            $newKelas = Kelas::create([
+                                'tingkat_kelas' => $currentKelas->tingkat_kelas,
+                                'grup_kelas' => $currentKelas->grup_kelas,
+                                'wali_kelas_id' => $currentKelas->wali_kelas_id,
+                                'tahun_ajaran_id' => $newTahunAjaran->id,
+                            ]);
+                            $newKelasMap[$newKelasKey] = $newKelas->id;
                         }
+                        $siswa->update(['kelas_id' => $newKelasMap[$newKelasKey]]);
                     }
                 }
             });
