@@ -17,8 +17,16 @@
     <link rel="manifest" href="/manifest-student.json">
     <link rel="apple-touch-icon" href="/icons/student-icon-192.svg">
 
+    @fluxStyles
     @fluxAppearance
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @if(app()->environment('production'))
+        <link rel="stylesheet" href="{{ asset('build/assets/app-CibD3xuV.css') }}">
+        <script type="module" src="{{ asset('build/assets/app-BtZHWQGV.js') }}"></script>
+    @else
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @endif
+
     @livewireStyles
 </head>
 <body class="min-h-screen bg-teal-50 dark:bg-slate-950 antialiased overflow-x-hidden"
