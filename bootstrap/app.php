@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Force HTTPS globally in production
+        $middleware->use([
+            App\Http\Middleware\ForceHttpsMiddleware::class,
+        ]);
+
         // Trust all proxies (for ngrok, cloudflare, etc.)
         $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR |
             Request::HEADER_X_FORWARDED_HOST |

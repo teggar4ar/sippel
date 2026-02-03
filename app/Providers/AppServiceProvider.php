@@ -24,9 +24,10 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Force HTTPS when behind a proxy (ngrok, cloudflare, etc.)
-        if ($this->app->environment('local') && request()->header('X-Forwarded-Proto') === 'https') {
+        // Force HTTPS in production (Cloud Run, etc.)
+        if ($this->app->environment('production')) {
             URL::forceScheme('https');
+            $this->app['request']->server->set('HTTPS', 'on');
         }
 
         $this->configureTable();
