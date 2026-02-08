@@ -1,0 +1,75 @@
+# ============================================================================
+# HEROKU.YML - Container Stack Deployment Configuration
+# ============================================================================
+# This file configures Heroku to deploy the application using Docker containers.
+# Documentation: https://devcenter.heroku.com/articles/build-docker-images-heroku-yml
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# SETUP PHASE
+# ----------------------------------------------------------------------------
+# Addons provisioned when the app is created or when stack is changed to container.
+# These run only once during initial setup.
+#
+# ⚠️  ADJUST THIS SECTION:
+#     - Change "essential-0" to your preferred Postgres tier if needed.
+#     - Available tiers: mini, essential-0, essential-1, essential-2, standard-0, etc.
+#     - See: https://devcenter.heroku.com/articles/heroku-postgres-plans
+# ----------------------------------------------------------------------------
+setup:
+  addons:
+    - plan: heroku-postgresql:essential-0
+      as: DATABASE
+
+# ----------------------------------------------------------------------------
+# BUILD PHASE
+# ----------------------------------------------------------------------------
+# Configuration for building Docker images.
+#
+# ⚠️  ADJUST THIS SECTION:
+#     - "web" refers to the Dockerfile at the root directory.
+#     - If your Dockerfile is elsewhere, update the path.
+#     - You can add build args if needed (e.g., for environment-specific builds).
+# ----------------------------------------------------------------------------
+build:
+  docker:
+    # Process type "web" uses the Dockerfile at the project root
+    web: Dockerfile
+  # Uncomment below to add build-time arguments if needed:
+  # config:
+  #   NODE_ENV: production
+
+# ----------------------------------------------------------------------------
+# RELEASE PHASE
+# ----------------------------------------------------------------------------
+# Commands to run after the build but before the new release is deployed.
+# This is ideal for database migrations and caching.
+#
+# ⚠️  ADJUST THIS SECTION:
+#     - Modify the migration command if you don't want --force.
+#     - Add or remove commands based on your release needs.
+#     - The image used is "web" (the built Docker image).
+# ----------------------------------------------------------------------------
+release:
+  image: web
+  command:
+    - php artisan migrate --force
+    - php artisan config:cache
+    - php artisan route:cache
+    - php artisan view:cache
+    - php artisan storage:link --force
+
+# ----------------------------------------------------------------------------
+# RUN PHASE
+# ----------------------------------------------------------------------------
+# Process types and their commands.
+#
+# ⚠️  ADJUST THIS SECTION:
+#     - "web" is the main web process (required for HTTP traffic).
+#     - The command below uses the Dockerfile's CMD by default.
+#     - Add worker processes here if you have queue workers.
+# ----------------------------------------------------------------------------
+run:
+  web: /usr/bin/supervisord -c /etc/supervisord.conf
+  # Uncomment below to add a queue worker:
+  # worker: php artisan queue:work --tries=3 --timeout=90
