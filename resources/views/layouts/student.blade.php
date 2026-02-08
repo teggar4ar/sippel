@@ -17,15 +17,7 @@
     <link rel="manifest" href="/manifest-student.json">
     <link rel="apple-touch-icon" href="/icons/student-icon-192.svg">
 
-    @fluxStyles
-    @fluxAppearance
-
-    @if(app()->environment('production'))
-        <link rel="stylesheet" href="{{ asset('build/assets/app-CibD3xuV.css') }}">
-        <script type="module" src="{{ asset('build/assets/app-BtZHWQGV.js') }}"></script>
-    @else
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @endif
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @livewireStyles
 </head>
@@ -213,7 +205,6 @@
         @csrf
     </form>
 
-    @fluxScripts
     @livewireScripts
 
     {{-- PWA Service Worker Registration --}}

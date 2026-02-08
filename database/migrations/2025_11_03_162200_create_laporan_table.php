@@ -14,9 +14,14 @@ return new class() extends Migration
             $table->id();
 
             // Aggregated/cached statistics
-            $table->float('rata_kehadiran')->nullable()->comment('Average attendance rate (percentage)');
-            $table->float('rata_nilai')->nullable()->comment('Average grade (0-100)');
-            $table->tinyInteger('rata_partisipasi')->nullable()->comment('Average participation score (1-5)');
+            $table->float('rata_kehadiran')->default(0);
+            $table->integer('hadir_count')->default(0);
+            $table->integer('izin_count')->default(0);
+            $table->integer('sakit_count')->default(0);
+            $table->integer('alpa_count')->default(0);
+            $table->integer('total_kehadiran')->default(0);
+            $table->float('rata_nilai')->nullable();
+            $table->integer('rata_partisipasi')->nullable();
 
             // Foreign keys
             $table->foreignId('siswa_id')->constrained('siswa')->cascadeOnDelete();

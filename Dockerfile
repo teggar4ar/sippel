@@ -2,9 +2,10 @@ FROM php:8.3-cli-alpine AS vendor
 
 WORKDIR /app
 
-RUN apk add --no-cache icu-libs libzip \
-    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev libzip-dev \
-    && docker-php-ext-install intl zip \
+RUN apk add --no-cache icu-libs libzip libpng libjpeg-turbo freetype \
+    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev libzip-dev libpng-dev libjpeg-turbo-dev freetype-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install intl zip gd \
     && apk del .build-deps
 
 COPY --from=composer:2.7.7 /usr/bin/composer /usr/bin/composer
@@ -21,10 +22,13 @@ FROM node:20-alpine AS assets
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+# Install ALL dependencies (devDependencies like vite, tailwindcss are needed for build)
 RUN npm ci
 
 COPY . .
 COPY --from=vendor /app/vendor /app/vendor
+
+# Set NODE_ENV=production for optimized build output (AFTER npm ci to allow devDeps install)
 ENV NODE_ENV=production
 RUN npm run build && rm -rf node_modules
 

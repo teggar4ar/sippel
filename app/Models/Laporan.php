@@ -16,6 +16,11 @@ final class Laporan extends Model
 
     protected $fillable = [
         'rata_kehadiran',
+        'hadir_count',
+        'izin_count',
+        'sakit_count',
+        'alpa_count',
+        'total_kehadiran',
         'rata_nilai',
         'rata_partisipasi',
         'siswa_id',
@@ -25,6 +30,11 @@ final class Laporan extends Model
 
     protected $casts = [
         'rata_kehadiran' => 'float',
+        'hadir_count' => 'integer',
+        'izin_count' => 'integer',
+        'sakit_count' => 'integer',
+        'alpa_count' => 'integer',
+        'total_kehadiran' => 'integer',
         'rata_nilai' => 'float',
         'rata_partisipasi' => 'integer',
     ];

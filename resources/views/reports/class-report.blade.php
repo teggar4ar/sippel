@@ -375,10 +375,14 @@
                     <th style="width: 30px;">No</th>
                     <th style="width: 60px;">NIS</th>
                     <th>Nama Siswa</th>
-                    <th style="width: 80px;">Kehadiran</th>
-                    <th style="width: 70px;">Nilai</th>
-                    <th style="width: 70px;">Partisipasi</th>
-                    <th style="width: 50px;">Rank</th>
+                    <th style="width: 50px;">%</th>
+                    <th style="width: 35px;">H</th>
+                    <th style="width: 35px;">I</th>
+                    <th style="width: 35px;">S</th>
+                    <th style="width: 35px;">A</th>
+                    <th style="width: 50px;">Nilai</th>
+                    <th style="width: 50px;">Part</th>
+                    <th style="width: 40px;">Rank</th>
                 </tr>
             </thead>
             <tbody>
@@ -410,13 +414,17 @@
                         <td class="center">{{ $laporan->siswa->nis }}</td>
                         <td>{{ $laporan->siswa->user->name }}</td>
                         <td class="center {{ $attendanceClass }}">{{ number_format($laporan->rata_kehadiran, 1) }}%</td>
+                        <td class="center">{{ $laporan->hadir_count }}</td>
+                        <td class="center">{{ $laporan->izin_count }}</td>
+                        <td class="center">{{ $laporan->sakit_count }}</td>
+                        <td class="center">{{ $laporan->alpa_count }}</td>
                         <td class="center {{ $gradeClass }}">{{ number_format($laporan->rata_nilai, 1) }}</td>
                         <td class="center">{{ $laporan->rata_partisipasi }}/5</td>
                         <td class="center"><strong>{{ $index + 1 }}</strong></td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="center" style="padding: 20px; color: #666;">
+                        <td colspan="11" class="center" style="padding: 20px; color: #666;">
                             Belum ada data laporan untuk kelas dan mata pelajaran ini
                         </td>
                     </tr>

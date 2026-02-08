@@ -259,14 +259,25 @@
                         <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <span class="text-sm font-semibold text-slate-900 dark:text-white">Pratinjau Laporan Kelas</span>
                             @if($this->classReportData->isNotEmpty())
-                                <button
-                                    wire:click="downloadClassPdf"
-                                    wire:loading.attr="disabled"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                                >
-                                    <flux:icon name="arrow-down-tray" class="w-3.5 h-3.5" />
-                                    <span>Download PDF</span>
-                                </button>
+                                <div class="flex gap-2">
+                                    <button
+                                        wire:click="downloadClassPdf"
+                                        wire:loading.attr="disabled"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                    >
+                                        <flux:icon name="arrow-down-tray" class="w-3.5 h-3.5" />
+                                        <span>Download PDF</span>
+                                    </button>
+
+                                    <button
+                                        wire:click="exportClassExcel"
+                                        wire:loading.attr="disabled"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                                    >
+                                        <flux:icon name="table-cells" class="w-3.5 h-3.5" />
+                                        <span>Export Excel</span>
+                                    </button>
+                                </div>
                             @endif
                         </div>
                         <div class="p-3 space-y-3">

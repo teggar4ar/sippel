@@ -37,7 +37,8 @@ final class UserForm
                     ->password()
                     ->required(fn ($livewire): bool => $livewire instanceof CreateUser)
                     ->revealable(filament()->arePasswordsRevealable())
-                    ->rule(Password::default())
+                    ->minLength(8)
+                    ->maxLength(255)
                     ->autocomplete('new-password')
                     ->dehydrated(fn ($state): bool => filled($state))
                     ->helperText('Minimal 8 karakter. Kosongkan jika tidak ingin mengubah password.'),

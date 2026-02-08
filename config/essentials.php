@@ -119,11 +119,11 @@ return [
     | application to be at least 12 characters long, maximum
     | 255 characters long, and not compromised.
     |
-    | Enabled by default.
+    | DISABLED: Custom 8-character minimum defined in UserForm
     |
     */
 
-    NunoMaduro\Essentials\Configurables\SetDefaultPassword::class => true,
+    NunoMaduro\Essentials\Configurables\SetDefaultPassword::class => false,
 
     /*
     |--------------------------------------------------------------------------

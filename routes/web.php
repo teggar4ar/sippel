@@ -83,6 +83,20 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
 
 /*
 |--------------------------------------------------------------------------
+| Report Export Routes
+|--------------------------------------------------------------------------
+|
+| Routes for exporting reports to Excel format.
+| Only teachers and operators can export class reports.
+|
+*/
+Route::middleware(['auth', 'role:teacher|operator'])->group(function () {
+    Route::post('/reports/class/export', [App\Http\Controllers\ClassReportExportController::class, 'export'])
+        ->name('reports.class.export');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Report Preview Routes (Local Development Only)
 |--------------------------------------------------------------------------
 |

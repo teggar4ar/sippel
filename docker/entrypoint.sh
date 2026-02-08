@@ -38,6 +38,11 @@ fi
 # Ensure required directories exist
 mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache
 
+# Optimize Laravel for production
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
 # If PORT env variable changed at runtime (Cloud Run dynamic port), update nginx config
 if [ "$PORT" != "8080" ] && [ -w /etc/nginx/conf.d/default.conf ]; then
     echo "Updating nginx to listen on port $PORT..."

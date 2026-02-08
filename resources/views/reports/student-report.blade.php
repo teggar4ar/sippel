@@ -312,9 +312,13 @@
                 <tr>
                     <th style="width: 30px;">No</th>
                     <th>Mata Pelajaran</th>
-                    <th style="width: 70px;">Kehadiran</th>
-                    <th style="width: 60px;">Nilai</th>
-                    <th style="width: 70px;">Partisipasi</th>
+                    <th style="width: 50px;">%</th>
+                    <th style="width: 30px;">H</th>
+                    <th style="width: 30px;">I</th>
+                    <th style="width: 30px;">S</th>
+                    <th style="width: 30px;">A</th>
+                    <th style="width: 50px;">Nilai</th>
+                    <th style="width: 50px;">Part</th>
                 </tr>
             </thead>
             <tbody>
@@ -331,12 +335,16 @@
                         <td class="center">{{ $index + 1 }}</td>
                         <td>{{ $laporan->mataPelajaran->nama_mapel }}</td>
                         <td class="center">{{ number_format($laporan->rata_kehadiran, 1) }}%</td>
+                        <td class="center">{{ $laporan->hadir_count }}</td>
+                        <td class="center">{{ $laporan->izin_count }}</td>
+                        <td class="center">{{ $laporan->sakit_count }}</td>
+                        <td class="center">{{ $laporan->alpa_count }}</td>
                         <td class="center {{ $gradeClass }}">{{ number_format($laporan->rata_nilai, 1) }}</td>
                         <td class="center">{{ $laporan->rata_partisipasi }}/5</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="center" style="padding: 20px; color: #666;">
+                        <td colspan="9" class="center" style="padding: 20px; color: #666;">
                             Belum ada data laporan untuk periode ini
                         </td>
                     </tr>

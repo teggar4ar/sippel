@@ -3,11 +3,94 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux/dist/**/*.blade.php';
 @source '../../vendor/livewire/flux-pro/dist/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
+@source '../../app/Livewire/**/*.php';
+@source '../../app/Filament/**/*.php';
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Enhanced Flux UI and placeholder styling for production */
+@layer base {
+    /* Standardize input/select/textarea elements only (not their wrapper divs) */
+    input[type='text']:not([type='hidden']),
+    input[type='email'],
+    input[type='password'],
+    input[type='number'],
+    input[type='date'],
+    input[type='time'],
+    input[type='datetime-local'],
+    input[type='search'] {
+        @apply h-10 px-3 text-sm;
+        @apply border border-slate-300 dark:border-slate-600;
+        @apply bg-white dark:bg-slate-900;
+        @apply rounded-lg;
+        @apply transition-colors;
+        line-height: 1.5 !important;
+    }
+
+    /* Select elements */
+    select {
+        @apply h-10 px-3 text-sm;
+        @apply border border-slate-300 dark:border-slate-600;
+        @apply bg-white dark:bg-slate-900;
+        @apply rounded-lg;
+        @apply transition-colors;
+        line-height: 1.5 !important;
+    }
+
+    /* Textarea elements */
+    textarea {
+        @apply px-3 py-2 text-sm;
+        @apply border border-slate-300 dark:border-slate-600;
+        @apply bg-white dark:bg-slate-900;
+        @apply rounded-lg;
+        @apply transition-colors;
+        @apply min-h-[80px];
+        line-height: 1.5 !important;
+    }
+
+    /* Focus states - consistent across all inputs */
+    input:focus,
+    select:focus,
+    textarea:focus {
+        @apply outline-none ring-2 ring-blue-500 ring-offset-0 border-blue-500;
+    }
+
+    /* Placeholder styling */
+    input::placeholder,
+    textarea::placeholder,
+    select::placeholder {
+        @apply text-slate-400 text-sm;
+        opacity: 0.6 !important;
+        font-weight: 400 !important;
+    }
+
+    /* Dark mode placeholders */
+    .dark input::placeholder,
+    .dark textarea::placeholder,
+    .dark select::placeholder {
+        @apply text-slate-500;
+        opacity: 0.6 !important;
+    }
+
+    /* Disabled state */
+    input:disabled,
+    select:disabled,
+    textarea:disabled {
+        @apply opacity-60 cursor-not-allowed bg-slate-50 dark:bg-slate-800;
+    }
+
+    /* Error state */
+    input[aria-invalid='true'],
+    select[aria-invalid='true'],
+    textarea[aria-invalid='true'] {
+        @apply border-red-500 ring-2 ring-red-500 ring-offset-0;
+    }
+}
+

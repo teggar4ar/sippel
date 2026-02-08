@@ -204,6 +204,11 @@ final class CalculateReports extends Command
 
         // Update statistics
         $laporan->rata_kehadiran = $stats['rata_kehadiran'];
+        $laporan->hadir_count = $stats['hadir_count'];
+        $laporan->izin_count = $stats['izin_count'];
+        $laporan->sakit_count = $stats['sakit_count'];
+        $laporan->alpa_count = $stats['alpa_count'];
+        $laporan->total_kehadiran = $stats['total_kehadiran'];
         $laporan->rata_nilai = $stats['rata_nilai'];
         $laporan->rata_partisipasi = $stats['rata_partisipasi'];
         $laporan->save();
@@ -215,15 +220,19 @@ final class CalculateReports extends Command
      * Calculate statistics from detail_aktivitas records.
      *
      * @param  \Illuminate\Database\Eloquent\Collection<int, DetailAktivitas>  $detailAktivitas
-     * @return array{rata_kehadiran: float, rata_nilai: float|null, rata_partisipasi: int|null}
+     * @return array{rata_kehadiran: float, hadir_count: int, izin_count: int, sakit_count: int, alpa_count: int, total_kehadiran: int, rata_nilai: float|null, rata_partisipasi: int|null}
      */
     private function calculateStatistics($detailAktivitas): array
     {
         $total = $detailAktivitas->count();
 
-        // Calculate attendance percentage
-        // Count 'hadir' as present (lowercase in database)
+        // Calculate attendance counts by status
         $hadirCount = $detailAktivitas->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count();
+        $izinCount = $detailAktivitas->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'izin')->count();
+        $sakitCount = $detailAktivitas->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'sakit')->count();
+        $alpaCount = $detailAktivitas->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'alpa')->count();
+
+        // Calculate attendance percentage
         $rataKehadiran = $total > 0 ? round(($hadirCount / $total) * 100, 2) : 0;
 
         // Calculate average grade (excluding null values)
@@ -238,6 +247,11 @@ final class CalculateReports extends Command
 
         return [
             'rata_kehadiran' => $rataKehadiran,
+            'hadir_count' => $hadirCount,
+            'izin_count' => $izinCount,
+            'sakit_count' => $sakitCount,
+            'alpa_count' => $alpaCount,
+            'total_kehadiran' => $total,
             'rata_nilai' => $rataNilai,
             'rata_partisipasi' => $rataPartisipasi,
         ];
