@@ -45,7 +45,7 @@ build:
 # Commands to run after the build but before the new release is deployed.
 # This is ideal for database migrations and caching.
 #
-# ⚠️  ADJUST THIS SECTION:
+# ⚠️  ADJUST THIS SECTION::
 #     - Modify the migration command if you don't want --force.
 #     - Add or remove commands based on your release needs.
 #     - The image used is "web" (the built Docker image).
