@@ -10,7 +10,6 @@ use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
-use Illuminate\Validation\Rules\Password;
 
 final class UserForm
 {
