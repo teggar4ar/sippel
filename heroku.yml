@@ -55,7 +55,8 @@ release:
   command:
     - php artisan migrate --force
     - php artisan config:cache
-    - php artisan route:cache
+    # Note: route:cache disabled - routes/web.php contains closures
+    # - php artisan route:cache
     - php artisan view:cache
     - php artisan storage:link --force
 

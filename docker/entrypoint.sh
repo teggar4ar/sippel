@@ -40,7 +40,9 @@ mkdir -p storage/framework/cache/data storage/framework/sessions storage/framewo
 
 # Optimize Laravel for production
 php artisan config:cache
-php artisan route:cache
+# Note: route:cache disabled because routes/web.php contains closures
+# Convert closure routes to controllers before enabling route caching
+# php artisan route:cache
 php artisan view:cache
 
 # If PORT env variable changed at runtime (Cloud Run dynamic port), update nginx config

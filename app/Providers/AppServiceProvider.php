@@ -32,10 +32,9 @@ final class AppServiceProvider extends ServiceProvider
             if (config('app.force_https')) {
                 URL::forceScheme('https');
                 $this->app['request']->server->set('HTTPS', 'on');
-            } else {
-                // Explicitly force HTTP when not requiring HTTPS
-                URL::forceScheme('http');
             }
+            // Note: Not forcing HTTP scheme when force_https is false
+            // to allow proper scheme detection from proxy headers
         }
 
         $this->configureTable();
@@ -52,10 +51,9 @@ final class AppServiceProvider extends ServiceProvider
             }
 
             // Teachers can only export classes where they are the homeroom teacher
+            // Note: wali_kelas_id references users.id directly (User model represents teachers)
             if ($user->hasRole('teacher')) {
-                $guru = $user->guru;
-
-                return $guru && $kelas->wali_kelas_id === $guru->id;
+                return $kelas->wali_kelas_id === $user->id;
             }
 
             return false;

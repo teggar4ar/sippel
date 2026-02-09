@@ -13,13 +13,14 @@ final class ForceHttpsMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Force HTTPS in production
-        if (app()->environment('production')) {
-            $request->server->set('HTTPS', 'on');
-
-            // If request is not secure but has X-Forwarded-Proto header, redirect
+        if (app()->environment('production') && config('app.force_https', false)) {
+            // Check if request is not secure before mutating server vars
             if (! $request->isSecure() && $request->header('X-Forwarded-Proto') !== 'https') {
                 return redirect()->secure($request->getRequestUri());
             }
+
+            // Set HTTPS flag for secure requests
+            $request->server->set('HTTPS', 'on');
         }
 
         return $next($request);
