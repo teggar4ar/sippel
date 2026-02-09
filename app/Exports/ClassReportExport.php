@@ -106,7 +106,7 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
 
             // Fill date columns
             foreach ($this->dates as $date) {
-                $record = $records->first(fn ($r): bool => $r->siswa_id == $student->id
+                $record = $records->first(fn ($r): bool => $r->siswa_id === $student->id
                     && $r->aktivitasPembelajaran?->tanggal?->isSameDay($date));
 
                 $row[] = $record ? ucfirst((string) $record->kehadiran) : '';
