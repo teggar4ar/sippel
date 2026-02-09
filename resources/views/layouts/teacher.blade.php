@@ -204,7 +204,5 @@
             });
         }
     </script>
-
-    @livewireScripts
 </body>
 </html>
