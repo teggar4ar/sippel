@@ -133,8 +133,9 @@ final class EditAktivitas extends Component
 
                 // Update or create detail records
                 foreach ($this->detailAktivitas as $siswaId => $detail) {
-                    // Clear nilai and partisipasi if student is not present
-                    $isHadir = mb_strtolower((string) $detail['kehadiran']) === 'hadir';
+                    // Convert kehadiran to lowercase for database enum
+                    $kehadiran = mb_strtolower((string) $detail['kehadiran']);
+                    $isHadir = $kehadiran === 'hadir';
 
                     DetailAktivitas::updateOrCreate(
                         [
@@ -142,7 +143,7 @@ final class EditAktivitas extends Component
                             'siswa_id' => $siswaId,
                         ],
                         [
-                            'kehadiran' => $detail['kehadiran'],
+                            'kehadiran' => $kehadiran,
                             'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
                             'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
                             'catatan' => $detail['catatan'] ?: null,
