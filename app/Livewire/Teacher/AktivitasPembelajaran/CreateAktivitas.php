@@ -6,8 +6,11 @@ namespace App\Livewire\Teacher\AktivitasPembelajaran;
 
 use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
+use App\Models\Kelas;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
+use App\Models\TahunAjaran;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +28,11 @@ final class CreateAktivitas extends Component
 
     // Step 1: Activity information
     public string $tanggal = '';
+
+    // Filter untuk memilih kelas
+    public ?int $tingkat_kelas = null;
+
+    public ?string $grup_kelas = null;
 
     public ?int $mata_pelajaran_id = null;
 
@@ -45,13 +53,80 @@ final class CreateAktivitas extends Component
     }
 
     #[Computed]
+    public function tingkatKelasList()
+    {
+        $activeTahunAjaran = TahunAjaran::getActive();
+
+        if (! $activeTahunAjaran instanceof TahunAjaran) {
+            return collect();
+        }
+
+        // Get distinct tingkat kelas yang ada di tahun ajaran aktif dan guru mengajar di kelas tersebut
+        return Kelas::where('tahun_ajaran_id', $activeTahunAjaran->id)
+            ->whereHas('mataPelajaran', function ($q): void {
+                $q->where('guru_id', Auth::id());
+            })
+            ->orderBy('tingkat_kelas')
+            ->pluck('tingkat_kelas')
+            ->unique()
+            ->values();
+    }
+
+    #[Computed]
+    public function grupKelasList()
+    {
+        if ($this->tingkat_kelas === null) {
+            return collect();
+        }
+
+        $activeTahunAjaran = TahunAjaran::getActive();
+
+        if (! $activeTahunAjaran instanceof TahunAjaran) {
+            return collect();
+        }
+
+        // Get distinct grup kelas untuk tingkat yang dipilih
+        return Kelas::where('tahun_ajaran_id', $activeTahunAjaran->id)
+            ->where('tingkat_kelas', $this->tingkat_kelas)
+            ->whereHas('mataPelajaran', function ($q): void {
+                $q->where('guru_id', Auth::id());
+            })
+            ->orderBy('grup_kelas')
+            ->pluck('grup_kelas')
+            ->unique()
+            ->values();
+    }
+
+    #[Computed]
     public function mataPelajaran()
     {
-        return MataPelajaran::query()
+        $activeTahunAjaran = TahunAjaran::getActive();
+
+        if (! $activeTahunAjaran instanceof TahunAjaran) {
+            return collect();
+        }
+
+        $query = MataPelajaran::query()
             ->where('guru_id', Auth::id())
-            ->with('kelas')
-            ->orderBy('nama_mapel')
-            ->get();
+            ->whereHas('kelas', function ($q) use ($activeTahunAjaran): void {
+                $q->where('tahun_ajaran_id', $activeTahunAjaran->id);
+            })
+            ->with('kelas');
+
+        // Filter berdasarkan tingkat kelas dan grup kelas jika dipilih
+        if ($this->tingkat_kelas !== null) {
+            $query->whereHas('kelas', function ($q): void {
+                $q->where('tingkat_kelas', $this->tingkat_kelas);
+            });
+        }
+
+        if ($this->grup_kelas !== null && $this->grup_kelas !== '') {
+            $query->whereHas('kelas', function ($q): void {
+                $q->where('grup_kelas', $this->grup_kelas);
+            });
+        }
+
+        return $query->orderBy('nama_mapel')->get();
     }
 
     #[Computed]
@@ -76,6 +151,32 @@ final class CreateAktivitas extends Component
         }
 
         return MataPelajaran::with('kelas')->find($this->mata_pelajaran_id);
+    }
+
+    public function updatedTingkatKelas(): void
+    {
+        // Reset grup kelas dan mata pelajaran ketika tingkat kelas berubah
+        $this->grup_kelas = null;
+        $this->mata_pelajaran_id = null;
+        $this->kelas_id = null;
+        $this->detailAktivitas = [];
+
+        // Clear computed property cache
+        unset($this->grupKelasList);
+        unset($this->mataPelajaran);
+        unset($this->siswaList);
+    }
+
+    public function updatedGrupKelas(): void
+    {
+        // Reset mata pelajaran ketika grup kelas berubah
+        $this->mata_pelajaran_id = null;
+        $this->kelas_id = null;
+        $this->detailAktivitas = [];
+
+        // Clear computed property cache
+        unset($this->mataPelajaran);
+        unset($this->siswaList);
     }
 
     public function updatedMataPelajaranId($value): void
@@ -134,32 +235,39 @@ final class CreateAktivitas extends Component
 
         $userId = Auth::id();
 
-        DB::transaction(function () use ($userId): void {
-            // Create the activity
-            $aktivitas = AktivitasPembelajaran::create([
-                'tanggal' => $this->tanggal,
-                'topik' => $this->topik,
-                'catatan' => $this->catatan !== '' && $this->catatan !== '0' ? $this->catatan : null,
-                'mata_pelajaran_id' => $this->mata_pelajaran_id,
-                'kelas_id' => $this->kelas_id,
-                'guru_id' => $userId,
-            ]);
-
-            // Create detail records for each student
-            foreach ($this->detailAktivitas as $siswaId => $detail) {
-                // Clear nilai and partisipasi if student is not present
-                $isHadir = mb_strtolower((string) $detail['kehadiran']) === 'hadir';
-
-                DetailAktivitas::create([
-                    'aktivitas_pembelajaran_id' => $aktivitas->id,
-                    'siswa_id' => $siswaId,
-                    'kehadiran' => $detail['kehadiran'],
-                    'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
-                    'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
-                    'catatan' => $detail['catatan'] ?: null,
+        try {
+            DB::transaction(function () use ($userId): void {
+                // Create the activity
+                $aktivitas = AktivitasPembelajaran::create([
+                    'tanggal' => $this->tanggal,
+                    'topik' => $this->topik,
+                    'catatan' => $this->catatan !== '' && $this->catatan !== '0' ? $this->catatan : null,
+                    'mata_pelajaran_id' => $this->mata_pelajaran_id,
+                    'kelas_id' => $this->kelas_id,
+                    'guru_id' => $userId,
                 ]);
-            }
-        });
+
+                // Create detail records for each student
+                foreach ($this->detailAktivitas as $siswaId => $detail) {
+                    // Convert kehadiran to lowercase for database enum
+                    $kehadiran = mb_strtolower((string) $detail['kehadiran']);
+                    $isHadir = $kehadiran === 'hadir';
+
+                    DetailAktivitas::create([
+                        'aktivitas_pembelajaran_id' => $aktivitas->id,
+                        'siswa_id' => $siswaId,
+                        'kehadiran' => $kehadiran,
+                        'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
+                        'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
+                        'catatan' => $detail['catatan'] ?: null,
+                    ]);
+                }
+            });
+        } catch (Exception) {
+            session()->flash('error', 'Gagal menyimpan data. Silakan coba lagi.');
+
+            return;
+        }
 
         Cache::forget('teacher_dashboard_stats_'.$userId);
 

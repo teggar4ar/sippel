@@ -1,390 +1,177 @@
-# Production Deployment Guide - SIPPEL
+# Heroku Deployment Guide
 
-## Pre-Deployment Checklist
+This guide covers how to deploy and manage the SIPPEL application on Heroku using container stack.
 
-### 1. Server Requirements
+## Prerequisites
 
-- **OS**: Ubuntu 22.04 LTS (recommended)
-- **PHP**: 8.3+
-- **MySQL**: 8.0+ / MariaDB 10.6+
-- **Nginx**: Latest stable
-- **Node.js**: 18+ (untuk build assets)
-- **Composer**: 2.x
-- **RAM**: Minimum 2GB
-- **Storage**: Minimum 20GB
+- Heroku CLI installed and logged in
+- Git repository with `heroku` remote configured
+- App name: `sippel-prod-1` (adjust as needed)
 
-### 2. Required PHP Extensions
+## Quick Deploy
+
+When you've made changes and want to deploy:
 
 ```bash
-sudo apt install php8.3-fpm php8.3-mysql php8.3-mbstring php8.3-xml \
-    php8.3-bcmath php8.3-curl php8.3-zip php8.3-gd php8.3-intl \
-    php8.3-redis php8.3-opcache
+# 1. Commit your changes
+git add .
+git commit -m "fix: your bug fix or feature"
+
+# 2. Push to Heroku
+git push heroku update:main
 ```
 
-### 3. Environment Configuration
+Heroku will automatically:
+1. Build a new Docker image from `Dockerfile`
+2. Run release commands (migrations, caching)
+3. Deploy the new container
 
-Buat file `.env` di server dengan konfigurasi berikut:
+## What Happens on Deploy
 
-```env
-# Application
-APP_NAME=SIPPEL
-APP_ENV=production
-APP_KEY=base64:GENERATE_NEW_KEY
-APP_DEBUG=false
-APP_URL=https://your-domain.com
+The `heroku.yml` file controls the deployment:
 
-# Locale
-APP_LOCALE=id
-APP_TIMEZONE=Asia/Jakarta
-APP_FALLBACK_LOCALE=en
+| Phase | Commands |
+|-------|----------|
+| **Build** | Docker image built from `Dockerfile` |
+| **Release** | `migrate --force`, `config:cache`, `route:cache`, `view:cache`, `storage:link` |
+| **Run** | Starts supervisord (nginx + php-fpm) |
 
-# Database
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=sippel_production
-DB_USERNAME=sippel_user
-DB_PASSWORD=STRONG_PASSWORD_HERE
+## Common Commands
 
-# Session (Secure)
-SESSION_DRIVER=file
-SESSION_LIFETIME=120
-SESSION_ENCRYPT=true
-SESSION_SECURE_COOKIE=true
-SESSION_DOMAIN=your-domain.com
-
-# Cache
-CACHE_STORE=file
-# Untuk high-traffic, gunakan Redis:
-# CACHE_STORE=redis
-
-# Queue
-QUEUE_CONNECTION=database
-
-# Logging
-LOG_CHANNEL=stack
-LOG_STACK=daily
-LOG_LEVEL=error
-
-# Mail (sesuaikan dengan provider)
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.your-provider.com
-MAIL_PORT=587
-MAIL_USERNAME=your-email
-MAIL_PASSWORD=your-password
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=noreply@your-domain.com
-MAIL_FROM_NAME="SIPPEL"
-
-# Security
-BCRYPT_ROUNDS=12
-
-# Debugbar (HARUS false di production!)
-DEBUGBAR_ENABLED=false
-```
-
----
-
-## Deployment Steps
-
-### Step 1: Clone Repository
+### Deployment
 
 ```bash
-cd /var/www
-git clone https://github.com/your-repo/sippel.git
-cd sippel
+# Deploy latest changes
+git push heroku update:main
+
+# Restart the app
+heroku restart -a sippel-prod-1
+
+# Rollback to previous release
+heroku rollback -a sippel-prod-1
+
+# Rollback to specific version
+heroku rollback v10 -a sippel-prod-1
 ```
 
-### Step 2: Install Dependencies
+### Logs & Monitoring
 
 ```bash
-# Install PHP dependencies (tanpa dev packages)
-composer install --no-dev --optimize-autoloader
+# Stream live logs
+heroku logs --tail -a sippel-prod-1
 
-# Install Node dependencies dan build assets
-npm ci
-npm run build
+# View recent logs
+heroku logs -n 100 -a sippel-prod-1
+
+# View release history
+heroku releases -a sippel-prod-1
 ```
 
-### Step 3: Configure Environment
+### Running Artisan Commands
 
 ```bash
-# Copy environment file
-cp .env.example .env
+# Run any artisan command
+heroku run php artisan <command> -a sippel-prod-1
 
-# Generate application key
-php artisan key:generate
-
-# Edit .env dengan konfigurasi production
-nano .env
+# Examples:
+heroku run php artisan tinker -a sippel-prod-1
+heroku run php artisan migrate:status -a sippel-prod-1
+heroku run php artisan db:seed --class=UserSeeder -a sippel-prod-1
+heroku run php artisan queue:work --once -a sippel-prod-1
 ```
 
-### Step 4: Setup Database
+### Environment Variables
 
 ```bash
-# Buat database
-mysql -u root -p
-CREATE DATABASE sippel_production CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'sippel_user'@'localhost' IDENTIFIED BY 'STRONG_PASSWORD';
-GRANT ALL PRIVILEGES ON sippel_production.* TO 'sippel_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
+# View all config vars
+heroku config -a sippel-prod-1
 
-# Run migrations
-php artisan migrate --force
+# Set a config var
+heroku config:set KEY=value -a sippel-prod-1
 
-# Seed initial data (roles, admin user)
-php artisan db:seed --force
+# Set multiple vars
+heroku config:set KEY1=value1 KEY2=value2 -a sippel-prod-1
+
+# Remove a config var
+heroku config:unset KEY -a sippel-prod-1
 ```
 
-### Step 5: Storage & Permissions
+### Database
 
 ```bash
-# Create storage link
-php artisan storage:link
+# Check database info
+heroku pg:info -a sippel-prod-1
 
-# Set permissions
-sudo chown -R www-data:www-data /var/www/sippel
-sudo chmod -R 755 /var/www/sippel
-sudo chmod -R 775 /var/www/sippel/storage
-sudo chmod -R 775 /var/www/sippel/bootstrap/cache
+# Access database console
+heroku pg:psql -a sippel-prod-1
+
+# Create a backup
+heroku pg:backups:capture -a sippel-prod-1
+
+# Download latest backup
+heroku pg:backups:download -a sippel-prod-1
 ```
 
-### Step 6: Optimize Application
+## Required Config Vars
 
-```bash
-# Cache configuration
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-php artisan event:cache
-php artisan icons:cache
-php artisan filament:cache-components
+These environment variables must be set on Heroku:
 
-# Optimize composer autoloader
-composer dump-autoload --optimize --classmap-authoritative
-```
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `APP_KEY` | Laravel app key | `base64:...` |
+| `DB_CONNECTION` | Database driver | `pgsql` |
+| `FORCE_HTTPS` | Force HTTPS URLs | `true` |
+| `DEFAULT_USER_EMAIL` | Admin email for seeder | `admin@example.com` |
+| `DEFAULT_USER_PASSWORD` | Admin password for seeder | `your-secure-password` |
 
-### Step 7: Configure Nginx
-
-Buat file `/etc/nginx/sites-available/sippel`:
-
-```nginx
-server {
-    listen 80;
-    listen [::]:80;
-    server_name your-domain.com;
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name your-domain.com;
-    root /var/www/sippel/public;
-
-    # SSL Configuration (gunakan certbot untuk Let's Encrypt)
-    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
-    ssl_prefer_server_ciphers off;
-
-    # Security Headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
-    index index.php;
-    charset utf-8;
-
-    # Gzip
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location = /favicon.ico { access_log off; log_not_found off; }
-    location = /robots.txt  { access_log off; log_not_found off; }
-
-    error_page 404 /index.php;
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
-        fastcgi_hide_header X-Powered-By;
-    }
-
-    location ~ /\.(?!well-known).* {
-        deny all;
-    }
-
-    # Deny access to sensitive files
-    location ~ /\.(env|git|htaccess) {
-        deny all;
-    }
-}
-```
-
-```bash
-# Enable site
-sudo ln -s /etc/nginx/sites-available/sippel /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-### Step 8: Setup SSL (Let's Encrypt)
-
-```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d your-domain.com
-```
-
-### Step 9: Configure Queue Worker (Systemd)
-
-Buat file `/etc/systemd/system/sippel-worker.service`:
-
-```ini
-[Unit]
-Description=SIPPEL Queue Worker
-After=network.target
-
-[Service]
-User=www-data
-Group=www-data
-Restart=always
-RestartSec=3
-WorkingDirectory=/var/www/sippel
-ExecStart=/usr/bin/php artisan queue:work database --sleep=3 --tries=3 --max-time=3600
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable sippel-worker
-sudo systemctl start sippel-worker
-```
-
-### Step 10: Configure Scheduler (Cron)
-
-```bash
-sudo crontab -e -u www-data
-```
-
-Tambahkan:
-```
-* * * * * cd /var/www/sippel && php artisan schedule:run >> /dev/null 2>&1
-```
-
----
-
-## Post-Deployment
-
-### Verify Deployment
-
-```bash
-# Check application status
-php artisan about
-
-# Check routes are cached
-php artisan route:list
-
-# Test database connection
-php artisan tinker --execute="DB::connection()->getPdo(); echo 'Connected!';"
-
-# Check logs
-tail -f storage/logs/laravel.log
-```
-
-### Save Admin Credentials
-
-Setelah seeding, **SIMPAN** kredensial admin yang ditampilkan di console!
-
----
-
-## Maintenance Commands
-
-```bash
-# Clear all cache
-php artisan optimize:clear
-
-# Re-cache everything
-php artisan optimize
-
-# Run migrations (update)
-php artisan migrate --force
-
-# Restart queue workers
-php artisan queue:restart
-
-# Enter maintenance mode
-php artisan down --secret="your-secret-token"
-
-# Exit maintenance mode
-php artisan up
-```
-
----
-
-## Backup Strategy
-
-### Database Backup (Daily)
-
-```bash
-# Add to crontab
-0 2 * * * mysqldump -u sippel_user -p'PASSWORD' sippel_production | gzip > /backups/db/sippel_$(date +\%Y\%m\%d).sql.gz
-```
-
-### File Backup
-
-```bash
-# Backup storage folder
-tar -czf /backups/files/storage_$(date +%Y%m%d).tar.gz /var/www/sippel/storage/app
-```
-
----
+The `DATABASE_URL` is automatically set by the Heroku PostgreSQL addon.
 
 ## Troubleshooting
 
-### 500 Error
+### Release Failed
+
+1. Check the build logs: `heroku logs --tail -a sippel-prod-1`
+2. If migration failed, run manually: `heroku run php artisan migrate:status -a sippel-prod-1`
+3. Rollback if needed: `heroku rollback -a sippel-prod-1`
+
+### Mixed Content Errors
+
+Ensure `FORCE_HTTPS=true` is set:
 ```bash
-# Check Laravel logs
-tail -f storage/logs/laravel.log
-
-# Check Nginx logs
-tail -f /var/log/nginx/error.log
-
-# Check permissions
-sudo chown -R www-data:www-data storage bootstrap/cache
+heroku config:set FORCE_HTTPS=true -a sippel-prod-1
 ```
 
-### Session Issues
+### Database Connection Issues
+
+1. Verify `DB_CONNECTION=pgsql` is set
+2. Check if DATABASE_URL exists: `heroku config -a sippel-prod-1`
+3. Verify addon is provisioned: `heroku addons -a sippel-prod-1`
+
+### App Not Starting
+
+1. Check logs: `heroku logs --tail -a sippel-prod-1`
+2. Verify the container is running: `heroku ps -a sippel-prod-1`
+3. Try restarting: `heroku restart -a sippel-prod-1`
+
+## Scaling
+
 ```bash
-php artisan session:table
-php artisan migrate
+# View current dynos
+heroku ps -a sippel-prod-1
+
+# Scale web dynos
+heroku ps:scale web=1 -a sippel-prod-1
+
+# Add a worker dyno (if using queues)
+heroku ps:scale worker=1 -a sippel-prod-1
 ```
 
-### Clear All Cache
+## Maintenance Mode
+
 ```bash
-php artisan optimize:clear
-composer dump-autoload
+# Enable maintenance mode
+heroku maintenance:on -a sippel-prod-1
+
+# Disable maintenance mode
+heroku maintenance:off -a sippel-prod-1
 ```
-
----
-
-## Security Checklist
-
-- [ ] `APP_DEBUG=false`
-- [ ] `DEBUGBAR_ENABLED=false`
-- [ ] Strong database password
-- [ ] SSL/HTTPS enabled
-- [ ] Firewall configured (UFW)
-- [ ] Regular security updates
-- [ ] Backup strategy implemented
-- [ ] Log monitoring enabled

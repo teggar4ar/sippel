@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Teacher;
 
+use App\Exports\ClassReportExport;
 use App\Models\Kelas;
 use App\Models\Laporan as LaporanModel;
 use App\Models\MataPelajaran;
@@ -17,6 +18,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Layout('layouts.teacher')]
@@ -462,6 +464,52 @@ final class Laporan extends Component
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();
         }, $filename);
+    }
+
+    /**
+     * Export class report as Excel
+     */
+    public function exportClassExcel(): mixed
+    {
+        if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) || ($this->tahunAjaranId === null || $this->tahunAjaranId === 0)) {
+            $this->dispatch('notify', type: 'error', message: 'Data tidak lengkap.');
+
+            return null;
+        }
+
+        // Security check: verify class belongs to teacher
+        if (! $this->kelasWali->contains('id', $this->kelasId)) {
+            $this->dispatch('notify', type: 'error', message: 'Anda tidak memiliki akses ke kelas ini.');
+
+            return null;
+        }
+
+        $kelas = Kelas::find($this->kelasId);
+        $tahunAjaran = TahunAjaran::find($this->tahunAjaranId);
+
+        if (! $kelas || ! $tahunAjaran) {
+            $this->dispatch('notify', type: 'error', message: 'Data tidak ditemukan.');
+
+            return null;
+        }
+
+        $laporanData = $this->classReportData;
+
+        if ($laporanData->isEmpty()) {
+            $this->dispatch('notify', type: 'warning', message: 'Belum ada data laporan untuk kelas dan mata pelajaran ini.');
+
+            return null;
+        }
+
+        $sanitizedTahun = str_replace(['/', '\\'], '-', $tahunAjaran->nama_tahun);
+        $filename = sprintf(
+            'laporan-kelas-%s%s-%s.xlsx',
+            $kelas->tingkat_kelas,
+            $kelas->grup_kelas,
+            $sanitizedTahun
+        );
+
+        return Excel::download(new ClassReportExport($kelas), $filename);
     }
 
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View

@@ -4,9 +4,21 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/app/login');
+
+// Health check for Cloud Run and local smoke tests with database connectivity check
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+
+        return response()->json(['status' => 'ok', 'database' => 'connected']);
+    } catch (Exception $e) {
+        return response()->json(['status' => 'error', 'database' => 'disconnected'], 503);
+    }
+});
 
 // API endpoint for checking role authorization (used by bfcache guard)
 Route::get('/app/api/check-role', function () {
@@ -67,6 +79,20 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/nilai', App\Livewire\Student\RiwayatNilai::class)->name('nilai');
     Route::get('/laporan', App\Livewire\Student\LaporanSaya::class)->name('laporan');
     Route::get('/profil', App\Livewire\Student\Profil::class)->name('profil');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Report Export Routes
+|--------------------------------------------------------------------------
+|
+| Routes for exporting reports to Excel format.
+| Only teachers and operators can export class reports.
+|
+*/
+Route::middleware(['auth', 'role:teacher|operator'])->group(function () {
+    Route::post('/reports/class/export', [App\Http\Controllers\ClassReportExportController::class, 'export'])
+        ->name('reports.class.export');
 });
 
 /*

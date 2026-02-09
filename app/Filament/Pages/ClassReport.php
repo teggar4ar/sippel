@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Exports\ClassReportExport;
 use App\Models\Kelas;
 use App\Models\Laporan;
 use App\Models\MataPelajaran;
@@ -20,6 +21,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class ClassReport extends Page implements HasForms
@@ -159,6 +161,67 @@ final class ClassReport extends Page implements HasForms
     }
 
     /**
+     * Export Excel report for the selected class.
+     */
+    public function exportExcel(): mixed
+    {
+        $this->validate([
+            'kelas_id' => ['required', 'exists:kelas,id'],
+            'mata_pelajaran_id' => ['required', 'exists:mata_pelajaran,id'],
+            'tahun_ajaran_id' => ['required', 'exists:tahun_ajaran,id'],
+        ]);
+
+        $kelas = Kelas::find($this->kelas_id);
+        $tahunAjaran = TahunAjaran::find($this->tahun_ajaran_id);
+
+        if (! $kelas || ! $tahunAjaran) {
+            Notification::make()
+                ->title('Data tidak ditemukan')
+                ->danger()
+                ->send();
+
+            return null;
+        }
+
+        // Check authorization
+        if (! auth()->user()?->can('export-class-report', $kelas)) {
+            Notification::make()
+                ->title('Tidak memiliki akses')
+                ->body('Anda tidak memiliki izin untuk mengekspor laporan kelas ini.')
+                ->danger()
+                ->send();
+
+            return null;
+        }
+
+        $laporanData = $this->getLaporanData(
+            $kelas,
+            MataPelajaran::find($this->mata_pelajaran_id),
+            $tahunAjaran
+        );
+
+        if ($laporanData->isEmpty()) {
+            Notification::make()
+                ->title('Tidak ada data laporan')
+                ->body('Kelas ini belum memiliki data laporan untuk mata pelajaran dan tahun ajaran yang dipilih.')
+                ->warning()
+                ->send();
+
+            return null;
+        }
+
+        $sanitizedTahun = str_replace(['/', '\\'], '-', $tahunAjaran->nama_tahun);
+        $filename = sprintf(
+            'laporan-kelas-%s%s-%s.xlsx',
+            $kelas->tingkat_kelas,
+            $kelas->grup_kelas,
+            $sanitizedTahun
+        );
+
+        return Excel::download(new ClassReportExport($kelas), $filename);
+    }
+
+    /**
      * @return array<int, Select>
      */
     protected function getFormSchema(): array
@@ -166,6 +229,7 @@ final class ClassReport extends Page implements HasForms
         return [
             Select::make('tahun_ajaran_id')
                 ->label('Tahun Ajaran')
+                ->native(false)
                 ->options(
                     TahunAjaran::orderByDesc('status')
                         ->orderByDesc('id')
@@ -184,6 +248,7 @@ final class ClassReport extends Page implements HasForms
 
             Select::make('kelas_id')
                 ->label('Pilih Kelas')
+                ->native(false)
                 ->options(function (Get $get): array {
                     /** @var int|null $tahunAjaranId */
                     $tahunAjaranId = $get('tahun_ajaran_id');
@@ -208,6 +273,7 @@ final class ClassReport extends Page implements HasForms
 
             Select::make('mata_pelajaran_id')
                 ->label('Mata Pelajaran')
+                ->native(false)
                 ->options(function (Get $get): array {
                     /** @var int|null $kelasId */
                     $kelasId = $get('kelas_id');
@@ -229,6 +295,7 @@ final class ClassReport extends Page implements HasForms
 
             Select::make('sort_by')
                 ->label('Urutkan Berdasarkan')
+                ->native(false)
                 ->options([
                     'nilai' => 'Nilai (Tertinggi)',
                     'nilai_asc' => 'Nilai (Terendah)',

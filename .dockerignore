@@ -1,0 +1,17 @@
+/.git
+/.github
+/.vscode
+/node_modules
+/vendor
+/storage
+/bootstrap/cache
+/public/storage
+/.env
+/.env.*
+/tests
+/docs
+/implementation-phases
+/.idea
+/npm-debug.log
+/yarn-error.log
+/*.log

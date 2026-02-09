@@ -15,6 +15,7 @@
         "vite": "^6.3.6"
     },
     "dependencies": {
-        "playwright": "^1.55.0"
+        "@alpinejs/collapse": "^3.15.8",
+        "playwright": "^1.58.0"
     }
 }

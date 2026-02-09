@@ -159,6 +159,7 @@ final class StudentReport extends Page implements HasForms
         return [
             Select::make('siswa_id')
                 ->label('Pilih Siswa')
+                ->native(false)
                 ->options(fn () => Siswa::with('user')
                     ->get()
                     ->mapWithKeys(function (Siswa $siswa): array {
@@ -177,6 +178,7 @@ final class StudentReport extends Page implements HasForms
 
             Select::make('tahun_ajaran_id')
                 ->label('Tahun Ajaran')
+                ->native(false)
                 ->options(
                     TahunAjaran::orderByDesc('status')
                         ->orderByDesc('id')

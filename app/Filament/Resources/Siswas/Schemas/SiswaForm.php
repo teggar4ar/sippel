@@ -92,6 +92,7 @@ final class SiswaForm
                             Select::make('user.jenis_kelamin')
                                 ->label('Jenis Kelamin')
                                 ->required()
+                                ->native(false)
                                 ->options([
                                     'L' => 'Laki-laki',
                                     'P' => 'Perempuan',
@@ -114,7 +115,7 @@ final class SiswaForm
                                     })
                                 )
                                 ->getOptionLabelFromRecordUsing(
-                                    fn (Kelas $record): string => "{$record->tingkat_kelas}{$record->grup_kelas} - {$record->tahunAjaran->nama_tahun} {$record->tahunAjaran->semester}"
+                                    fn (Kelas $record): string => "{$record->tingkat_kelas}{$record->grup_kelas} - {$record->tahunAjaran?->nama_tahun} {$record->tahunAjaran?->semester}"
                                 )
                                 ->searchable()
                                 ->preload()

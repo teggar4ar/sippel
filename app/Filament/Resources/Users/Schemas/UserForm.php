@@ -10,7 +10,6 @@ use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
-use Illuminate\Validation\Rules\Password;
 
 final class UserForm
 {
@@ -37,7 +36,8 @@ final class UserForm
                     ->password()
                     ->required(fn ($livewire): bool => $livewire instanceof CreateUser)
                     ->revealable(filament()->arePasswordsRevealable())
-                    ->rule(Password::default())
+                    ->minLength(8)
+                    ->maxLength(255)
                     ->autocomplete('new-password')
                     ->dehydrated(fn ($state): bool => filled($state))
                     ->helperText('Minimal 8 karakter. Kosongkan jika tidak ingin mengubah password.'),
@@ -45,6 +45,7 @@ final class UserForm
                 Select::make('jenis_kelamin')
                     ->label('Jenis Kelamin')
                     ->required()
+                    ->native(false)
                     ->options([
                         'L' => 'Laki-laki',
                         'P' => 'Perempuan',
@@ -53,6 +54,7 @@ final class UserForm
 
                 Select::make('role')
                     ->label('Role')
+                    ->native(false)
                     ->options([
                         'admin' => 'Admin',
                         'teacher' => 'Guru',

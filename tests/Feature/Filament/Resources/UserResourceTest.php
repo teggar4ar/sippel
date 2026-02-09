@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\assertDatabaseHas;
-use function Pest\Laravel\assertDatabaseMissing;
+use function Pest\Laravel\assertSoftDeleted;
 use function Pest\Livewire\livewire;
 
 beforeEach(function () {
@@ -131,7 +131,7 @@ it('can delete a user', function () {
         ->assertNotified()
         ->assertRedirect();
 
-    assertDatabaseMissing($user);
+    assertSoftDeleted($user);
 });
 
 it('can bulk delete users', function () {
@@ -145,7 +145,7 @@ it('can bulk delete users', function () {
         ->assertNotified()
         ->assertCanNotSeeTableRecords($users);
 
-    $users->each(fn (User $user) => assertDatabaseMissing($user));
+    $users->each(fn (User $user) => assertSoftDeleted($user));
 });
 
 it('validates unique email on create', function () {

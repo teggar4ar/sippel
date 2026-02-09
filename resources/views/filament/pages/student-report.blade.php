@@ -94,7 +94,11 @@
                                 <tr class="border-b dark:border-gray-700">
                                     <th class="pb-3 text-left font-medium text-gray-500 dark:text-gray-400">No</th>
                                     <th class="pb-3 text-left font-medium text-gray-500 dark:text-gray-400">Mata Pelajaran</th>
-                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Kehadiran</th>
+                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Kehadiran (%)</th>
+                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Hadir</th>
+                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Izin</th>
+                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Sakit</th>
+                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Alpa</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Nilai</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Partisipasi</th>
                                 </tr>
@@ -111,6 +115,18 @@
                                                    'bg-danger-100 text-danger-700 dark:bg-danger-500/20 dark:text-danger-400') }}">
                                                 {{ number_format($laporan->rata_kehadiran, 1) }}%
                                             </span>
+                                        </td>
+                                        <td class="py-3 text-center text-sm text-slate-700 dark:text-slate-300">
+                                            {{ $laporan->hadir_count }}
+                                        </td>
+                                        <td class="py-3 text-center text-sm text-slate-700 dark:text-slate-300">
+                                            {{ $laporan->izin_count }}
+                                        </td>
+                                        <td class="py-3 text-center text-sm text-slate-700 dark:text-slate-300">
+                                            {{ $laporan->sakit_count }}
+                                        </td>
+                                        <td class="py-3 text-center text-sm text-slate-700 dark:text-slate-300">
+                                            {{ $laporan->alpa_count }}
                                         </td>
                                         <td class="py-3 text-center">
                                             <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium

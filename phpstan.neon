@@ -12,6 +12,8 @@ parameters:
     ignoreErrors:
         # Livewire computed properties are accessed via magic __get
         - '#Access to an undefined property App\\Livewire\\.*::\$\w+#'
+        # Filament InteractsWithForms trait provides $form property via magic
+        - '#Access to an undefined property App\\Filament\\Pages\\.*::\$form#'
         # Filament closures use generic Model type, but specific models are passed at runtime
         - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$\w+#'
         # Filament record can be Model|int|string in certain contexts
@@ -30,5 +32,3 @@ parameters:
         - '#Using nullsafe property access .* on left side of \?\? is unnecessary#'
         # Livewire computed property return type
         - '#should return .* but returns Illuminate\\Database\\Eloquent\\Model\|null#'
-        # Livewire validation methods (rules, messages) are called via Livewire magic
-        - '#Method App\\Livewire\\.*::(rules|messages)\(\) is unused#'

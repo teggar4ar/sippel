@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'SIPPEL - Portal Guru' }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon-removebg.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon-removebg.png') }}">
 
     {{-- PWA Meta Tags --}}
     <meta name="theme-color" content="#1e293b">
@@ -15,14 +17,14 @@
     <link rel="manifest" href="/manifest-teacher.json">
     <link rel="apple-touch-icon" href="/icons/teacher-icon-192.svg">
 
-    @fluxAppearance
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     @livewireStyles
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-950 antialiased overflow-x-hidden"
       data-inactivity-timer
-      data-idle-minutes="30"
-      data-warning-minutes="2"
+      data-idle-minutes="{{ config('inactivity.timeout.teacher', 30) }}"
+      data-warning-minutes="{{ config('inactivity.timeout.warning', 2) }}"
       data-logout-url="{{ route('filament.app.auth.logout') }}">
     <div class="flex min-h-screen w-full overflow-x-hidden">
         {{-- Desktop Sidebar - Slate/Blue professional theme --}}
@@ -68,7 +70,7 @@
                     </div>
                 </div>
                 <button onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                        class="flex items-center gap-2 w-full mt-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700/80 rounded-lg transition-colors">
+                        class="flex items-center gap-2 w-full mt-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700/80 rounded-lg transition-colors cursor-pointer">
                     <flux:icon name="arrow-right-start-on-rectangle" variant="outline" class="w-4 h-4" />
                     Keluar
                 </button>
@@ -186,7 +188,6 @@
         @csrf
     </form>
 
-    @fluxScripts
     @livewireScripts
 
     {{-- PWA Service Worker Registration --}}

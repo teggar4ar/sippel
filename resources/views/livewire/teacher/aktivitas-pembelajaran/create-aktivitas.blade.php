@@ -1,4 +1,40 @@
 <div class="space-y-3 overflow-x-hidden">
+    {{-- Flash Messages --}}
+    @if (session()->has('success'))
+        <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+            <div class="flex items-center gap-2">
+                <flux:icon name="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <p class="text-sm font-medium text-emerald-900 dark:text-emerald-100">{{ session('success') }}</p>
+            </div>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <div class="flex items-center gap-2">
+                <flux:icon name="exclamation-circle" class="w-5 h-5 text-red-600 dark:text-red-400" />
+                <p class="text-sm font-medium text-red-900 dark:text-red-100">{{ session('error') }}</p>
+            </div>
+        </div>
+    @endif
+
+    {{-- Validation Errors --}}
+    @if ($errors->any())
+        <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <div class="flex items-start gap-2">
+                <flux:icon name="exclamation-circle" class="w-5 h-5 text-red-600 dark:text-red-400 shrink-0" />
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-red-900 dark:text-red-100 mb-1">Terdapat kesalahan:</p>
+                    <ul class="list-disc list-inside text-xs text-red-800 dark:text-red-200 space-y-0.5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Header with back button - Compact --}}
     <div class="flex items-center gap-3">
         <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
@@ -44,25 +80,65 @@
                     @enderror
                 </div>
 
-                {{-- Subject selection --}}
+                {{-- Tingkat Kelas --}}
                 <div>
                     <flux:select
-                        wire:model.live="mata_pelajaran_id"
-                        label="Mata Pelajaran *"
+                        wire:model.live="tingkat_kelas"
+                        label="Tingkat Kelas *"
                         label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
                         class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
                     >
-                        <option value="">Pilih mata pelajaran...</option>
-                        @foreach($this->mataPelajaran as $mapel)
-                            <option value="{{ $mapel->id }}">
-                                {{ $mapel->nama_mapel }} - {{ $mapel->kelas->nama_lengkap }}
-                            </option>
+                        <option value="">Pilih tingkat kelas...</option>
+                        @foreach($this->tingkatKelasList as $tingkat)
+                            <option value="{{ $tingkat }}">Kelas {{ $tingkat }}</option>
                         @endforeach
                     </flux:select>
-                    @error('mata_pelajaran_id')
+                    @error('tingkat_kelas')
                         <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
+
+                {{-- Grup Kelas --}}
+                @if($tingkat_kelas !== null)
+                    <div>
+                        <flux:select
+                            wire:model.live="grup_kelas"
+                            label="Grup Kelas *"
+                            label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
+                            class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                        >
+                            <option value="">Pilih grup kelas...</option>
+                            @foreach($this->grupKelasList as $grup)
+                                <option value="{{ $grup }}">{{ $grup }}</option>
+                            @endforeach
+                        </flux:select>
+                        @error('grup_kelas')
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @endif
+
+                {{-- Subject selection --}}
+                @if($grup_kelas !== null && $grup_kelas !== '')
+                    <div>
+                        <flux:select
+                            wire:model.live="mata_pelajaran_id"
+                            label="Mata Pelajaran *"
+                            label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
+                            class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
+                        >
+                            <option value="">Pilih mata pelajaran...</option>
+                            @foreach($this->mataPelajaran as $mapel)
+                                <option value="{{ $mapel->id }}">
+                                    {{ $mapel->nama_mapel }}
+                                </option>
+                            @endforeach
+                        </flux:select>
+                        @error('mata_pelajaran_id')
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @endif
 
                 {{-- Show selected class info --}}
                 @if($this->selectedMapel)
@@ -109,10 +185,14 @@
         {{-- Step 1 action button --}}
         <div class="sticky bottom-0 -mx-4 px-4 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 lg:relative lg:mx-0 lg:px-0 lg:border-0 lg:bg-transparent">
             <button wire:click="nextStep"
+                    wire:loading.attr="disabled"
+                    wire:loading.class="opacity-50 cursor-not-allowed"
                     class="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     {{ !$mata_pelajaran_id ? 'disabled' : '' }}>
-                <span>Lanjut ke Absensi</span>
-                <flux:icon name="arrow-right" class="w-4 h-4" />
+                <span wire:loading.remove wire:target="nextStep">Lanjut ke Absensi</span>
+                <span wire:loading wire:target="nextStep">Memproses...</span>
+                <flux:icon wire:loading.remove wire:target="nextStep" name="arrow-right" class="w-4 h-4" />
+                <flux:icon wire:loading wire:target="nextStep" name="arrow-path" class="w-4 h-4 animate-spin" />
             </button>
         </div>
 
@@ -313,15 +393,21 @@
         <div class="sticky bottom-0 -mx-4 px-4 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 lg:relative lg:mx-0 lg:px-0 lg:border-0 lg:bg-transparent">
             <div class="flex gap-2">
                 <button wire:click="previousStep"
+                        wire:loading.attr="disabled"
+                        wire:loading.class="opacity-50 cursor-not-allowed"
                         class="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-xl transition-colors">
                     <flux:icon name="arrow-left" class="w-4 h-4" />
                     <span>Kembali</span>
                 </button>
                 <button wire:click="save"
+                        wire:loading.attr="disabled"
+                        wire:loading.class="opacity-50 cursor-not-allowed"
                         class="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         {{ $this->siswaList->isEmpty() ? 'disabled' : '' }}>
-                    <flux:icon name="check" class="w-4 h-4" />
-                    <span>Simpan</span>
+                    <flux:icon wire:loading.remove wire:target="save" name="check" class="w-4 h-4" />
+                    <flux:icon wire:loading wire:target="save" name="arrow-path" class="w-4 h-4 animate-spin" />
+                    <span wire:loading.remove wire:target="save">Simpan</span>
+                    <span wire:loading wire:target="save">Menyimpan...</span>
                 </button>
             </div>
         </div>

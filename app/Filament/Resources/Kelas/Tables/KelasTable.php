@@ -25,7 +25,9 @@ final class KelasTable
                 TextColumn::make('nama_lengkap')
                     ->label('Kelas')
                     ->searchable(['tingkat_kelas', 'grup_kelas'])
-                    ->sortable()
+                    ->sortable(query: fn ($query, $direction) => $query
+                        ->orderBy('tingkat_kelas', $direction)
+                        ->orderBy('grup_kelas', $direction))
                     ->badge()
                     ->color('primary'),
 

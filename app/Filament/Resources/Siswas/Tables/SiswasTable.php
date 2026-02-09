@@ -52,12 +52,15 @@ final class SiswasTable
 
                 TextColumn::make('kelas.nama_lengkap')
                     ->label('Kelas')
-                    ->searchable()
-                    ->sortable()
+                    ->sortable(query: fn ($query, $direction) => $query
+                        ->select('siswa.*')
+                        ->leftJoin('kelas', 'siswa.kelas_id', '=', 'kelas.id')
+                        ->orderBy('kelas.tingkat_kelas', $direction)
+                        ->orderBy('kelas.grup_kelas', $direction))
                     ->badge()
                     ->color('success')
                     ->description(
-                        fn ($record) => $record->kelas ?
+                        fn ($record) => $record->kelas?->tahunAjaran ?
                             "{$record->kelas->tahunAjaran->nama_tahun} {$record->kelas->tahunAjaran->semester}" :
                             null
                     ),
@@ -79,7 +82,7 @@ final class SiswasTable
                     ->label('Filter Kelas')
                     ->relationship('kelas', 'id')
                     ->getOptionLabelFromRecordUsing(
-                        fn (Kelas $record): string => "{$record->tingkat_kelas}{$record->grup_kelas} - {$record->tahunAjaran->nama_tahun}"
+                        fn (Kelas $record): string => "{$record->tingkat_kelas}{$record->grup_kelas} - {$record->tahunAjaran?->nama_tahun}"
                     )
                     ->searchable()
                     ->preload(),
@@ -123,7 +126,7 @@ final class SiswasTable
                                     Kelas::with('tahunAjaran')
                                         ->get()
                                         ->mapWithKeys(fn ($kelas): array => [
-                                            $kelas->id => "{$kelas->tingkat_kelas}{$kelas->grup_kelas} - {$kelas->tahunAjaran->nama_tahun} {$kelas->tahunAjaran->semester}",
+                                            $kelas->id => "{$kelas->tingkat_kelas}{$kelas->grup_kelas} - {$kelas->tahunAjaran?->nama_tahun} {$kelas->tahunAjaran?->semester}",
                                         ])
                                 )
                                 ->required()

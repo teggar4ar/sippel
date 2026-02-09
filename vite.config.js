@@ -5,8 +5,17 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/css/filament/admin/theme.css'],
-            refresh: true,
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/js/inactivity-timer.js',
+                'resources/css/filament/admin/theme.css'
+            ],
+            refresh: [
+                'resources/views/**',
+                'routes/**',
+                'app/Livewire/**',
+            ],
         }),
         tailwindcss(),
     ],
