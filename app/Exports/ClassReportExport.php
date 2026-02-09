@@ -40,7 +40,7 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
                 'aktivitasPembelajaran',
                 'aktivitasPembelajaran.mataPelajaran.guru',
             ])
-            ->whereHas('siswa', fn ($q) => $q->where('kelas_id', $this->kelas->id))
+            ->whereHas('siswa', fn($q) => $q->where('kelas_id', $this->kelas->id))
             ->orderBy('created_at');
 
         if ($this->startDate && $this->endDate) {
@@ -99,7 +99,7 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
                 $rowNumber,
                 $student->nis,
                 $student->user->name,
-                $this->kelas->tingkat_kelas.'-'.$this->kelas->grup_kelas,
+                $this->kelas->tingkat_kelas . '-' . $this->kelas->grup_kelas,
                 $firstRecord?->aktivitasPembelajaran?->mataPelajaran?->nama_mapel ?? '-',
                 $firstRecord?->aktivitasPembelajaran?->mataPelajaran?->guru?->name ?? '-',
                 $this->kelas->waliKelas?->name ?? '-',
@@ -107,7 +107,7 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
 
             // Fill date columns
             foreach ($this->dates as $date) {
-                $record = $records->first(fn ($r): bool => $r->siswa_id === $student->id
+                $record = $records->first(fn($r): bool => $r->siswa_id === $student->id
                     && $r->aktivitasPembelajaran?->tanggal?->isSameDay($date));
 
                 $row[] = $record ? ucfirst((string) $record->kehadiran) : '';
@@ -129,7 +129,7 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
         }
 
         // Style header rows
-        $sheet->getStyle('A1:'.$sheet->getHighestColumn().'2')->applyFromArray([
+        $sheet->getStyle('A1:' . $sheet->getHighestColumn() . '2')->applyFromArray([
             'font' => ['bold' => true],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -148,7 +148,7 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
 
         // Style data rows
         $lastRow = $sheet->getHighestRow();
-        $sheet->getStyle('A3:'.$sheet->getHighestColumn().$lastRow)->applyFromArray([
+        $sheet->getStyle('A3:' . $sheet->getHighestColumn() . $lastRow)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -171,7 +171,7 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
                 // Merge cells for fixed column headers (row 1 and 2)
                 $fixedCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
                 foreach ($fixedCols as $col) {
-                    $sheet->mergeCells($col.'1:'.$col.'2');
+                    $sheet->mergeCells($col . '1:' . $col . '2');
                 }
 
                 // Merge cells for each date (3 columns per date)
@@ -179,12 +179,12 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
                 foreach ($this->dates as $date) {
                     $startCol = $this->columnLetter($colIndex);
                     $endCol = $this->columnLetter($colIndex + 2);
-                    $sheet->mergeCells($startCol.'1:'.$endCol.'1');
+                    $sheet->mergeCells($startCol . '1:' . $endCol . '1');
                     $colIndex += 3;
                 }
 
                 // Center align date group headers
-                $sheet->getStyle('H1:'.$sheet->getHighestColumn().'1')->getAlignment()
+                $sheet->getStyle('H1:' . $sheet->getHighestColumn() . '1')->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
             },
         ];
@@ -194,7 +194,7 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
     {
         $letter = '';
         while ($index >= 0) {
-            $letter = chr(65 + ($index % 26)).$letter;
+            $letter = chr(65 + ($index % 26)) . $letter;
             $index = (int) ($index / 26) - 1;
         }
 
