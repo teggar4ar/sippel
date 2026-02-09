@@ -127,7 +127,7 @@ if (app()->environment('local')) {
             $tahunAjaran = App\Models\TahunAjaran::where('status', true)->first();
             $laporanData = App\Models\Laporan::where('tahun_ajaran_id', $tahunAjaran?->id)
                 ->where('mata_pelajaran_id', $mataPelajaran->id)
-                ->whereHas('siswa', fn($q) => $q->where('kelas_id', $kelas->id))
+                ->whereHas('siswa', fn ($q) => $q->where('kelas_id', $kelas->id))
                 ->with(['siswa.user', 'mataPelajaran'])
                 ->get()
                 ->sortByDesc('rata_nilai')
