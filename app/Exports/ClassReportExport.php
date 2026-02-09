@@ -45,7 +45,8 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
 
         if ($this->startDate && $this->endDate) {
             $query->whereHas('aktivitasPembelajaran', function ($q): void {
-                $q->whereBetween('tanggal', [$this->startDate, $this->endDate]);
+                $q->whereDate('tanggal', '>=', $this->startDate)
+                    ->whereDate('tanggal', '<=', $this->endDate);
             });
         }
 
