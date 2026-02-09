@@ -1,4 +1,40 @@
 <div class="space-y-3 overflow-x-hidden">
+    {{-- Flash Messages --}}
+    @if (session()->has('success'))
+        <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+            <div class="flex items-center gap-2">
+                <flux:icon name="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <p class="text-sm font-medium text-emerald-900 dark:text-emerald-100">{{ session('success') }}</p>
+            </div>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <div class="flex items-center gap-2">
+                <flux:icon name="exclamation-circle" class="w-5 h-5 text-red-600 dark:text-red-400" />
+                <p class="text-sm font-medium text-red-900 dark:text-red-100">{{ session('error') }}</p>
+            </div>
+        </div>
+    @endif
+
+    {{-- Validation Errors --}}
+    @if ($errors->any())
+        <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <div class="flex items-start gap-2">
+                <flux:icon name="exclamation-circle" class="w-5 h-5 text-red-600 dark:text-red-400 shrink-0" />
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-red-900 dark:text-red-100 mb-1">Terdapat kesalahan:</p>
+                    <ul class="list-disc list-inside text-xs text-red-800 dark:text-red-200 space-y-0.5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Header with back button - Compact --}}
     <div class="flex items-center gap-3">
         <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
@@ -366,6 +402,7 @@
                 <button wire:click="save"
                         wire:loading.attr="disabled"
                         wire:loading.class="opacity-50 cursor-not-allowed"
+                        onclick="console.log('Save button clicked'); console.log('detailAktivitas:', @js($detailAktivitas));"
                         class="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         {{ $this->siswaList->isEmpty() ? 'disabled' : '' }}>
                     <flux:icon wire:loading.remove wire:target="save" name="check" class="w-4 h-4" />
