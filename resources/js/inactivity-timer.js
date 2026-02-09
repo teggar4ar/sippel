@@ -213,8 +213,6 @@ export function initInactivityTimer(config = {}) {
 
         // Set timeout for auto-logout
         warningTimeout = setTimeout(performLogout, settings.warningDuration);
-
-        console.log('[InactivityTimer] Warning shown, logout in', settings.warningDuration / 1000, 'seconds');
     }
 
     /**
@@ -250,15 +248,12 @@ export function initInactivityTimer(config = {}) {
         previousActiveElement = null;
 
         resetActivity();
-        console.log('[InactivityTimer] Warning dismissed, timer reset');
     }
 
     /**
      * Perform logout via form submission
      */
     function performLogout() {
-        console.log('[InactivityTimer] Performing logout');
-
         // Clear all timers
         if (warningTimeout) clearTimeout(warningTimeout);
         if (countdownInterval) clearInterval(countdownInterval);
@@ -366,12 +361,6 @@ export function initInactivityTimer(config = {}) {
                 checkSession();
                 resetActivity();
             }
-        });
-
-        console.log('[InactivityTimer] Initialized:', {
-            idleTimeout: settings.idleTimeout / 1000 / 60 + ' min',
-            warningDuration: settings.warningDuration / 1000 + ' sec',
-            sessionCheck: settings.sessionCheckUrl ? 'enabled' : 'disabled'
         });
     }
 
