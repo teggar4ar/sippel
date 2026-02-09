@@ -402,7 +402,6 @@
                 <button wire:click="save"
                         wire:loading.attr="disabled"
                         wire:loading.class="opacity-50 cursor-not-allowed"
-                        onclick="console.log('Save button clicked'); console.log('detailAktivitas:', @js($detailAktivitas));"
                         class="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         {{ $this->siswaList->isEmpty() ? 'disabled' : '' }}>
                     <flux:icon wire:loading.remove wire:target="save" name="check" class="w-4 h-4" />

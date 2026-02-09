@@ -227,15 +227,15 @@ final class CreateAktivitas extends Component
 
     public function save(): void
     {
+        // Validate both steps
+        $this->validate(
+            array_merge($this->rulesForStep1(), $this->rulesForStep2()),
+            $this->messagesForValidation()
+        );
+
+        $userId = Auth::id();
+
         try {
-            // Validate both steps
-            $this->validate(
-                array_merge($this->rulesForStep1(), $this->rulesForStep2()),
-                $this->messagesForValidation()
-            );
-
-            $userId = Auth::id();
-
             DB::transaction(function () use ($userId): void {
                 // Create the activity
                 $aktivitas = AktivitasPembelajaran::create([
@@ -263,23 +263,17 @@ final class CreateAktivitas extends Component
                     ]);
                 }
             });
+        } catch (Exception) {
+            session()->flash('error', 'Gagal menyimpan data. Silakan coba lagi.');
 
-            Cache::forget('teacher_dashboard_stats_'.$userId);
-
-            session()->flash('success', 'Aktivitas pembelajaran berhasil disimpan!');
-
-            $this->redirect(route('teacher.aktivitas.list'), navigate: true);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Validation failed - errors are automatically shown by Livewire
-            $this->dispatch('validation-failed', errors: $e->errors());
-            throw $e;
-        } catch (Exception $e) {
-            \Log::error('Failed to save aktivitas pembelajaran', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            session()->flash('error', 'Gagal menyimpan data: '.$e->getMessage());
+            return;
         }
+
+        Cache::forget('teacher_dashboard_stats_'.$userId);
+
+        session()->flash('success', 'Aktivitas pembelajaran berhasil disimpan!');
+
+        $this->redirect(route('teacher.aktivitas.list'), navigate: true);
     }
 
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
