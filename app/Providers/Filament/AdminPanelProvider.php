@@ -107,9 +107,9 @@ final class AdminPanelProvider extends PanelProvider
                     return '';
                 }
 
-                // Get timeout values from config (falls back to defaults)
-                $idleMinutes = (int) env('SESSION_TIMEOUT_ADMIN', 15);
-                $warningMinutes = (int) env('SESSION_WARNING_MINUTES', 2);
+                // Get timeout values from config
+                $idleMinutes = config('inactivity.timeout.admin', 15);
+                $warningMinutes = config('inactivity.timeout.warning', 2);
 
                 return <<<HTML
                     <div id="admin-inactivity-config"

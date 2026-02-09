@@ -23,8 +23,8 @@
 </head>
 <body class="min-h-screen bg-teal-50 dark:bg-slate-950 antialiased overflow-x-hidden"
       data-inactivity-timer
-      data-idle-minutes="{{ env('SESSION_TIMEOUT_STUDENT', 60) }}"
-      data-warning-minutes="{{ env('SESSION_WARNING_MINUTES', 2) }}"
+      data-idle-minutes="{{ config('inactivity.timeout.student', 60) }}"
+      data-warning-minutes="{{ config('inactivity.timeout.warning', 2) }}"
       data-logout-url="{{ route('filament.app.auth.logout') }}">
     <div class="flex min-h-screen w-full overflow-x-hidden">
         {{-- Desktop Sidebar - Teal theme for Student --}}
