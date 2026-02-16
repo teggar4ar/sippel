@@ -89,11 +89,11 @@ final class Siswa extends Model
                 $query->where('aktivitas_pembelajaran.mata_pelajaran_id', $mataPelajaranId);
             }
 
-            if ($startDate !== null && $startDate !== '' && $startDate !== '0') {
+            if (!in_array($startDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '>=', $startDate);
             }
 
-            if ($endDate !== null && $endDate !== '' && $endDate !== '0') {
+            if (!in_array($endDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '<=', $endDate);
             }
 
@@ -146,11 +146,11 @@ final class Siswa extends Model
                 $query->where('aktivitas_pembelajaran.mata_pelajaran_id', $mataPelajaranId);
             }
 
-            if ($startDate !== null && $startDate !== '' && $startDate !== '0') {
+            if (!in_array($startDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '>=', $startDate);
             }
 
-            if ($endDate !== null && $endDate !== '' && $endDate !== '0') {
+            if (!in_array($endDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '<=', $endDate);
             }
 
@@ -193,11 +193,11 @@ final class Siswa extends Model
                 $query->where('aktivitas_pembelajaran.mata_pelajaran_id', $mataPelajaranId);
             }
 
-            if ($startDate !== null && $startDate !== '' && $startDate !== '0') {
+            if (!in_array($startDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '>=', $startDate);
             }
 
-            if ($endDate !== null && $endDate !== '' && $endDate !== '0') {
+            if (!in_array($endDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '<=', $endDate);
             }
 

@@ -50,7 +50,7 @@ final class Login extends BasePage
     /**
      * Override the email form component to accept both email and NIS.
      */
-    protected function getEmailFormComponent(): Component
+    protected function getEmailFormComponent(): \Filament\Forms\Components\TextInput
     {
         return TextInput::make('identifier')
             ->label('Email atau NIS')
