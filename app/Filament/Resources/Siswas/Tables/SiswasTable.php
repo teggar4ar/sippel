@@ -38,23 +38,23 @@ final class SiswasTable
                     ->label('Nama Lengkap')
                     ->searchable(['users.name'])
                     ->sortable()
-                    ->description(fn($record) => $record->user->email),
+                    ->description(fn ($record) => $record->user->email),
 
                 TextColumn::make('user.jenis_kelamin')
                     ->label('Jenis Kelamin')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'L' => 'info',
                         'P' => 'warning',
                     })
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
                         'L' => 'Laki-laki',
                         'P' => 'Perempuan',
                     }),
 
                 TextColumn::make('kelas.nama_lengkap')
                     ->label('Kelas')
-                    ->sortable(query: fn($query, $direction) => $query
+                    ->sortable(query: fn ($query, $direction) => $query
                         ->select('siswa.*')
                         ->leftJoin('kelas', 'siswa.kelas_id', '=', 'kelas.id')
                         ->orderBy('kelas.tingkat_kelas', $direction)
@@ -62,7 +62,7 @@ final class SiswasTable
                     ->badge()
                     ->color('success')
                     ->description(
-                        fn($record) => $record->kelas?->tahunAjaran ?
+                        fn ($record) => $record->kelas?->tahunAjaran ?
                             "{$record->kelas->tahunAjaran->nama_tahun} {$record->kelas->tahunAjaran->semester}" :
                             null
                     ),
@@ -84,7 +84,7 @@ final class SiswasTable
                     ->label('Filter Kelas')
                     ->relationship('kelas', 'id')
                     ->getOptionLabelFromRecordUsing(
-                        fn(Kelas $record): string => "{$record->tingkat_kelas}{$record->grup_kelas} - {$record->tahunAjaran?->nama_tahun}"
+                        fn (Kelas $record): string => "{$record->tingkat_kelas}{$record->grup_kelas} - {$record->tahunAjaran?->nama_tahun}"
                     )
                     ->searchable()
                     ->preload(),
@@ -154,7 +154,7 @@ final class SiswasTable
                                 ->options(
                                     Kelas::with('tahunAjaran')
                                         ->get()
-                                        ->mapWithKeys(fn($kelas): array => [
+                                        ->mapWithKeys(fn ($kelas): array => [
                                             $kelas->id => "{$kelas->tingkat_kelas}{$kelas->grup_kelas} - {$kelas->tahunAjaran?->nama_tahun} {$kelas->tahunAjaran?->semester}",
                                         ])
                                 )
@@ -195,7 +195,7 @@ final class SiswasTable
                         ->modalDescription('QR code lama akan tidak valid. Kartu QR baru harus dicetak ulang dan dibagikan ke siswa.')
                         ->modalSubmitActionLabel('Regenerate')
                         ->successNotification(
-                            fn($result) => \Filament\Notifications\Notification::make()
+                            fn ($result) => \Filament\Notifications\Notification::make()
                                 ->success()
                                 ->title('QR Code berhasil di-regenerate!')
                                 ->body("{$result} QR code telah di-generate ulang.")

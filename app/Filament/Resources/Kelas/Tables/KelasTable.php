@@ -28,7 +28,7 @@ final class KelasTable
                 TextColumn::make('nama_lengkap')
                     ->label('Kelas')
                     ->searchable(['tingkat_kelas', 'grup_kelas'])
-                    ->sortable(query: fn($query, $direction) => $query
+                    ->sortable(query: fn ($query, $direction) => $query
                         ->orderBy('tingkat_kelas', $direction)
                         ->orderBy('grup_kelas', $direction))
                     ->badge()
@@ -58,7 +58,7 @@ final class KelasTable
                 TextColumn::make('tahunAjaran.semester')
                     ->label('Semester')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Ganjil' => 'success',
                         'Genap' => 'info',
                         default => 'gray',
@@ -100,8 +100,8 @@ final class KelasTable
                     ->searchable()
                     ->preload()
                     ->native(false)
-                    ->getOptionLabelFromRecordUsing(fn(TahunAjaran $record): string => "{$record->nama_tahun} - {$record->semester}")
-                    ->default(fn() => TahunAjaran::where('status', true)->first()?->id),
+                    ->getOptionLabelFromRecordUsing(fn (TahunAjaran $record): string => "{$record->nama_tahun} - {$record->semester}")
+                    ->default(fn () => TahunAjaran::where('status', true)->first()?->id),
 
                 TrashedFilter::make(),
             ])
@@ -131,7 +131,7 @@ final class KelasTable
                     })
                     ->requiresConfirmation()
                     ->modalHeading('Cetak QR Code Kelas')
-                    ->modalDescription(fn($record) => "Generate dan download kartu QR untuk seluruh siswa di kelas {$record->nama_lengkap}. Total siswa: {$record->siswa_count}.")
+                    ->modalDescription(fn ($record) => "Generate dan download kartu QR untuk seluruh siswa di kelas {$record->nama_lengkap}. Total siswa: {$record->siswa_count}.")
                     ->modalSubmitActionLabel('Download PDF')
                     ->successNotificationTitle('PDF QR Code berhasil di-generate!'),
 

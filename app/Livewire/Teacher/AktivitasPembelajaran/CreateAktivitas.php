@@ -300,7 +300,7 @@ final class CreateAktivitas extends Component
             return;
         }
 
-        Cache::forget('teacher_dashboard_stats_' . $userId);
+        Cache::forget('teacher_dashboard_stats_'.$userId);
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil disimpan!');
 

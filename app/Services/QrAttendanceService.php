@@ -18,7 +18,6 @@ use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Facades\DB;
 
-
 final class QrAttendanceService
 {
     /**
@@ -391,6 +390,28 @@ final class QrAttendanceService
     }
 
     /**
+     * Auto-close expired sessions
+     *
+     * @return int Number of sessions closed
+     */
+    public function autoCloseExpiredSessions(): int
+    {
+        $expiredSessions = SesiAbsensi::where('status', 'open')
+            ->get()
+            ->filter(fn (SesiAbsensi $sesi): bool => ! $sesi->isActive());
+
+        $count = 0;
+
+        foreach ($expiredSessions as $sesi) {
+            if ($this->closeSession($sesi)) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
      * Log a successful scan attempt
      */
     private function logSuccessfulScan(
@@ -429,27 +450,5 @@ final class QrAttendanceService
             'user_agent' => $userAgent,
             'waktu_scan' => now(),
         ]);
-    }
-
-    /**
-     * Auto-close expired sessions
-     *
-     * @return int Number of sessions closed
-     */
-    public function autoCloseExpiredSessions(): int
-    {
-        $expiredSessions = SesiAbsensi::where('status', 'open')
-            ->get()
-            ->filter(fn(SesiAbsensi $sesi): bool => ! $sesi->isActive());
-
-        $count = 0;
-
-        foreach ($expiredSessions as $sesi) {
-            if ($this->closeSession($sesi)) {
-                $count++;
-            }
-        }
-
-        return $count;
     }
 }

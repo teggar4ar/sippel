@@ -151,7 +151,7 @@ final class Siswa extends Model
             return 0.0;
         }
 
-        $hadir = $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count();
+        $hadir = $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count();
 
         return round(($hadir / $total) * 100, 2);
     }
@@ -310,10 +310,10 @@ final class Siswa extends Model
 
         return [
             'total' => $details->count(),
-            'hadir' => $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count(),
-            'izin' => $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'izin')->count(),
-            'sakit' => $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'sakit')->count(),
-            'alpa' => $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'alpa')->count(),
+            'hadir' => $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count(),
+            'izin' => $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'izin')->count(),
+            'sakit' => $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'sakit')->count(),
+            'alpa' => $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'alpa')->count(),
         ];
     }
 
@@ -323,7 +323,7 @@ final class Siswa extends Model
     protected function attendancePercentage(): Attribute
     {
         return Attribute::make(
-            get: fn(): float => $this->getAttendancePercentage(),
+            get: fn (): float => $this->getAttendancePercentage(),
         );
     }
 
@@ -333,7 +333,7 @@ final class Siswa extends Model
     protected function averageGrade(): Attribute
     {
         return Attribute::make(
-            get: fn(): ?float => $this->getAverageGrade(),
+            get: fn (): ?float => $this->getAverageGrade(),
         );
     }
 
@@ -343,7 +343,7 @@ final class Siswa extends Model
     protected function averageParticipation(): Attribute
     {
         return Attribute::make(
-            get: fn(): ?float => $this->getAverageParticipation(),
+            get: fn (): ?float => $this->getAverageParticipation(),
         );
     }
 }

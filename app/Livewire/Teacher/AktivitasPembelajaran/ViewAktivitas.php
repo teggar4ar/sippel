@@ -24,7 +24,7 @@ final class ViewAktivitas extends Component
             ->with([
                 'mataPelajaran',
                 'kelas',
-                'detailAktivitas' => fn($q) => $q->orderBy('siswa_id'),
+                'detailAktivitas' => fn ($q) => $q->orderBy('siswa_id'),
                 'detailAktivitas.siswa.user',
                 'sesiAbsensi',
             ])
@@ -38,10 +38,10 @@ final class ViewAktivitas extends Component
         $total = $details->count();
 
         // Use case-insensitive comparison for kehadiran
-        $hadir = $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count();
-        $izin = $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'izin')->count();
-        $sakit = $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'sakit')->count();
-        $alpa = $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'alpa')->count();
+        $hadir = $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count();
+        $izin = $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'izin')->count();
+        $sakit = $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'sakit')->count();
+        $alpa = $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'alpa')->count();
 
         return [
             'total' => $total,

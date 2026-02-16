@@ -163,7 +163,7 @@ final class EditAktivitas extends Component
             return;
         }
 
-        Cache::forget('teacher_dashboard_stats_' . Auth::id());
+        Cache::forget('teacher_dashboard_stats_'.Auth::id());
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil diperbarui!');
 
@@ -190,7 +190,7 @@ final class EditAktivitas extends Component
 
             session()->flash('success', 'Sesi absensi QR berhasil ditutup!');
         } catch (Exception $e) {
-            session()->flash('error', 'Gagal menutup sesi: ' . $e->getMessage());
+            session()->flash('error', 'Gagal menutup sesi: '.$e->getMessage());
         }
     }
 
@@ -217,7 +217,7 @@ final class EditAktivitas extends Component
 
             session()->flash('success', "Sesi absensi QR baru dibuka untuk {$durasiMenit} menit!");
         } catch (Exception $e) {
-            session()->flash('error', 'Gagal membuka sesi: ' . $e->getMessage());
+            session()->flash('error', 'Gagal membuka sesi: '.$e->getMessage());
         }
     }
 
