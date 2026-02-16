@@ -93,8 +93,8 @@
         </div>
     </div>
 
-    {{-- QR Session Control (only if absensi_mandiri) --}}
-    @if($aktivitas->absensi_mandiri)
+    {{-- QR Session Control (only if presensi_mandiri) --}}
+    @if($aktivitas->presensi_mandiri)
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                 <span class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -140,7 +140,7 @@
                         <flux:icon name="clock" class="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-medium text-slate-600 dark:text-slate-300">Tidak Ada Sesi Aktif</p>
-                            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Buka sesi baru agar siswa bisa scan QR untuk absensi</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Buka sesi baru agar siswa bisa scan QR untuk presensi</p>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-2">
@@ -176,7 +176,7 @@
         {{-- Section header --}}
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Absensi & Penilaian</h2>
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Presensi & Penilaian</h2>
                 <p class="text-xs text-slate-500 dark:text-slate-400">Perbarui kehadiran dan nilai siswa ({{ $this->siswaList->count() }} siswa)</p>
             </div>
         </div>

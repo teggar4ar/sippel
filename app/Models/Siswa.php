@@ -71,9 +71,9 @@ final class Siswa extends Model
     /**
      * Get all QR scan logs for this student
      */
-    public function logScanAbsensi(): HasMany
+    public function logScanPresensi(): HasMany
     {
-        return $this->hasMany(LogScanAbsensi::class);
+        return $this->hasMany(LogScanPresensi::class);
     }
 
     /**
@@ -93,7 +93,7 @@ final class Siswa extends Model
      */
     public function hasQrCode(): bool
     {
-        return $this->qr_secret !== null && $this->qr_secret !== '' && $this->qr_secret !== '0';
+        return ! in_array($this->qr_secret, [null, '', '0'], true);
     }
 
     // =========================================================================

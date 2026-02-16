@@ -112,7 +112,7 @@ final class KelasTable
                     ->label('Cetak QR Kelas')
                     ->icon('heroicon-o-printer')
                     ->color('success')
-                    ->action(function ($record) {
+                    ->action(function (\App\Models\Kelas $record) {
                         $service = app(QrAttendanceService::class);
                         $pdfContent = $service->generateClassQrPdf($record);
 
@@ -131,7 +131,7 @@ final class KelasTable
                     })
                     ->requiresConfirmation()
                     ->modalHeading('Cetak QR Code Kelas')
-                    ->modalDescription(fn ($record) => "Generate dan download kartu QR untuk seluruh siswa di kelas {$record->nama_lengkap}. Total siswa: {$record->siswa_count}.")
+                    ->modalDescription(fn ($record): string => "Generate dan download kartu QR untuk seluruh siswa di kelas {$record->nama_lengkap}. Total siswa: {$record->siswa_count}.")
                     ->modalSubmitActionLabel('Download PDF')
                     ->successNotificationTitle('PDF QR Code berhasil di-generate!'),
 

@@ -7,12 +7,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class LogScanAbsensi extends Model
+final class LogScanPresensi extends Model
 {
-    protected $table = 'log_scan_absensi';
+    protected $table = 'log_scan_presensi';
 
     protected $fillable = [
-        'sesi_absensi_id',
+        'sesi_presensi_id',
         'siswa_id',
         'status_scan',
         'alasan_gagal',
@@ -28,9 +28,9 @@ final class LogScanAbsensi extends Model
     /**
      * Get the session for this scan log
      */
-    public function sesiAbsensi(): BelongsTo
+    public function sesiPresensi(): BelongsTo
     {
-        return $this->belongsTo(SesiAbsensi::class);
+        return $this->belongsTo(SesiPresensi::class);
     }
 
     /**

@@ -48,9 +48,9 @@ final class CreateAktivitas extends Component
     public array $detailAktivitas = [];
 
     // QR Attendance Mode (Phase 3)
-    public bool $absensiMandiri = false;
+    public bool $presensiMandiri = false;
 
-    public ?int $durasiAbsensiMenit = 5;
+    public ?int $durasiPresensiMenit = 5;
 
     public function mount(): void
     {
@@ -251,20 +251,21 @@ final class CreateAktivitas extends Component
                     'mata_pelajaran_id' => $this->mata_pelajaran_id,
                     'kelas_id' => $this->kelas_id,
                     'guru_id' => $userId,
-                    'absensi_mandiri' => $this->absensiMandiri,
-                    'durasi_absensi_menit' => $this->absensiMandiri ? $this->durasiAbsensiMenit : null,
+                    'presensi_mandiri' => $this->presensiMandiri,
+                    'durasi_presensi_menit' => $this->presensiMandiri ? $this->durasiPresensiMenit : null,
                 ]);
 
                 // Create detail records for each student
                 foreach ($this->detailAktivitas as $siswaId => $detail) {
                     // Skip if attendance not set and self-attendance is enabled
-                    if ($this->absensiMandiri && empty($detail['kehadiran'])) {
+                    if ($this->presensiMandiri && empty($detail['kehadiran'])) {
                         // Create with default 'alpa' status - will be updated by QR scan
+                        // Don't set metode_kehadiran so QR scans can override this default
                         DetailAktivitas::create([
                             'aktivitas_pembelajaran_id' => $aktivitas->id,
                             'siswa_id' => $siswaId,
                             'kehadiran' => 'alpa',
-                            'metode_kehadiran' => 'manual',
+                            'metode_kehadiran' => null,
                             'nilai' => null,
                             'partisipasi' => null,
                             'catatan' => null,
@@ -289,9 +290,9 @@ final class CreateAktivitas extends Component
                 }
 
                 // Auto-create QR attendance session if enabled
-                if ($this->absensiMandiri && $this->durasiAbsensiMenit) {
+                if ($this->presensiMandiri && $this->durasiPresensiMenit) {
                     $service = app(QrAttendanceService::class);
-                    $service->createSession($aktivitas, $this->durasiAbsensiMenit);
+                    $service->createSession($aktivitas, $this->durasiPresensiMenit);
                 }
             });
         } catch (Exception) {
@@ -324,7 +325,7 @@ final class CreateAktivitas extends Component
 
     private function rulesForStep2(): array
     {
-        $kehadiranRule = $this->absensiMandiri
+        $kehadiranRule = $this->presensiMandiri
             ? 'nullable|in:Hadir,Izin,Sakit,Alpa'
             : 'required|in:Hadir,Izin,Sakit,Alpa';
 

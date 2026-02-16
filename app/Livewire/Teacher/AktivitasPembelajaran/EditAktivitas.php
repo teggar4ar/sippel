@@ -42,7 +42,7 @@ final class EditAktivitas extends Component
     {
         $this->aktivitas = AktivitasPembelajaran::query()
             ->where('guru_id', Auth::id())
-            ->with(['mataPelajaran.kelas', 'detailAktivitas.siswa.user', 'sesiAbsensi'])
+            ->with(['mataPelajaran.kelas', 'detailAktivitas.siswa.user', 'sesiPresensi'])
             ->findOrFail($id);
 
         // Load activity data
@@ -174,7 +174,7 @@ final class EditAktivitas extends Component
     {
         $activeSesi = $this->aktivitas->activeSesi();
 
-        if (! $activeSesi) {
+        if (! $activeSesi instanceof \App\Models\SesiPresensi) {
             session()->flash('error', 'Tidak ada sesi aktif untuk ditutup.');
 
             return;
@@ -186,9 +186,9 @@ final class EditAktivitas extends Component
 
             // Refresh the component to update UI
             $this->aktivitas->refresh();
-            $this->aktivitas->load('sesiAbsensi');
+            $this->aktivitas->load('sesiPresensi');
 
-            session()->flash('success', 'Sesi absensi QR berhasil ditutup!');
+            session()->flash('success', 'Sesi presensi QR berhasil ditutup!');
         } catch (Exception $e) {
             session()->flash('error', 'Gagal menutup sesi: '.$e->getMessage());
         }
@@ -198,7 +198,7 @@ final class EditAktivitas extends Component
     {
         // Close existing active session if any
         $activeSesi = $this->aktivitas->activeSesi();
-        if ($activeSesi) {
+        if ($activeSesi instanceof \App\Models\SesiPresensi) {
             try {
                 $service = app(QrAttendanceService::class);
                 $service->closeSession($activeSesi);
@@ -213,9 +213,9 @@ final class EditAktivitas extends Component
 
             // Refresh the component to update UI
             $this->aktivitas->refresh();
-            $this->aktivitas->load('sesiAbsensi');
+            $this->aktivitas->load('sesiPresensi');
 
-            session()->flash('success', "Sesi absensi QR baru dibuka untuk {$durasiMenit} menit!");
+            session()->flash('success', "Sesi presensi QR baru dibuka untuk {$durasiMenit} menit!");
         } catch (Exception $e) {
             session()->flash('error', 'Gagal membuka sesi: '.$e->getMessage());
         }

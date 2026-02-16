@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('sesi_absensi', function (Blueprint $table): void {
+        Schema::create('sesi_presensi', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('aktivitas_pembelajaran_id')
                 ->constrained('aktivitas_pembelajaran')
@@ -31,6 +31,6 @@ return new class() extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('sesi_absensi');
+        Schema::dropIfExists('sesi_presensi');
     }
 };

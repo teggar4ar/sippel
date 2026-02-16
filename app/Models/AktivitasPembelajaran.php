@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class AktivitasPembelajaran extends Model
 {
+    use HasFactory;
     use SoftDeletes;
 
     protected $table = 'aktivitas_pembelajaran';
@@ -22,14 +24,14 @@ final class AktivitasPembelajaran extends Model
         'kelas_id',
         'mata_pelajaran_id',
         'guru_id',
-        'absensi_mandiri',
-        'durasi_absensi_menit',
+        'presensi_mandiri',
+        'durasi_presensi_menit',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
-        'absensi_mandiri' => 'boolean',
-        'durasi_absensi_menit' => 'integer',
+        'presensi_mandiri' => 'boolean',
+        'durasi_presensi_menit' => 'integer',
     ];
 
     /**
@@ -67,17 +69,17 @@ final class AktivitasPembelajaran extends Model
     /**
      * Get all QR attendance sessions for this activity
      */
-    public function sesiAbsensi(): HasMany
+    public function sesiPresensi(): HasMany
     {
-        return $this->hasMany(SesiAbsensi::class);
+        return $this->hasMany(SesiPresensi::class);
     }
 
     /**
      * Get the active (open and not expired) QR session for this activity
      */
-    public function activeSesi(): ?SesiAbsensi
+    public function activeSesi(): ?SesiPresensi
     {
-        return $this->sesiAbsensi()
+        return $this->sesiPresensi()
             ->where('status', 'open')
             ->latest('dibuka_pada')
             ->first();

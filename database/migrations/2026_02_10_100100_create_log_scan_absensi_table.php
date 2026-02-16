@@ -10,10 +10,11 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('log_scan_absensi', function (Blueprint $table): void {
+        Schema::create('log_scan_presensi', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('sesi_absensi_id')
-                ->constrained('sesi_absensi')
+            $table->foreignId('sesi_presensi_id')
+                ->nullable() // Nullable for early validation failures (signature, format)
+                ->constrained('sesi_presensi')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
             $table->foreignId('siswa_id')
@@ -28,15 +29,15 @@ return new class() extends Migration
             $table->timestamps();
 
             // Indexes
-            $table->index('sesi_absensi_id', 'log_sesi_idx');
+            $table->index('sesi_presensi_id', 'log_sesi_idx');
             $table->index('siswa_id', 'log_siswa_idx');
-            $table->index(['sesi_absensi_id', 'siswa_id'], 'log_sesi_siswa_idx');
+            $table->index(['sesi_presensi_id', 'siswa_id'], 'log_sesi_siswa_idx');
             $table->index('status_scan', 'log_status_idx');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('log_scan_absensi');
+        Schema::dropIfExists('log_scan_presensi');
     }
 };

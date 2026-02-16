@@ -47,7 +47,7 @@
                 @if($step === 1)
                     Langkah 1: Informasi Aktivitas
                 @else
-                    Langkah 2: Absensi & Penilaian
+                    Langkah 2: Presensi & Penilaian
                 @endif
             </p>
         </div>
@@ -189,7 +189,7 @@
                     wire:loading.class="opacity-50 cursor-not-allowed"
                     class="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     {{ !$mata_pelajaran_id ? 'disabled' : '' }}>
-                <span wire:loading.remove wire:target="nextStep">Lanjut ke Absensi</span>
+                <span wire:loading.remove wire:target="nextStep">Lanjut ke Presensi</span>
                 <span wire:loading wire:target="nextStep">Memproses...</span>
                 <flux:icon wire:loading.remove wire:target="nextStep" name="arrow-right" class="w-4 h-4" />
                 <flux:icon wire:loading wire:target="nextStep" name="arrow-path" class="w-4 h-4 animate-spin" />
@@ -232,50 +232,50 @@
                                 <flux:icon name="qr-code" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div class="flex-1 min-w-0">
-                                <label for="toggle-absensi-mandiri" class="text-sm font-medium text-slate-900 dark:text-white cursor-pointer">
-                                    Absensi Mandiri QR
+                                <label for="toggle-presensi-mandiri" class="text-sm font-medium text-slate-900 dark:text-white cursor-pointer">
+                                    Presensi Mandiri QR
                                 </label>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                    Siswa scan QR untuk absensi otomatis
+                                    Siswa scan QR untuk presensi otomatis
                                 </p>
                             </div>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
                             <input type="checkbox"
-                                   wire:model.live="absensiMandiri"
-                                   id="toggle-absensi-mandiri"
+                                   wire:model.live="presensiMandiri"
+                                   id="toggle-presensi-mandiri"
                                    class="sr-only peer">
                             <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
                         </label>
                     </div>
 
-                    @if($absensiMandiri)
+                    @if($presensiMandiri)
                         <div x-data x-transition class="border-t border-slate-100 dark:border-slate-700 pt-3">
                             <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
                                 Durasi Sesi QR
                             </label>
                             <div class="grid grid-cols-3 gap-2">
                                 <button type="button"
-                                        wire:click="$set('durasiAbsensiMenit', 5)"
-                                        class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $durasiAbsensiMenit === 5 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer' }}">
+                                        wire:click="$set('durasiPresensiMenit', 5)"
+                                        class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $durasiPresensiMenit === 5 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer' }}">
                                     5 menit
                                 </button>
                                 <button type="button"
-                                        wire:click="$set('durasiAbsensiMenit', 10)"
-                                        class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $durasiAbsensiMenit === 10 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer' }}">
+                                        wire:click="$set('durasiPresensiMenit', 10)"
+                                        class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $durasiPresensiMenit === 10 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer' }}">
                                     10 menit
                                 </button>
                                 <button type="button"
-                                        wire:click="$set('durasiAbsensiMenit', 15)"
-                                        class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $durasiAbsensiMenit === 15 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer' }}">
+                                        wire:click="$set('durasiPresensiMenit', 15)"
+                                        class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $durasiPresensiMenit === 15 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer' }}">
                                     15 menit
                                 </button>
                             </div>
                             <p class="text-xs text-blue-600 dark:text-blue-400 mt-2 flex items-start gap-1">
                                 <flux:icon name="information-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                                 <span>
-                                    @if($absensiMandiri)
-                                        Absensi manual di bawah bersifat opsional. Siswa yang tidak scan akan tercatat Alpa.
+                                    @if($presensiMandiri)
+                                        Presensi manual di bawah bersifat opsional. Siswa yang tidak scan akan tercatat Alpa.
                                     @endif
                                 </span>
                             </p>
@@ -287,10 +287,10 @@
             {{-- Section header --}}
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Absensi & Penilaian</h2>
+                    <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Presensi & Penilaian</h2>
                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                        @if($absensiMandiri)
-                            Opsional - Siswa bisa scan QR untuk absensi
+                        @if($presensiMandiri)
+                            Opsional - Siswa bisa scan QR untuk presensi
                         @else
                             Catat kehadiran dan nilai siswa
                         @endif

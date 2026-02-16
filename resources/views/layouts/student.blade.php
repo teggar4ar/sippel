@@ -47,6 +47,11 @@
                     <flux:icon name="squares-2x2" variant="outline" class="w-5 h-5" />
                     Dashboard
                 </a>
+                <a href="{{ route('student.presensi.scan') }}" wire:navigate
+                   class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('student.presensi.scan') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80 hover:text-white' }}">
+                    <flux:icon name="qr-code" variant="outline" class="w-5 h-5" />
+                    Scan Presensi
+                </a>
                 <a href="{{ route('student.kehadiran') }}" wire:navigate
                    class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('student.kehadiran') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80 hover:text-white' }}">
                     <flux:icon name="calendar-days" variant="outline" class="w-5 h-5" />
@@ -120,6 +125,11 @@
                        class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('student.dashboard') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80' }}">
                         <flux:icon name="squares-2x2" variant="outline" class="w-5 h-5" />
                         Dashboard
+                    </a>
+                    <a href="{{ route('student.presensi.scan') }}" wire:navigate @click="open = false"
+                       class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('student.presensi.scan') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80' }}">
+                        <flux:icon name="qr-code" variant="outline" class="w-5 h-5" />
+                        Scan Presensi
                     </a>
                     <a href="{{ route('student.kehadiran') }}" wire:navigate @click="open = false"
                        class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('student.kehadiran') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80' }}">

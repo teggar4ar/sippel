@@ -11,7 +11,7 @@ return new class() extends Migration
     public function up(): void
     {
         Schema::table('detail_aktivitas', function (Blueprint $table): void {
-            $table->enum('metode_kehadiran', ['manual', 'qr_scan'])->default('manual')->after('kehadiran'); // Attendance method
+            $table->enum('metode_kehadiran', ['manual', 'qr_scan'])->nullable()->after('kehadiran'); // Attendance method (null = awaiting QR scan)
             $table->timestamp('waktu_kehadiran')->nullable()->after('metode_kehadiran'); // Attendance timestamp (for QR scan)
 
             // Indexes

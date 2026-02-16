@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-final class SesiAbsensi extends Model
+final class SesiPresensi extends Model
 {
-    protected $table = 'sesi_absensi';
+    protected $table = 'sesi_presensi';
 
     protected $fillable = [
         'aktivitas_pembelajaran_id',
@@ -37,9 +37,9 @@ final class SesiAbsensi extends Model
     /**
      * Get all scan logs for this session
      */
-    public function logScanAbsensi(): HasMany
+    public function logScanPresensi(): HasMany
     {
-        return $this->hasMany(LogScanAbsensi::class);
+        return $this->hasMany(LogScanPresensi::class);
     }
 
     /**
@@ -61,6 +61,7 @@ final class SesiAbsensi extends Model
      */
     public function getExpiresAtAttribute(): ?\Carbon\CarbonImmutable
     {
+        // @phpstan-ignore-next-line (dibuka_pada can be null in database)
         if (! $this->dibuka_pada) {
             return null;
         }

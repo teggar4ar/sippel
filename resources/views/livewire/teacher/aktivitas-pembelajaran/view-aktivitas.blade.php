@@ -16,7 +16,7 @@
     </div>
 
     {{-- QR Session Status --}}
-    @if($aktivitas->absensi_mandiri && $aktivitas->activeSesi())
+    @if($aktivitas->presensi_mandiri && $aktivitas->activeSesi())
         @php
             $sesi = $aktivitas->activeSesi();
             $isActive = $sesi->isActive();
@@ -28,7 +28,7 @@
                         <flux:icon name="qr-code" class="w-5 h-5" />
                     </div>
                     <div class="min-w-0">
-                        <p class="text-xs font-medium">{{ $isActive ? 'Sesi Absensi QR Aktif' : 'Sesi Absensi QR Selesai' }}</p>
+                        <p class="text-xs font-medium">{{ $isActive ? 'Sesi Presensi QR Aktif' : 'Sesi Presensi QR Selesai' }}</p>
                         <p class="text-[10px] opacity-90 truncate">
                             @if($isActive)
                                 Dibuka {{ $sesi->created_at->diffForHumans() }}
@@ -139,12 +139,12 @@
                     </div>
 
                     {{-- QR Scan Status --}}
-                    @if($detail->metode_kehadiran === 'qr_scan' && $detail->waktu_scan)
+                    @if($detail->metode_kehadiran === 'qr_scan')
                         <div class="flex items-center gap-1 mt-1 text-[10px] text-emerald-600 dark:text-emerald-400">
                             <flux:icon name="check-badge" class="w-3 h-3" />
-                            <span>Scan QR: {{ $detail->waktu_scan->format('H:i') }}</span>
+                            <span>Presensi via QR</span>
                         </div>
-                    @elseif($aktivitas->absensi_mandiri && $detail->kehadiran === 'Alpa')
+                    @elseif($aktivitas->presensi_mandiri && $detail->kehadiran === 'Alpa')
                         <div class="flex items-center gap-1 mt-1 text-[10px] text-slate-400">
                             <flux:icon name="x-circle" class="w-3 h-3" />
                             <span>Belum scan QR</span>

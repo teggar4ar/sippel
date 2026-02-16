@@ -7,8 +7,8 @@ namespace App\Services;
 use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
 use App\Models\Kelas;
-use App\Models\LogScanAbsensi;
-use App\Models\SesiAbsensi;
+use App\Models\LogScanPresensi;
+use App\Models\SesiPresensi;
 use App\Models\Siswa;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Endroid\QrCode\Encoding\Encoding;
@@ -78,7 +78,10 @@ final class QrAttendanceService
         $kelas->load(['siswa.user', 'tahunAjaran']);
 
         // Generate QR codes for all students
-        $studentsWithQr = $kelas->siswa->map(function (Siswa $siswa) {
+        /** @var \Illuminate\Database\Eloquent\Collection<int,Siswa> $students */
+        $students = $kelas->siswa;
+
+        $studentsWithQr = $students->map(function (Siswa $siswa): array {
             // Auto-generate QR secret if not exists
             if (! $siswa->hasQrCode()) {
                 $siswa->generateQrSecret();
@@ -177,8 +180,8 @@ final class QrAttendanceService
     public function createSession(
         AktivitasPembelajaran $aktivitas,
         int $durasiMenit
-    ): SesiAbsensi {
-        return SesiAbsensi::create([
+    ): SesiPresensi {
+        return SesiPresensi::create([
             'aktivitas_pembelajaran_id' => $aktivitas->id,
             'status' => 'open',
             'durasi_menit' => $durasiMenit,
@@ -189,7 +192,7 @@ final class QrAttendanceService
     /**
      * Close an attendance session
      */
-    public function closeSession(SesiAbsensi $sesi): bool
+    public function closeSession(SesiPresensi $sesi): bool
     {
         $sesi->status = 'closed';
         $sesi->ditutup_pada = now();
@@ -200,7 +203,7 @@ final class QrAttendanceService
     /**
      * Check if a session is active (open and not expired)
      */
-    public function isSessionActive(SesiAbsensi $sesi): bool
+    public function isSessionActive(SesiPresensi $sesi): bool
     {
         return $sesi->isActive();
     }
@@ -253,7 +256,7 @@ final class QrAttendanceService
         }
 
         // BR-12: Find active session
-        $sesi = SesiAbsensi::where('status', 'open')
+        $sesi = SesiPresensi::where('status', 'open')
             ->whereHas('aktivitasPembelajaran', function ($query) use ($siswa): void {
                 $query->where('kelas_id', $siswa->kelas_id);
             })
@@ -271,7 +274,7 @@ final class QrAttendanceService
 
             return [
                 'success' => false,
-                'message' => 'Tidak ada sesi absensi yang sedang aktif untuk kelas Anda',
+                'message' => 'Tidak ada sesi presensi yang sedang aktif untuk kelas Anda',
                 'detail_aktivitas_id' => null,
             ];
         }
@@ -288,7 +291,7 @@ final class QrAttendanceService
 
             return [
                 'success' => false,
-                'message' => 'Sesi absensi sudah berakhir',
+                'message' => 'Sesi presensi sudah berakhir',
                 'detail_aktivitas_id' => null,
             ];
         }
@@ -313,7 +316,7 @@ final class QrAttendanceService
         }
 
         // BR-14: Check if student already scanned (one scan per session)
-        $existingScan = LogScanAbsensi::where('sesi_absensi_id', $sesi->id)
+        $existingScan = LogScanPresensi::where('sesi_presensi_id', $sesi->id)
             ->where('siswa_id', $siswa->id)
             ->where('status_scan', 'berhasil')
             ->exists();
@@ -329,7 +332,7 @@ final class QrAttendanceService
 
             return [
                 'success' => false,
-                'message' => 'Anda sudah melakukan absensi untuk sesi ini',
+                'message' => 'Anda sudah melakukan presensi untuk sesi ini',
                 'detail_aktivitas_id' => null,
             ];
         }
@@ -343,6 +346,7 @@ final class QrAttendanceService
 
             if ($detailAktivitas) {
                 // BR-16-17: Only update if not manually set by teacher
+                // Allow override if metode_kehadiran is null (default placeholder) or already qr_scan
                 if ($detailAktivitas->metode_kehadiran === 'manual') {
                     $this->logFailedScan(
                         $sesi->id,
@@ -359,6 +363,7 @@ final class QrAttendanceService
                     ];
                 }
 
+                // Update the attendance record
                 $detailAktivitas->kehadiran = 'hadir';
                 $detailAktivitas->metode_kehadiran = 'qr_scan';
                 $detailAktivitas->waktu_kehadiran = now();
@@ -383,7 +388,7 @@ final class QrAttendanceService
 
             return [
                 'success' => true,
-                'message' => 'Absensi berhasil dicatat',
+                'message' => 'Presensi berhasil dicatat',
                 'detail_aktivitas_id' => $detailAktivitas->id,
             ];
         });
@@ -396,9 +401,9 @@ final class QrAttendanceService
      */
     public function autoCloseExpiredSessions(): int
     {
-        $expiredSessions = SesiAbsensi::where('status', 'open')
+        $expiredSessions = SesiPresensi::where('status', 'open')
             ->get()
-            ->filter(fn (SesiAbsensi $sesi): bool => ! $sesi->isActive());
+            ->filter(fn (SesiPresensi $sesi): bool => ! $sesi->isActive());
 
         $count = 0;
 
@@ -420,8 +425,8 @@ final class QrAttendanceService
         string $ipAddress,
         string $userAgent
     ): void {
-        LogScanAbsensi::create([
-            'sesi_absensi_id' => $sesiId,
+        LogScanPresensi::create([
+            'sesi_presensi_id' => $sesiId,
             'siswa_id' => $siswaId,
             'status_scan' => 'berhasil',
             'alasan_gagal' => null,
@@ -441,8 +446,8 @@ final class QrAttendanceService
         string $ipAddress,
         string $userAgent
     ): void {
-        LogScanAbsensi::create([
-            'sesi_absensi_id' => $sesiId,
+        LogScanPresensi::create([
+            'sesi_presensi_id' => $sesiId,
             'siswa_id' => $siswaId,
             'status_scan' => 'gagal',
             'alasan_gagal' => $reason,

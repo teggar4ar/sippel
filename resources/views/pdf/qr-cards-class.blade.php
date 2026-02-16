@@ -34,20 +34,22 @@
         }
 
         .cards-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
+            text-align: center;
+            margin: 0 auto;
+            max-width: 650px;
         }
 
         .qr-card {
-            width: 180px;
+            width: 200px;
             border: 2px solid #333;
             border-radius: 8px;
             padding: 12px;
             text-align: center;
             page-break-inside: avoid;
             background: white;
+            display: inline-block;
+            vertical-align: top;
+            margin: 0 8px 15px 8px;
         }
 
         .qr-card .school-name {
@@ -58,8 +60,8 @@
         }
 
         .qr-card .qr-image {
-            width: 140px;
-            height: 140px;
+            width: 160px;
+            height: 160px;
             margin: 0 auto 10px;
             border: 1px solid #ddd;
             padding: 5px;
@@ -118,7 +120,7 @@
 </head>
 <body>
     <div class="page-header">
-        <h1>Kartu QR Absensi Mandiri</h1>
+        <h1>Kartu QR Presensi Mandiri</h1>
         <div class="subtitle">
             Kelas {{ $kelas->tingkat_kelas }}{{ $kelas->grup_kelas }}
             @if($kelas->tahunAjaran)
@@ -148,15 +150,16 @@
                 </div>
 
                 <div class="instruction">
-                    Scan QR ini untuk absensi mandiri
+                    Scan QR ini untuk presensi mandiri
                 </div>
             </div>
 
-            {{-- Page break after every 12 cards (3 columns x 4 rows) --}}
-            @if(($index + 1) % 12 === 0 && !$loop->last)
+            {{-- Page break after every 9 cards (3 columns x 3 rows) --}}
+            @if(($index + 1) % 9 === 0 && !$loop->last)
+                </div> {{-- Close cards-container --}}
                 <div class="page-break"></div>
                 <div class="page-header" style="margin-top: 20px;">
-                    <h1>Kartu QR Absensi Mandiri</h1>
+                    <h1>Kartu QR Presensi Mandiri</h1>
                     <div class="subtitle">
                         Kelas {{ $kelas->tingkat_kelas }}{{ $kelas->grup_kelas }}
                         @if($kelas->tahunAjaran)
@@ -164,6 +167,7 @@
                         @endif
                     </div>
                 </div>
+                <div class="cards-container"> {{-- Reopen cards-container --}}
             @endif
         @endforeach
     </div>

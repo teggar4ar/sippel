@@ -26,7 +26,7 @@ final class ViewAktivitas extends Component
                 'kelas',
                 'detailAktivitas' => fn ($q) => $q->orderBy('siswa_id'),
                 'detailAktivitas.siswa.user',
-                'sesiAbsensi',
+                'sesiPresensi',
             ])
             ->findOrFail($id);
     }

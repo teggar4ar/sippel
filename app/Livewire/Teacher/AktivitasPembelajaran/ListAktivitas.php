@@ -181,7 +181,7 @@ final class ListAktivitas extends Component
             ->when($this->filterPeriode === 'week', fn ($q) => $q->whereBetween('tanggal', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]))
             ->when($this->filterPeriode === 'month', fn ($q) => $q->whereMonth('tanggal', Carbon::now()->month)->whereYear('tanggal', Carbon::now()->year))
             ->when($this->search, fn ($q) => $q->where('topik', 'like', "%{$this->search}%"))
-            ->with(['mataPelajaran', 'kelas', 'detailAktivitas', 'sesiAbsensi'])
+            ->with(['mataPelajaran', 'kelas', 'detailAktivitas', 'sesiPresensi'])
             ->latest('tanggal')
             ->latest('created_at')
             ->paginate($this->perPage);

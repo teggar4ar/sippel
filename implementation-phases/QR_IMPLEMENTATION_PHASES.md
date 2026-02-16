@@ -47,7 +47,7 @@
 | 3.6 | Modifikasi `EditAktivitas` | Tambah tombol "Tutup Sesi" dan "Buka Sesi Baru" di halaman edit |
 | 3.7 | Modifikasi `ViewAktivitas` | Tampilkan status scan per siswa (deskripsi sederhana di kartu siswa: "Hadir via QR", "Belum scan") |
 
-## Fase 4: QR Scanning — Student Side (Estimasi: 3-4 hari)
+## Fase 4: QR Scanning — Student Side (Estimasi: 3-4 hari) COMPLETED
 
 **Tujuan**: Siswa bisa scan QR code mereka untuk absensi.
 

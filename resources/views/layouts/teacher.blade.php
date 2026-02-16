@@ -21,7 +21,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @livewireStyles
-    @fluxStyles
+    {{-- @fluxStyles --}}
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-950 antialiased overflow-x-hidden"
       data-inactivity-timer

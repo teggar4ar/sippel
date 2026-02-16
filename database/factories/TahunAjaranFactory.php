@@ -18,11 +18,16 @@ final class TahunAjaranFactory extends Factory
      */
     public function definition(): array
     {
-        $year = fake()->year();
+        // Use sequence to ensure unique combinations
+        static $counter = 0;
+        $counter++;
+
+        $baseYear = 2020 + $counter;
+        $semester = $counter % 2 === 0 ? 'Ganjil' : 'Genap';
 
         return [
-            'nama_tahun' => $year.'/'.($year + 1),
-            'semester' => fake()->randomElement(['Ganjil', 'Genap']),
+            'nama_tahun' => $baseYear.'/'.($baseYear + 1),
+            'semester' => $semester,
             'tanggal_mulai' => fake()->dateTimeBetween('-1 year', 'now'),
             'tanggal_selesai' => fake()->dateTimeBetween('now', '+1 year'),
             'status' => false,

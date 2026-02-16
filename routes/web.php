@@ -79,6 +79,7 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/nilai', App\Livewire\Student\RiwayatNilai::class)->name('nilai');
     Route::get('/laporan', App\Livewire\Student\LaporanSaya::class)->name('laporan');
     Route::get('/profil', App\Livewire\Student\Profil::class)->name('profil');
+    Route::get('/presensi/scan', App\Livewire\Student\ScanPresensi::class)->name('presensi.scan');
 });
 
 /*

@@ -114,7 +114,7 @@ final class SiswasTable
                     ->label('Download QR')
                     ->icon('heroicon-o-qr-code')
                     ->color('success')
-                    ->action(function ($record) {
+                    ->action(function (\App\Models\Siswa $record) {
                         $service = app(QrAttendanceService::class);
                         $qrImage = $service->generateQrImage($record, 400);
 
@@ -179,7 +179,7 @@ final class SiswasTable
                         ->icon('heroicon-o-arrow-path')
                         ->color('warning')
                         ->accessSelectedRecords()
-                        ->action(function ($records) {
+                        ->action(function ($records): int {
                             $count = 0;
 
                             foreach ($records as $record) {
@@ -195,7 +195,7 @@ final class SiswasTable
                         ->modalDescription('QR code lama akan tidak valid. Kartu QR baru harus dicetak ulang dan dibagikan ke siswa.')
                         ->modalSubmitActionLabel('Regenerate')
                         ->successNotification(
-                            fn ($result) => \Filament\Notifications\Notification::make()
+                            fn ($result): \Filament\Notifications\Notification => \Filament\Notifications\Notification::make()
                                 ->success()
                                 ->title('QR Code berhasil di-regenerate!')
                                 ->body("{$result} QR code telah di-generate ulang.")
