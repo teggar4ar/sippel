@@ -10,6 +10,7 @@ use App\Models\Kelas;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
+use App\Services\QrAttendanceService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -45,6 +46,11 @@ final class CreateAktivitas extends Component
 
     // Step 2: Student attendance details
     public array $detailAktivitas = [];
+
+    // QR Attendance Mode (Phase 3)
+    public bool $absensiMandiri = false;
+
+    public ?int $durasiAbsensiMenit = 5;
 
     public function mount(): void
     {
@@ -245,10 +251,28 @@ final class CreateAktivitas extends Component
                     'mata_pelajaran_id' => $this->mata_pelajaran_id,
                     'kelas_id' => $this->kelas_id,
                     'guru_id' => $userId,
+                    'absensi_mandiri' => $this->absensiMandiri,
+                    'durasi_absensi_menit' => $this->absensiMandiri ? $this->durasiAbsensiMenit : null,
                 ]);
 
                 // Create detail records for each student
                 foreach ($this->detailAktivitas as $siswaId => $detail) {
+                    // Skip if attendance not set and self-attendance is enabled
+                    if ($this->absensiMandiri && empty($detail['kehadiran'])) {
+                        // Create with default 'alpa' status - will be updated by QR scan
+                        DetailAktivitas::create([
+                            'aktivitas_pembelajaran_id' => $aktivitas->id,
+                            'siswa_id' => $siswaId,
+                            'kehadiran' => 'alpa',
+                            'metode_kehadiran' => 'manual',
+                            'nilai' => null,
+                            'partisipasi' => null,
+                            'catatan' => null,
+                        ]);
+
+                        continue;
+                    }
+
                     // Convert kehadiran to lowercase for database enum
                     $kehadiran = mb_strtolower((string) $detail['kehadiran']);
                     $isHadir = $kehadiran === 'hadir';
@@ -257,10 +281,17 @@ final class CreateAktivitas extends Component
                         'aktivitas_pembelajaran_id' => $aktivitas->id,
                         'siswa_id' => $siswaId,
                         'kehadiran' => $kehadiran,
+                        'metode_kehadiran' => 'manual',
                         'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
                         'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
                         'catatan' => $detail['catatan'] ?: null,
                     ]);
+                }
+
+                // Auto-create QR attendance session if enabled
+                if ($this->absensiMandiri && $this->durasiAbsensiMenit) {
+                    $service = app(QrAttendanceService::class);
+                    $service->createSession($aktivitas, $this->durasiAbsensiMenit);
                 }
             });
         } catch (Exception) {
@@ -269,7 +300,7 @@ final class CreateAktivitas extends Component
             return;
         }
 
-        Cache::forget('teacher_dashboard_stats_'.$userId);
+        Cache::forget('teacher_dashboard_stats_' . $userId);
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil disimpan!');
 
@@ -293,9 +324,13 @@ final class CreateAktivitas extends Component
 
     private function rulesForStep2(): array
     {
+        $kehadiranRule = $this->absensiMandiri
+            ? 'nullable|in:Hadir,Izin,Sakit,Alpa'
+            : 'required|in:Hadir,Izin,Sakit,Alpa';
+
         return [
             'detailAktivitas' => 'required|array|min:1',
-            'detailAktivitas.*.kehadiran' => 'required|in:Hadir,Izin,Sakit,Alpa',
+            'detailAktivitas.*.kehadiran' => $kehadiranRule,
             'detailAktivitas.*.nilai' => 'nullable|numeric|min:0|max:100',
             'detailAktivitas.*.partisipasi' => 'nullable|integer|min:1|max:5',
             'detailAktivitas.*.catatan' => 'nullable|string|max:500',

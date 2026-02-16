@@ -21,11 +21,14 @@ final class DetailAktivitas extends Model
         'catatan',
         'aktivitas_pembelajaran_id',
         'siswa_id',
+        'metode_kehadiran',
+        'waktu_kehadiran',
     ];
 
     protected $casts = [
         'nilai' => 'decimal:2',
         'partisipasi' => 'decimal:2',
+        'waktu_kehadiran' => 'datetime',
     ];
 
     /**

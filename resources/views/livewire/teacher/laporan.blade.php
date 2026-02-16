@@ -153,7 +153,7 @@
                         wire:click="generatePreview"
                         wire:loading.attr="disabled"
                         wire:loading.class="opacity-50 cursor-not-allowed"
-                        class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors"
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors cursor-pointer"
                     >
                         <flux:icon wire:loading.remove wire:target="generatePreview" name="eye" class="w-4 h-4" />
                         <flux:icon wire:loading wire:target="generatePreview" name="arrow-path" class="w-4 h-4 animate-spin" />
@@ -175,7 +175,7 @@
                                 <button
                                     wire:click="downloadStudentPdf"
                                     wire:loading.attr="disabled"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer"
                                 >
                                     <flux:icon name="arrow-down-tray" class="w-3.5 h-3.5" />
                                     <span>Download PDF</span>
@@ -263,7 +263,7 @@
                                     <button
                                         wire:click="downloadClassPdf"
                                         wire:loading.attr="disabled"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer"
                                     >
                                         <flux:icon name="arrow-down-tray" class="w-3.5 h-3.5" />
                                         <span>Download PDF</span>
@@ -272,7 +272,7 @@
                                     <button
                                         wire:click="exportClassExcel"
                                         wire:loading.attr="disabled"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors cursor-pointer"
                                     >
                                         <flux:icon name="table-cells" class="w-3.5 h-3.5" />
                                         <span>Export Excel</span>

@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "@alpinejs/collapse": "^3.15.8",
+        "html5-qrcode": "^2.3.8",
         "playwright": "^1.58.0"
     }
 }

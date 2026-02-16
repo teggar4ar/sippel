@@ -1,5 +1,5 @@
 // SIPPEL Teacher Service Worker
-const CACHE_NAME = 'sippel-teacher-v1';
+const CACHE_NAME = 'sippel-teacher-v4';
 const OFFLINE_URL = '/offline.html';
 
 // Assets to cache on install
@@ -45,10 +45,37 @@ self.addEventListener('fetch', (event) => {
     // Skip cross-origin requests
     if (!event.request.url.startsWith(self.location.origin)) return;
 
-    // Skip API requests and form submissions
+    // Skip Livewire AJAX endpoints (but not HTML page requests)
     if (event.request.url.includes('/livewire/') ||
-        event.request.url.includes('/api/') ||
-        event.request.headers.get('X-Livewire')) {
+        event.request.url.includes('/api/')) {
+        return;
+    }
+
+    // Handle HTML page requests (direct navigation or wire:navigate)
+    const isHTMLRequest = event.request.mode === 'navigate' ||
+                          event.request.destination === 'document' ||
+                          event.request.headers.get('Accept')?.includes('text/html');
+
+    if (isHTMLRequest) {
+        event.respondWith(
+            fetch(event.request)
+                .catch(async () => {
+                    // Network failed - serve offline page
+                    const offlineResponse = await caches.match(OFFLINE_URL);
+                    if (offlineResponse) {
+                        return offlineResponse;
+                    }
+                    return new Response('Offline - No cached page available', {
+                        status: 503,
+                        statusText: 'Service Unavailable',
+                    });
+                })
+        );
+        return;
+    }
+
+    // Only cache static assets
+    if (!isStaticAsset(event.request.url)) {
         return;
     }
 
@@ -88,9 +115,14 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// Helper function to check if URL is a static asset
+// Helper function to check if URL is a static asset worth caching
+// Excludes Vite-generated assets (they have hashes built-in for cache busting)
 function isStaticAsset(url) {
-    return url.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)(\?.*)?$/i);
+    // Skip Vite build assets - they have content hashes and don't need SW caching
+    if (url.includes('/build/assets/')) {
+        return false;
+    }
+    return url.match(/\.(png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)(\?.*)?$/i);
 }
 
 // Listen for messages from the main thread

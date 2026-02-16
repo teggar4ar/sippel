@@ -15,6 +15,48 @@
         </a>
     </div>
 
+    {{-- QR Session Status --}}
+    @if($aktivitas->absensi_mandiri && $aktivitas->activeSesi())
+        @php
+            $sesi = $aktivitas->activeSesi();
+            $isActive = $sesi->isActive();
+        @endphp
+        <div class="bg-gradient-to-r {{ $isActive ? 'from-emerald-500 to-blue-500' : 'from-slate-400 to-slate-500' }} rounded-xl p-3 text-white shadow-lg">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <div class="w-10 h-10 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center flex-shrink-0">
+                        <flux:icon name="qr-code" class="w-5 h-5" />
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium">{{ $isActive ? 'Sesi Absensi QR Aktif' : 'Sesi Absensi QR Selesai' }}</p>
+                        <p class="text-[10px] opacity-90 truncate">
+                            @if($isActive)
+                                Dibuka {{ $sesi->created_at->diffForHumans() }}
+                            @else
+                                Ditutup {{ $sesi->updated_at->diffForHumans() }}
+                            @endif
+                        </p>
+                    </div>
+                </div>
+                @if($isActive)
+                    @php
+                        $expiresAt = $sesi->expires_at->timestamp;
+                        $remainingSeconds = $sesi->remaining_seconds;
+                    @endphp
+                    <div x-data="qrCountdown({{ $expiresAt }}, {{ $remainingSeconds }})"
+                         class="text-right flex-shrink-0">
+                        <div class="text-lg font-bold" x-text="formatTimeColon()"></div>
+                        <div class="text-[10px] opacity-90">tersisa</div>
+                    </div>
+                @else
+                    <div class="text-right flex-shrink-0">
+                        <div class="text-xs font-medium opacity-75">{{ ucfirst($sesi->status) }}</div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
+
     {{-- Info + Stats Combined Card --}}
     <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
         {{-- Class & Student count --}}
@@ -95,6 +137,20 @@
                             {{ $detail->kehadiran }}
                         </span>
                     </div>
+
+                    {{-- QR Scan Status --}}
+                    @if($detail->metode_kehadiran === 'qr_scan' && $detail->waktu_scan)
+                        <div class="flex items-center gap-1 mt-1 text-[10px] text-emerald-600 dark:text-emerald-400">
+                            <flux:icon name="check-badge" class="w-3 h-3" />
+                            <span>Scan QR: {{ $detail->waktu_scan->format('H:i') }}</span>
+                        </div>
+                    @elseif($aktivitas->absensi_mandiri && $detail->kehadiran === 'Alpa')
+                        <div class="flex items-center gap-1 mt-1 text-[10px] text-slate-400">
+                            <flux:icon name="x-circle" class="w-3 h-3" />
+                            <span>Belum scan QR</span>
+                        </div>
+                    @endif
+
                     {{-- Row 2: Scores --}}
                     <div class="flex gap-3 mt-1.5 text-xs text-slate-500">
                         <span>Nilai: <b class="text-slate-700 dark:text-slate-200">{{ $detail->nilai ?? '-' }}</b></span>
@@ -111,12 +167,14 @@
     {{-- Action buttons --}}
     <div class="flex gap-2 pb-4">
         <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
-           class="flex-1 py-2.5 text-center text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg">
+           class="flex-1 py-2.5 text-center text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">
             ← Kembali
         </a>
         <a href="{{ route('teacher.aktivitas.edit', $aktivitas->id) }}" wire:navigate
-           class="flex-1 py-2.5 text-center text-sm font-medium text-white bg-blue-600 rounded-lg">
+           class="flex-1 py-2.5 text-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
             Edit
         </a>
     </div>
 </div>
+
+

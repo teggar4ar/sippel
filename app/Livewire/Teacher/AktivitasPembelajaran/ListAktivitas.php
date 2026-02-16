@@ -175,13 +175,13 @@ final class ListAktivitas extends Component
     {
         return AktivitasPembelajaran::query()
             ->where('guru_id', Auth::id())
-            ->when($this->filterMapel, fn ($q) => $q->where('mata_pelajaran_id', $this->filterMapel))
-            ->when($this->filterTanggal, fn ($q) => $q->whereDate('tanggal', $this->filterTanggal))
-            ->when($this->filterPeriode === 'today', fn ($q) => $q->whereDate('tanggal', Carbon::today()))
-            ->when($this->filterPeriode === 'week', fn ($q) => $q->whereBetween('tanggal', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]))
-            ->when($this->filterPeriode === 'month', fn ($q) => $q->whereMonth('tanggal', Carbon::now()->month)->whereYear('tanggal', Carbon::now()->year))
-            ->when($this->search, fn ($q) => $q->where('topik', 'like', "%{$this->search}%"))
-            ->with(['mataPelajaran', 'kelas', 'detailAktivitas'])
+            ->when($this->filterMapel, fn($q) => $q->where('mata_pelajaran_id', $this->filterMapel))
+            ->when($this->filterTanggal, fn($q) => $q->whereDate('tanggal', $this->filterTanggal))
+            ->when($this->filterPeriode === 'today', fn($q) => $q->whereDate('tanggal', Carbon::today()))
+            ->when($this->filterPeriode === 'week', fn($q) => $q->whereBetween('tanggal', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]))
+            ->when($this->filterPeriode === 'month', fn($q) => $q->whereMonth('tanggal', Carbon::now()->month)->whereYear('tanggal', Carbon::now()->year))
+            ->when($this->search, fn($q) => $q->where('topik', 'like', "%{$this->search}%"))
+            ->with(['mataPelajaran', 'kelas', 'detailAktivitas', 'sesiAbsensi'])
             ->latest('tanggal')
             ->latest('created_at')
             ->paginate($this->perPage);
@@ -195,7 +195,7 @@ final class ListAktivitas extends Component
     #[Computed]
     public function aktivitasGrouped()
     {
-        return $this->aktivitas->getCollection()->groupBy(fn ($item) => $item->tanggal->format('Y-m-d'));
+        return $this->aktivitas->getCollection()->groupBy(fn($item) => $item->tanggal->format('Y-m-d'));
     }
 
     /**
@@ -225,7 +225,7 @@ final class ListAktivitas extends Component
         if ($aktivitas) {
             try {
                 $aktivitas->delete();
-                Cache::forget('teacher_dashboard_stats_'.Auth::id());
+                Cache::forget('teacher_dashboard_stats_' . Auth::id());
                 session()->flash('success', 'Aktivitas berhasil dihapus.');
             } catch (Exception) {
                 session()->flash('error', 'Gagal menghapus aktivitas. Silakan coba lagi.');

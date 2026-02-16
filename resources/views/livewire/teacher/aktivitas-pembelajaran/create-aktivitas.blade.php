@@ -187,7 +187,7 @@
             <button wire:click="nextStep"
                     wire:loading.attr="disabled"
                     wire:loading.class="opacity-50 cursor-not-allowed"
-                    class="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     {{ !$mata_pelajaran_id ? 'disabled' : '' }}>
                 <span wire:loading.remove wire:target="nextStep">Lanjut ke Absensi</span>
                 <span wire:loading wire:target="nextStep">Memproses...</span>
@@ -223,11 +223,78 @@
                 </div>
             </div>
 
+            {{-- QR Self-Attendance Toggle --}}
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="p-3 space-y-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start gap-2 flex-1">
+                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <flux:icon name="qr-code" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <label for="toggle-absensi-mandiri" class="text-sm font-medium text-slate-900 dark:text-white cursor-pointer">
+                                    Absensi Mandiri QR
+                                </label>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                    Siswa scan QR untuk absensi otomatis
+                                </p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                            <input type="checkbox"
+                                   wire:model.live="absensiMandiri"
+                                   id="toggle-absensi-mandiri"
+                                   class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+
+                    @if($absensiMandiri)
+                        <div x-data x-transition class="border-t border-slate-100 dark:border-slate-700 pt-3">
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+                                Durasi Sesi QR
+                            </label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button"
+                                        wire:click="$set('durasiAbsensiMenit', 5)"
+                                        class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $durasiAbsensiMenit === 5 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer' }}">
+                                    5 menit
+                                </button>
+                                <button type="button"
+                                        wire:click="$set('durasiAbsensiMenit', 10)"
+                                        class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $durasiAbsensiMenit === 10 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer' }}">
+                                    10 menit
+                                </button>
+                                <button type="button"
+                                        wire:click="$set('durasiAbsensiMenit', 15)"
+                                        class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $durasiAbsensiMenit === 15 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer' }}">
+                                    15 menit
+                                </button>
+                            </div>
+                            <p class="text-xs text-blue-600 dark:text-blue-400 mt-2 flex items-start gap-1">
+                                <flux:icon name="information-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                <span>
+                                    @if($absensiMandiri)
+                                        Absensi manual di bawah bersifat opsional. Siswa yang tidak scan akan tercatat Alpa.
+                                    @endif
+                                </span>
+                            </p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             {{-- Section header --}}
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Absensi & Penilaian</h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Catat kehadiran dan nilai siswa</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        @if($absensiMandiri)
+                            Opsional - Siswa bisa scan QR untuk absensi
+                        @else
+                            Catat kehadiran dan nilai siswa
+                        @endif
+                    </p>
                 </div>
             </div>
 
@@ -241,7 +308,7 @@
                     <button
                         type="button"
                         wire:click="setAllAttendance('Hadir')"
-                        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-colors"
+                        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-colors cursor-pointer"
                     >
                         <flux:icon name="check" class="w-3 h-3" />
                         <span>Semua Hadir</span>
@@ -318,7 +385,7 @@
                                     <button
                                         type="button"
                                         wire:click="$set('detailAktivitas.{{ $siswa->id }}.kehadiran', '{{ $status }}')"
-                                        class="w-8 h-8 rounded-md text-xs font-bold transition-all {{ $isActive ? $btnColor : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600' }}"
+                                        class="w-8 h-8 rounded-md text-xs font-bold transition-all {{ $isActive ? $btnColor : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600 cursor-pointer' }}"
                                         title="{{ $status }}"
                                     >
                                         {{ substr($status, 0, 1) }}
@@ -395,14 +462,14 @@
                 <button wire:click="previousStep"
                         wire:loading.attr="disabled"
                         wire:loading.class="opacity-50 cursor-not-allowed"
-                        class="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-xl transition-colors">
+                        class="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                     <flux:icon name="arrow-left" class="w-4 h-4" />
                     <span>Kembali</span>
                 </button>
                 <button wire:click="save"
                         wire:loading.attr="disabled"
                         wire:loading.class="opacity-50 cursor-not-allowed"
-                        class="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         {{ $this->siswaList->isEmpty() ? 'disabled' : '' }}>
                     <flux:icon wire:loading.remove wire:target="save" name="check" class="w-4 h-4" />
                     <flux:icon wire:loading wire:target="save" name="arrow-path" class="w-4 h-4 animate-spin" />

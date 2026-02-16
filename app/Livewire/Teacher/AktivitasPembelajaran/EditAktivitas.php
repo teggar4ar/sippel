@@ -8,6 +8,7 @@ use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
+use App\Services\QrAttendanceService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -41,7 +42,7 @@ final class EditAktivitas extends Component
     {
         $this->aktivitas = AktivitasPembelajaran::query()
             ->where('guru_id', Auth::id())
-            ->with(['mataPelajaran.kelas', 'detailAktivitas.siswa.user'])
+            ->with(['mataPelajaran.kelas', 'detailAktivitas.siswa.user', 'sesiAbsensi'])
             ->findOrFail($id);
 
         // Load activity data
@@ -162,11 +163,62 @@ final class EditAktivitas extends Component
             return;
         }
 
-        Cache::forget('teacher_dashboard_stats_'.Auth::id());
+        Cache::forget('teacher_dashboard_stats_' . Auth::id());
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil diperbarui!');
 
         $this->redirect(route('teacher.aktivitas.list'), navigate: true);
+    }
+
+    public function closeSession(): void
+    {
+        $activeSesi = $this->aktivitas->activeSesi();
+
+        if (! $activeSesi) {
+            session()->flash('error', 'Tidak ada sesi aktif untuk ditutup.');
+
+            return;
+        }
+
+        try {
+            $service = app(QrAttendanceService::class);
+            $service->closeSession($activeSesi);
+
+            // Refresh the component to update UI
+            $this->aktivitas->refresh();
+            $this->aktivitas->load('sesiAbsensi');
+
+            session()->flash('success', 'Sesi absensi QR berhasil ditutup!');
+        } catch (Exception $e) {
+            session()->flash('error', 'Gagal menutup sesi: ' . $e->getMessage());
+        }
+    }
+
+    public function openNewSession(int $durasiMenit = 5): void
+    {
+        // Close existing active session if any
+        $activeSesi = $this->aktivitas->activeSesi();
+        if ($activeSesi) {
+            try {
+                $service = app(QrAttendanceService::class);
+                $service->closeSession($activeSesi);
+            } catch (Exception) {
+                // Silent fail, will try creating new session anyway
+            }
+        }
+
+        try {
+            $service = app(QrAttendanceService::class);
+            $service->createSession($this->aktivitas, $durasiMenit);
+
+            // Refresh the component to update UI
+            $this->aktivitas->refresh();
+            $this->aktivitas->load('sesiAbsensi');
+
+            session()->flash('success', "Sesi absensi QR baru dibuka untuk {$durasiMenit} menit!");
+        } catch (Exception $e) {
+            session()->flash('error', 'Gagal membuka sesi: ' . $e->getMessage());
+        }
     }
 
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View

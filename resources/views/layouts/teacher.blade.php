@@ -20,6 +20,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @livewireStyles
+    @fluxStyles
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-950 antialiased overflow-x-hidden"
       data-inactivity-timer
@@ -100,7 +101,7 @@
                         </div>
                         <span class="text-base font-bold text-white">SIPPEL</span>
                     </div>
-                    <button @click="open = false" class="p-1.5 text-slate-300 hover:text-white rounded-lg">
+                    <button @click="open = false" class="p-1.5 text-slate-300 hover:text-white rounded-lg cursor-pointer">
                         <flux:icon name="x-mark" class="w-5 h-5" />
                     </button>
                 </div>
@@ -132,7 +133,7 @@
                         </div>
                     </div>
                     <button onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                            class="flex items-center gap-2 w-full mt-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700/80 rounded-lg">
+                            class="flex items-center gap-2 w-full mt-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700/80 rounded-lg transition-colors cursor-pointer">
                         <flux:icon name="arrow-right-start-on-rectangle" variant="outline" class="w-4 h-4" />
                         Keluar
                     </button>
@@ -142,7 +143,7 @@
             {{-- Mobile header - Compact --}}
             <header class="fixed top-0 left-0 right-0 z-30 flex items-center justify-between h-14 px-3 bg-slate-800 dark:bg-slate-900/95 lg:hidden safe-area-inset">
                 <div class="flex items-center gap-2">
-                    <button @click="open = true" class="p-2 -ml-1 text-slate-300 hover:text-white rounded-lg">
+                    <button @click="open = true" class="p-2 -ml-1 text-slate-300 hover:text-white rounded-lg cursor-pointer">
                         <flux:icon name="bars-3" class="w-6 h-6" />
                     </button>
                     <div class="w-7 h-7 bg-blue-500 rounded-md flex items-center justify-center">
@@ -189,6 +190,7 @@
     </form>
 
     @livewireScripts
+    @fluxScripts
 
     {{-- PWA Service Worker Registration --}}
     <script>

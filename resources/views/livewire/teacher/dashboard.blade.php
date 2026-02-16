@@ -52,12 +52,12 @@
     {{-- Quick Actions - Mobile compact buttons --}}
     <div class="flex gap-2 lg:hidden">
         <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
-           class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-lg">
+           class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-lg transition-colors hover:bg-slate-200 dark:hover:bg-slate-800">
             <flux:icon name="list-bullet" class="w-4 h-4" />
             Aktivitas
         </a>
         <a href="{{ route('teacher.laporan') }}" wire:navigate
-           class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-lg">
+           class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-lg transition-colors hover:bg-slate-200 dark:hover:bg-slate-800">
             <flux:icon name="chart-bar" class="w-4 h-4" />
             Laporan
         </a>
@@ -71,7 +71,7 @@
         </div>
         <div class="divide-y divide-slate-100 dark:divide-slate-700/80">
             @foreach($this->mySubjects->take(5) as $mapel)
-                <div class="flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
+                <div class="flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors cursor-pointer">
                     <div class="flex items-center gap-3 min-w-0">
                         <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                             <span class="text-sm font-bold text-white">{{ $mapel->kelas->tingkat_kelas }}{{ $mapel->kelas->grup_kelas }}</span>

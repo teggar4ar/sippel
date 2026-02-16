@@ -22,10 +22,14 @@ final class AktivitasPembelajaran extends Model
         'kelas_id',
         'mata_pelajaran_id',
         'guru_id',
+        'absensi_mandiri',
+        'durasi_absensi_menit',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
+        'absensi_mandiri' => 'boolean',
+        'durasi_absensi_menit' => 'integer',
     ];
 
     /**
@@ -58,5 +62,34 @@ final class AktivitasPembelajaran extends Model
     public function detailAktivitas(): HasMany
     {
         return $this->hasMany(DetailAktivitas::class);
+    }
+
+    /**
+     * Get all QR attendance sessions for this activity
+     */
+    public function sesiAbsensi(): HasMany
+    {
+        return $this->hasMany(SesiAbsensi::class);
+    }
+
+    /**
+     * Get the active (open and not expired) QR session for this activity
+     */
+    public function activeSesi(): ?SesiAbsensi
+    {
+        return $this->sesiAbsensi()
+            ->where('status', 'open')
+            ->latest('dibuka_pada')
+            ->first();
+    }
+
+    /**
+     * Check if this activity has an active QR attendance session
+     */
+    public function hasActiveSesi(): bool
+    {
+        $sesi = $this->activeSesi();
+
+        return $sesi && $sesi->isActive();
     }
 }
