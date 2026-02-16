@@ -177,7 +177,7 @@ final class KenaikanKelasPage extends Page implements HasForms
                             return [Section::make('Daftar Kelas Baru')->schema($fields)->columns(2)];
                         }),
                     Wizard\Step::make('Siswa')
-                        ->schema(function () {
+                        ->schema(function (): array {
                             $fields = [];
 
                             // Group students by class

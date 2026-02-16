@@ -17,6 +17,7 @@
     <link rel="manifest" href="/manifest-student.json">
     <link rel="apple-touch-icon" href="/icons/student-icon-192.svg">
 
+    @fluxAppearance
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @livewireStyles
@@ -206,6 +207,7 @@
     </form>
 
     @livewireScripts
+    @fluxScripts
 
     {{-- PWA Service Worker Registration --}}
     <script>

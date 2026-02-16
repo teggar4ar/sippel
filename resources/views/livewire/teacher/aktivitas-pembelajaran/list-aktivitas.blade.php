@@ -205,9 +205,26 @@
                                    class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded transition-colors">
                                     <flux:icon name="pencil" class="w-4 h-4" />
                                 </a>
-                                <button wire:click="confirmDelete({{ $aktivitas->id }}, '{{ addslashes($aktivitas->topik) }}')"
-                                        class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors cursor-pointer">
-                                    <flux:icon name="trash" class="w-4 h-4" />
+                                <button
+                                    wire:click="confirmDelete({{ $aktivitas->id }}, '{{ addslashes($aktivitas->topik) }}')"
+                                    wire:loading.attr="disabled"
+                                    class="relative p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors disabled:opacity-75 disabled:cursor-wait">
+
+                                    {{-- Trash icon - hide when this specific button is loading --}}
+                                    <span wire:loading.remove
+                                          wire:target="confirmDelete({{ $aktivitas->id }}, '{{ addslashes($aktivitas->topik) }}')">
+                                        <flux:icon name="trash" class="w-4 h-4" />
+                                    </span>
+
+                                    {{-- Loading spinner - show only for this specific button --}}
+                                    <svg wire:loading
+                                         wire:target="confirmDelete({{ $aktivitas->id }}, '{{ addslashes($aktivitas->topik) }}')"
+                                         class="w-4 h-4 animate-spin text-red-600"
+                                         fill="none"
+                                         viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
                                 </button>
                             </div>
                         </div>
@@ -293,40 +310,100 @@
         </div>
     @endif
 
-    {{-- Delete Confirmation Modal --}}
-    <flux:modal wire:model="showDeleteModal" class="max-w-sm">
-        <div class="p-5">
-            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
-                <flux:icon name="exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+    {{-- Delete Confirmation Modal - Custom Implementation --}}
+    @if($showDeleteModal)
+        <div
+            x-data="{ show: @entangle('showDeleteModal') }"
+            x-show="show"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style="display: none;">
+
+            {{-- Backdrop --}}
+            <div
+                @click="$wire.closeDeleteModal()"
+                class="absolute inset-0 bg-slate-900/60 dark:bg-slate-950/75 backdrop-blur-sm">
             </div>
 
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white text-center">Hapus Aktivitas?</h3>
+            {{-- Modal Content --}}
+            <div
+                x-show="show"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl p-4 sm:p-5 space-y-4"
+                @click.stop>
 
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 text-center">
-                Yakin hapus <strong class="text-slate-700 dark:text-slate-200">"{{ $deleteTopik }}"</strong>?
-                Data kehadiran & nilai akan ikut terhapus.
-            </p>
-
-            <div class="flex gap-2 mt-5">
-                <flux:button
+                {{-- Close Button --}}
+                <button
                     wire:click="closeDeleteModal"
-                    variant="ghost"
-                    class="flex-1">
-                    Batal
-                </flux:button>
-                <flux:button
-                    wire:click="deleteAktivitas"
-                    wire:loading.attr="disabled"
-                    variant="danger"
-                    class="flex-1">
-                    <flux:icon wire:loading.remove wire:target="deleteAktivitas" name="trash" class="size-4" />
-                    <flux:icon wire:loading wire:target="deleteAktivitas" name="arrow-path" class="size-4 animate-spin" />
-                    <span wire:loading.remove wire:target="deleteAktivitas">Hapus</span>
-                    <span wire:loading wire:target="deleteAktivitas">Menghapus...</span>
-                </flux:button>
+                    class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+
+                {{-- Icon --}}
+                <div class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 mx-auto bg-red-50 dark:bg-red-950/50 rounded-full ring-4 ring-red-100 dark:ring-red-900/30">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+
+                {{-- Content --}}
+                <div class="text-center space-y-2 sm:space-y-3">
+                    <h3 class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white leading-tight">
+                        Hapus Aktivitas?
+                    </h3>
+
+                    <div class="space-y-1.5">
+                        <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-200 font-medium line-clamp-2 px-2">
+                            "{{ $deleteTopik }}"
+                        </p>
+                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
+                            Data kehadiran & nilai akan terhapus permanen
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Action Buttons --}}
+                <div class="flex gap-2 pt-1">
+                    <button
+                        wire:click="closeDeleteModal"
+                        type="button"
+                        class="flex-1 px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg transition-colors">
+                        Batal
+                    </button>
+                    <button
+                        wire:click="deleteAktivitas"
+                        wire:loading.attr="disabled"
+                        type="button"
+                        class="flex-1 px-4 py-2 text-xs sm:text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-lg border-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <span class="inline-flex items-center justify-center gap-1.5">
+                            <svg wire:loading.remove wire:target="deleteAktivitas" class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            <svg wire:loading wire:target="deleteAktivitas" class="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span wire:loading.remove wire:target="deleteAktivitas">Hapus</span>
+                            <span wire:loading wire:target="deleteAktivitas" class="hidden sm:inline">Menghapus...</span>
+                            <span wire:loading wire:target="deleteAktivitas" class="inline sm:hidden">...</span>
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
-    </flux:modal>
+    @endif
 </div>
 
 
