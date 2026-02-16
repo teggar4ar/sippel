@@ -278,36 +278,51 @@
         </div>
     @endif
 
-    {{-- Delete Confirmation Modal --}}
-    <flux:modal wire:model="showDeleteModal" class="max-w-sm">
-        <div class="p-5">
-            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
-                <flux:icon name="exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+    {{-- Delete Confirmation Modal - Compact Mobile Design --}}
+    <flux:modal wire:model="showDeleteModal" class="max-w-sm mx-3 sm:mx-auto">
+        <div class="p-4 sm:p-5">
+            {{-- Compact Icon --}}
+            <div class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full mb-3">
+                <flux:icon name="exclamation-triangle" class="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
             </div>
 
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white text-center">Hapus Aktivitas?</h3>
+            {{-- Compact Heading --}}
+            <h3 class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white text-center leading-tight">
+                Hapus Aktivitas?
+            </h3>
 
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 text-center">
-                Yakin hapus <strong class="text-slate-700 dark:text-slate-200">"{{ $deleteTopik }}"</strong>?
-                Data kehadiran & nilai akan ikut terhapus.
-            </p>
+            {{-- Compact Description with Line Clamp --}}
+            <div class="mt-2 sm:mt-3 text-center">
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium line-clamp-2 px-2">
+                    "{{ $deleteTopik }}"
+                </p>
+                <p class="mt-1.5 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
+                    Data kehadiran & nilai akan terhapus permanen
+                </p>
+            </div>
 
-            <div class="flex gap-2 mt-5">
+            {{-- Action Buttons - Compact --}}
+            <div class="flex gap-2 mt-4 sm:mt-5">
                 <flux:button
                     wire:click="closeDeleteModal"
                     variant="ghost"
-                    class="flex-1">
+                    size="sm"
+                    class="flex-1 text-xs sm:text-sm py-2 sm:py-2.5">
                     Batal
                 </flux:button>
                 <flux:button
                     wire:click="deleteAktivitas"
                     wire:loading.attr="disabled"
                     variant="danger"
-                    class="flex-1">
-                    <flux:icon wire:loading.remove wire:target="deleteAktivitas" name="trash" class="size-4" />
-                    <flux:icon wire:loading wire:target="deleteAktivitas" name="arrow-path" class="size-4 animate-spin" />
-                    <span wire:loading.remove wire:target="deleteAktivitas">Hapus</span>
-                    <span wire:loading wire:target="deleteAktivitas">Menghapus...</span>
+                    size="sm"
+                    class="flex-1 text-xs sm:text-sm py-2 sm:py-2.5">
+                    <span class="flex items-center justify-center gap-1.5">
+                        <flux:icon wire:loading.remove wire:target="deleteAktivitas" name="trash" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <flux:icon wire:loading wire:target="deleteAktivitas" name="arrow-path" class="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+                        <span wire:loading.remove wire:target="deleteAktivitas">Hapus</span>
+                        <span wire:loading wire:target="deleteAktivitas" class="hidden sm:inline">Menghapus...</span>
+                        <span wire:loading wire:target="deleteAktivitas" class="sm:hidden">...</span>
+                    </span>
                 </flux:button>
             </div>
         </div>
