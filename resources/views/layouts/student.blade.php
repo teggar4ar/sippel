@@ -40,6 +40,11 @@
                 </a>
             </div>
 
+            {{-- Tahun Ajaran Selector - Desktop --}}
+            <div class="px-3 pt-3 pb-2 border-b border-teal-700 dark:border-teal-800/80">
+                @livewire('components.tahun-ajaran-selector', ['variant' => 'teal'])
+            </div>
+
             {{-- Navigation --}}
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 <a href="{{ route('student.dashboard') }}" wire:navigate
@@ -115,6 +120,12 @@
                         <flux:icon name="x-mark" class="w-5 h-5" />
                     </button>
                 </div>
+
+                {{-- Tahun Ajaran Selector - Mobile Sidebar --}}
+                <div class="px-3 py-2 border-b border-teal-700 dark:border-teal-800/80">
+                    @livewire('components.tahun-ajaran-selector', ['variant' => 'teal'])
+                </div>
+
                 <nav class="px-3 py-4 space-y-1">
                     <a href="{{ route('student.dashboard') }}" wire:navigate @click="open = false"
                        class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('student.dashboard') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80' }}">

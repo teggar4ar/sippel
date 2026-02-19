@@ -40,6 +40,39 @@ final class TahunAjaran extends Model
     }
 
     /**
+     * Get tahun ajaran context untuk user saat ini
+     * Priority:
+     * 1. Session context (jika user sudah memilih)
+     * 2. Fallback ke tahun ajaran aktif (status = true)
+     */
+    public static function getContext(): ?self
+    {
+        $contextId = session('tahun_ajaran_context');
+
+        if ($contextId) {
+            $tahunAjaran = self::find($contextId);
+            if ($tahunAjaran) {
+                return $tahunAjaran;
+            }
+        }
+
+        // Fallback ke tahun ajaran aktif
+        return self::getActive();
+    }
+
+    /**
+     * Set tahun ajaran context untuk user saat ini
+     */
+    public static function setContext(?int $tahunAjaranId): void
+    {
+        if ($tahunAjaranId === null) {
+            session()->forget('tahun_ajaran_context');
+        } else {
+            session(['tahun_ajaran_context' => $tahunAjaranId]);
+        }
+    }
+
+    /**
      * Get all classes for this academic year
      */
     public function kelas(): HasMany
@@ -82,7 +115,7 @@ final class TahunAjaran extends Model
             $startYear = (int) $parts[0] + 1;
             $endYear = (int) $parts[1] + 1;
 
-            return $startYear.'/'.$endYear;
+            return $startYear . '/' . $endYear;
         }
 
         // Fallback: just return current name

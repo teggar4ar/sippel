@@ -21,15 +21,15 @@
         <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-teal-200 dark:border-slate-700/90 overflow-hidden">
             <div class="flex">
                 <div class="flex-1 py-3 text-center border-r border-teal-100 dark:border-slate-700/90">
-                    <div class="text-lg font-bold text-teal-900 dark:text-white">{{ number_format($siswa->getAttendancePercentage(), 0) }}%</div>
+                    <div class="text-lg font-bold text-teal-900 dark:text-white">{{ number_format($attendancePercentage, 0) }}%</div>
                     <div class="text-[10px] text-teal-600 dark:text-teal-300">Kehadiran</div>
                 </div>
                 <div class="flex-1 py-3 text-center border-r border-teal-100 dark:border-slate-700/90">
-                    <div class="text-lg font-bold text-teal-900 dark:text-white">{{ number_format($siswa->getAverageGrade() ?? 0, 1) }}</div>
+                    <div class="text-lg font-bold text-teal-900 dark:text-white">{{ number_format($averageGrade, 1) }}</div>
                     <div class="text-[10px] text-teal-600 dark:text-teal-300">Nilai</div>
                 </div>
                 <div class="flex-1 py-3 text-center border-r border-teal-100 dark:border-slate-700/90">
-                    <div class="text-lg font-bold text-teal-900 dark:text-white">{{ number_format($siswa->getAverageParticipation() ?? 0, 1) }}</div>
+                    <div class="text-lg font-bold text-teal-900 dark:text-white">{{ number_format($averageParticipation, 1) }}</div>
                     <div class="text-[10px] text-teal-600 dark:text-teal-300">Partisipasi</div>
                 </div>
                 <div class="flex-1 py-3 text-center">

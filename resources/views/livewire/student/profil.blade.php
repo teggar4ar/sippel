@@ -73,19 +73,19 @@
             </div>
             <div class="flex">
                 <div class="flex-1 py-3 text-center border-r border-teal-100 dark:border-teal-800">
-                    <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($siswa->getAttendancePercentage(), 0) }}%</div>
+                    <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($attendancePercentage, 0) }}%</div>
                     <div class="text-[10px] text-teal-600 dark:text-teal-400">Kehadiran</div>
                 </div>
                 <div class="flex-1 py-3 text-center border-r border-teal-100 dark:border-teal-800">
-                    <div class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ number_format($siswa->getAverageGrade(), 1) }}</div>
+                    <div class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ number_format($averageGrade, 1) }}</div>
                     <div class="text-[10px] text-teal-600 dark:text-teal-400">Nilai</div>
                 </div>
                 <div class="flex-1 py-3 text-center border-r border-teal-100 dark:border-teal-800">
-                    <div class="text-lg font-bold text-amber-600 dark:text-amber-400">{{ number_format($siswa->getAverageParticipation() ?? 0, 1) }}</div>
+                    <div class="text-lg font-bold text-amber-600 dark:text-amber-400">{{ number_format($averageParticipation, 1) }}</div>
                     <div class="text-[10px] text-teal-600 dark:text-teal-400">Partisipasi</div>
                 </div>
                 <div class="flex-1 py-3 text-center">
-                    <div class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ $siswa->detailAktivitas()->count() }}</div>
+                    <div class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ $totalAktivitas }}</div>
                     <div class="text-[10px] text-teal-600 dark:text-teal-400">Aktivitas</div>
                 </div>
             </div>
