@@ -50,7 +50,7 @@ final class Dashboard extends Component
         }
 
         $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
-        $cacheKey = 'student_performance_' . $siswa->id . '_' . ($contextTahunAjaran?->id ?? 'none');
+        $cacheKey = 'student_performance_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none');
 
         return Cache::remember($cacheKey, 300, function () use ($siswa, $contextTahunAjaran) {
             // Get all subjects for student's class
@@ -61,7 +61,7 @@ final class Dashboard extends Component
                 $avgNilai = DetailAktivitas::where('siswa_id', $siswa->id)
                     ->whereHas('aktivitasPembelajaran', function ($q) use ($mapel, $contextTahunAjaran) {
                         $q->where('mata_pelajaran_id', $mapel->id)
-                            ->when($contextTahunAjaran, fn($query) => $query->whereHas('kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                            ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
                     })
                     ->whereNotNull('nilai')
                     ->avg('nilai');
@@ -70,7 +70,7 @@ final class Dashboard extends Component
                     'nama_mapel' => $mapel->nama_mapel,
                     'avg_nilai' => $avgNilai ?? 0,
                 ];
-            })->filter(fn(array $data): bool => $data['avg_nilai'] > 0)
+            })->filter(fn (array $data): bool => $data['avg_nilai'] > 0)
                 ->sortByDesc('avg_nilai')
                 ->take(5)
                 ->values();
@@ -122,7 +122,7 @@ final class Dashboard extends Component
         }
 
         $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
-        $cacheKey = 'student_streak_' . $siswa->id . '_' . ($contextTahunAjaran?->id ?? 'none');
+        $cacheKey = 'student_streak_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none');
 
         return Cache::remember($cacheKey, 300, function () use ($siswa, $contextTahunAjaran): int {
             // Get all activities for this student ordered by date desc using DB query
@@ -191,7 +191,7 @@ final class Dashboard extends Component
             $siswa->load('detailAktivitas.aktivitasPembelajaran.mataPelajaran', 'kelas');
 
             $totalAktivitas = $siswa->detailAktivitas()
-                ->when($contextTahunAjaran, fn($q) => $q->whereHas('aktivitasPembelajaran.kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
+                ->when($contextTahunAjaran, fn ($q) => $q->whereHas('aktivitasPembelajaran.kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
                 ->count();
 
             // Get recent activities (last 5)
@@ -200,7 +200,7 @@ final class Dashboard extends Component
                 ->with(['aktivitasPembelajaran.mataPelajaran'])
                 ->whereHas('aktivitasPembelajaran', function ($q) use ($contextTahunAjaran) {
                     $q->whereNull('deleted_at')
-                        ->when($contextTahunAjaran, fn($query) => $query->whereHas('kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
                 })
                 ->orderByDesc(
                     DetailAktivitas::query()

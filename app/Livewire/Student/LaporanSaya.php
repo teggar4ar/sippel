@@ -83,7 +83,7 @@ final class LaporanSaya extends Component
 
         return Laporan::where('siswa_id', $siswa->id)
             ->where('tahun_ajaran_id', $this->tahunAjaranId)
-            ->when($this->mataPelajaranId, fn($q) => $q->where('mata_pelajaran_id', $this->mataPelajaranId))
+            ->when($this->mataPelajaranId, fn ($q) => $q->where('mata_pelajaran_id', $this->mataPelajaranId))
             ->with(['mataPelajaran', 'tahunAjaran'])
             ->orderBy('mata_pelajaran_id')
             ->get();
@@ -147,7 +147,7 @@ final class LaporanSaya extends Component
 
         // Sanitize filename - replace / and \ with -
         $tahunAjaranSafe = str_replace(['/', '\\'], '-', $tahunAjaran?->nama_tahun ?? 'unknown');
-        $filename = 'laporan-' . $siswa->nis . '-' . $tahunAjaranSafe . '.pdf';
+        $filename = 'laporan-'.$siswa->nis.'-'.$tahunAjaranSafe.'.pdf';
 
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();

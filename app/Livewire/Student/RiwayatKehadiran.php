@@ -80,11 +80,11 @@ final class RiwayatKehadiran extends Component
             ->where('siswa_id', $siswa->id)
             ->whereHas('aktivitasPembelajaran', function ($q) use ($contextTahunAjaran) {
                 $q->whereNull('deleted_at')
-                    ->when($contextTahunAjaran, fn($query) => $query->whereHas('kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                    ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
             });
 
         if ($this->filterMapel !== '' && $this->filterMapel !== '0') {
-            $query->whereHas('aktivitasPembelajaran', fn($q) => $q->where('mata_pelajaran_id', $this->filterMapel));
+            $query->whereHas('aktivitasPembelajaran', fn ($q) => $q->where('mata_pelajaran_id', $this->filterMapel));
         }
 
         $total = (clone $query)->count();
@@ -122,12 +122,12 @@ final class RiwayatKehadiran extends Component
                 ->with(['aktivitasPembelajaran.mataPelajaran', 'aktivitasPembelajaran.kelas'])
                 ->whereHas('aktivitasPembelajaran', function ($q) use ($contextTahunAjaran) {
                     $q->whereNull('deleted_at')
-                        ->when($contextTahunAjaran, fn($query) => $query->whereHas('kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
                 })
-                ->when($this->filterMapel, fn($q) => $q->whereHas('aktivitasPembelajaran', fn($sq) => $sq->where('mata_pelajaran_id', $this->filterMapel)))
-                ->when($this->filterStatus, fn($q) => $q->where('kehadiran', $this->filterStatus))
-                ->when($this->filterDariTanggal, fn($q) => $q->whereHas('aktivitasPembelajaran', fn($sq) => $sq->whereDate('tanggal', '>=', $this->filterDariTanggal)))
-                ->when($this->filterSampaiTanggal, fn($q) => $q->whereHas('aktivitasPembelajaran', fn($sq) => $sq->whereDate('tanggal', '<=', $this->filterSampaiTanggal)))
+                ->when($this->filterMapel, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($sq) => $sq->where('mata_pelajaran_id', $this->filterMapel)))
+                ->when($this->filterStatus, fn ($q) => $q->where('kehadiran', $this->filterStatus))
+                ->when($this->filterDariTanggal, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($sq) => $sq->whereDate('tanggal', '>=', $this->filterDariTanggal)))
+                ->when($this->filterSampaiTanggal, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($sq) => $sq->whereDate('tanggal', '<=', $this->filterSampaiTanggal)))
                 ->orderByDesc(
                     DetailAktivitas::query()
                         ->select('tanggal')
@@ -141,7 +141,7 @@ final class RiwayatKehadiran extends Component
             $mataPelajaran = MataPelajaran::query()
                 ->whereHas('aktivitasPembelajaran.detailAktivitas', function ($q) use ($siswa, $contextTahunAjaran) {
                     $q->where('siswa_id', $siswa->id)
-                        ->when($contextTahunAjaran, fn($query) => $query->whereHas('aktivitasPembelajaran.kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('aktivitasPembelajaran.kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
                 })
                 ->orderBy('nama_mapel')
                 ->get();

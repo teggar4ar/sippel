@@ -115,7 +115,7 @@ final class TahunAjaran extends Model
             $startYear = (int) $parts[0] + 1;
             $endYear = (int) $parts[1] + 1;
 
-            return $startYear . '/' . $endYear;
+            return $startYear.'/'.$endYear;
         }
 
         // Fallback: just return current name

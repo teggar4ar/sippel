@@ -107,7 +107,7 @@ final class Laporan extends Component
         return Siswa::where('kelas_id', $this->kelasId)
             ->with('user')
             ->get()
-            ->sortBy(fn(Siswa $s): string => $s->user->name ?? '');
+            ->sortBy(fn (Siswa $s): string => $s->user->name ?? '');
     }
 
     /**
@@ -241,7 +241,7 @@ final class Laporan extends Component
 
         $laporanData = LaporanModel::where('tahun_ajaran_id', $this->tahunAjaranId)
             ->where('mata_pelajaran_id', $this->mataPelajaranId)
-            ->whereHas('siswa', fn($q) => $q->where('kelas_id', $this->kelasId))
+            ->whereHas('siswa', fn ($q) => $q->where('kelas_id', $this->kelasId))
             ->with(['siswa.user', 'mataPelajaran'])
             ->get();
 
@@ -250,7 +250,7 @@ final class Laporan extends Component
             'nilai' => $laporanData->sortByDesc('rata_nilai')->values(),
             'nilai_asc' => $laporanData->sortBy('rata_nilai')->values(),
             'kehadiran' => $laporanData->sortByDesc('rata_kehadiran')->values(),
-            'nama' => $laporanData->sortBy(fn(LaporanModel $l): string => $l->siswa->user->name ?? '')->values(),
+            'nama' => $laporanData->sortBy(fn (LaporanModel $l): string => $l->siswa->user->name ?? '')->values(),
             default => $laporanData->sortByDesc('rata_nilai')->values(),
         };
     }
@@ -406,7 +406,7 @@ final class Laporan extends Component
         $pdf->setPaper('A4', 'portrait');
 
         $sanitizedTahun = str_replace(['/', '\\'], '-', $tahunAjaran->nama_tahun);
-        $filename = 'laporan-siswa-' . $siswa->nis . '-' . $sanitizedTahun . '.pdf';
+        $filename = 'laporan-siswa-'.$siswa->nis.'-'.$sanitizedTahun.'.pdf';
 
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();
@@ -459,7 +459,7 @@ final class Laporan extends Component
         $pdf->setPaper('A4', 'portrait');
 
         $sanitizedTahun = str_replace(['/', '\\'], '-', $tahunAjaran->nama_tahun);
-        $filename = 'laporan-kelas-' . $kelas->tingkat_kelas . $kelas->grup_kelas . '-' . $sanitizedTahun . '.pdf';
+        $filename = 'laporan-kelas-'.$kelas->tingkat_kelas.$kelas->grup_kelas.'-'.$sanitizedTahun.'.pdf';
 
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();
