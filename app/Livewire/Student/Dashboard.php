@@ -45,18 +45,37 @@ final class Dashboard extends Component
     public function performancePerMapel(): Collection
     {
         $siswa = $this->siswa();
-        if (! $siswa instanceof Siswa || ! $siswa->kelas_id) {
+        if (! $siswa instanceof Siswa) {
             return collect();
         }
 
-        $cacheKey = 'student_performance_'.$siswa->id;
+        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
+        $cacheKey = 'student_performance_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none');
 
-        return Cache::remember($cacheKey, 300, function () use ($siswa) {
-            // Get all subjects for student's class
-            $subjects = MataPelajaran::where('kelas_id', $siswa->kelas_id)->get();
+        return Cache::remember($cacheKey, 300, function () use ($siswa, $contextTahunAjaran) {
+            // Get student's historical class for the context year
+            $kelasId = $contextTahunAjaran instanceof \App\Models\TahunAjaran
+                ? $siswa->getKelasForTahunAjaran($contextTahunAjaran->id)?->id
+                : $siswa->kelas_id;
 
-            return $subjects->map(function (MataPelajaran $mapel) use ($siswa): array {
-                $avgNilai = $siswa->getAverageGrade($mapel->id);
+            if (! $kelasId) {
+                return collect();
+            }
+
+            // Get all subjects for student's class in the context year
+            $subjects = MataPelajaran::where('kelas_id', $kelasId)->get();
+
+            return $subjects->map(function (MataPelajaran $mapel) use ($siswa, $contextTahunAjaran): array {
+                // Calculate average only from context year and non-deleted records
+                $avgNilai = DetailAktivitas::where('siswa_id', $siswa->id)
+                    ->whereNull('deleted_at')
+                    ->whereHas('aktivitasPembelajaran', function ($q) use ($mapel, $contextTahunAjaran): void {
+                        $q->where('mata_pelajaran_id', $mapel->id)
+                            ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
+                            ->whereNull('deleted_at');
+                    })
+                    ->whereNotNull('nilai')
+                    ->avg('nilai');
 
                 return [
                     'nama_mapel' => $mapel->nama_mapel,
@@ -77,8 +96,9 @@ final class Dashboard extends Component
             return ['text' => 'Selamat datang di SIPPEL! 👋', 'variant' => 'info'];
         }
 
-        $attendance = $siswa->getAttendancePercentage();
-        $grade = $siswa->getAverageGrade() ?? 0;
+        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
+        $attendance = $siswa->getAttendancePercentage(null, null, null, $contextTahunAjaran?->id);
+        $grade = $siswa->getAverageGrade(null, null, null, $contextTahunAjaran?->id) ?? 0;
 
         return match (true) {
             $attendance >= 90 && $grade >= 85 => [
@@ -112,17 +132,24 @@ final class Dashboard extends Component
             return 0;
         }
 
-        $cacheKey = 'student_streak_'.$siswa->id;
+        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
+        $cacheKey = 'student_streak_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none');
 
-        return Cache::remember($cacheKey, 300, function () use ($siswa): int {
+        return Cache::remember($cacheKey, 300, function () use ($siswa, $contextTahunAjaran): int {
             // Get all activities for this student ordered by date desc using DB query
-            /** @var Collection<int, object{kehadiran: string, tanggal: string}> $activities */
-            $activities = \Illuminate\Support\Facades\DB::table('detail_aktivitas')
+            $query = \Illuminate\Support\Facades\DB::table('detail_aktivitas')
                 ->where('detail_aktivitas.siswa_id', $siswa->id)
                 ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
                 ->whereNull('aktivitas_pembelajaran.deleted_at')
-                ->whereNull('detail_aktivitas.deleted_at')
-                ->orderByDesc('aktivitas_pembelajaran.tanggal')
+                ->whereNull('detail_aktivitas.deleted_at');
+
+            if ($contextTahunAjaran instanceof \App\Models\TahunAjaran) {
+                $query->join('kelas', 'aktivitas_pembelajaran.kelas_id', '=', 'kelas.id')
+                    ->where('kelas.tahun_ajaran_id', $contextTahunAjaran->id);
+            }
+
+            /** @var Collection<int, object{kehadiran: string, tanggal: string}> $activities */
+            $activities = $query->orderByDesc('aktivitas_pembelajaran.tanggal')
                 ->select('detail_aktivitas.kehadiran', 'aktivitas_pembelajaran.tanggal')
                 ->get();
 
@@ -162,21 +189,30 @@ final class Dashboard extends Component
     public function render(): View
     {
         $siswa = $this->siswa();
+        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
 
         $totalAktivitas = 0;
         $recentAktivitas = collect();
+        $attendancePercentage = 0;
+        $averageGrade = 0;
+        $averageParticipation = 0;
 
         if ($siswa instanceof Siswa) {
             // Eager load relationships for stats
             $siswa->load('detailAktivitas.aktivitasPembelajaran.mataPelajaran', 'kelas');
 
-            $totalAktivitas = $siswa->detailAktivitas()->count();
+            $totalAktivitas = $siswa->detailAktivitas()
+                ->when($contextTahunAjaran, fn ($q) => $q->whereHas('aktivitasPembelajaran.kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
+                ->count();
 
             // Get recent activities (last 5)
             $recentAktivitas = DetailAktivitas::query()
                 ->where('siswa_id', $siswa->id)
                 ->with(['aktivitasPembelajaran.mataPelajaran'])
-                ->whereHas('aktivitasPembelajaran', fn ($q) => $q->whereNull('deleted_at'))
+                ->whereHas('aktivitasPembelajaran', function ($q) use ($contextTahunAjaran): void {
+                    $q->whereNull('deleted_at')
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                })
                 ->orderByDesc(
                     DetailAktivitas::query()
                         ->select('tanggal')
@@ -186,12 +222,20 @@ final class Dashboard extends Component
                 )
                 ->limit(5)
                 ->get();
+
+            // Context-aware stats for view
+            $attendancePercentage = $siswa->getAttendancePercentage(null, null, null, $contextTahunAjaran?->id);
+            $averageGrade = $siswa->getAverageGrade(null, null, null, $contextTahunAjaran?->id) ?? 0;
+            $averageParticipation = $siswa->getAverageParticipation(null, null, null, $contextTahunAjaran?->id) ?? 0;
         }
 
         return view('livewire.student.dashboard', [
             'siswa' => $siswa,
             'totalAktivitas' => $totalAktivitas,
             'recentAktivitas' => $recentAktivitas,
+            'attendancePercentage' => $attendancePercentage,
+            'averageGrade' => $averageGrade,
+            'averageParticipation' => $averageParticipation,
         ]);
     }
 }

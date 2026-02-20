@@ -68,15 +68,24 @@ final class RiwayatNilai extends Component
             return collect();
         }
 
-        // Get subjects that have activities for this student
+        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
+
+        // Get subjects that have activities for this student (filtered by context year)
         $mataPelajaran = MataPelajaran::query()
-            ->whereHas('aktivitasPembelajaran.detailAktivitas', fn ($q) => $q->where('siswa_id', $siswa->id))
+            ->whereHas('aktivitasPembelajaran.detailAktivitas', function ($q) use ($siswa, $contextTahunAjaran): void {
+                $q->where('siswa_id', $siswa->id)
+                    ->when($contextTahunAjaran, fn ($query) => $query->whereHas('aktivitasPembelajaran.kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+            })
             ->get();
 
-        return $mataPelajaran->map(function (MataPelajaran $mapel) use ($siswa): array {
+        return $mataPelajaran->map(function (MataPelajaran $mapel) use ($siswa, $contextTahunAjaran): array {
             $nilai = DetailAktivitas::query()
                 ->where('siswa_id', $siswa->id)
-                ->whereHas('aktivitasPembelajaran', fn ($q) => $q->where('mata_pelajaran_id', $mapel->id)->whereNull('deleted_at'))
+                ->whereHas('aktivitasPembelajaran', function ($q) use ($mapel, $contextTahunAjaran): void {
+                    $q->where('mata_pelajaran_id', $mapel->id)
+                        ->whereNull('deleted_at')
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                })
                 ->whereNotNull('nilai')
                 ->pluck('nilai');
 
@@ -96,6 +105,7 @@ final class RiwayatNilai extends Component
         /** @var Siswa|null $siswa */
         $siswa = $user->siswa;
 
+        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
         $riwayat = collect();
         $mataPelajaran = collect();
 
@@ -103,7 +113,10 @@ final class RiwayatNilai extends Component
             $riwayat = DetailAktivitas::query()
                 ->where('siswa_id', $siswa->id)
                 ->with(['aktivitasPembelajaran.mataPelajaran', 'aktivitasPembelajaran.kelas'])
-                ->whereHas('aktivitasPembelajaran', fn ($q) => $q->whereNull('deleted_at'))
+                ->whereHas('aktivitasPembelajaran', function ($q) use ($contextTahunAjaran): void {
+                    $q->whereNull('deleted_at')
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                })
                 ->when($this->filterMapel, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($sq) => $sq->where('mata_pelajaran_id', $this->filterMapel)))
                 ->when($this->filterDariTanggal, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($sq) => $sq->whereDate('tanggal', '>=', $this->filterDariTanggal)))
                 ->when($this->filterSampaiTanggal, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($sq) => $sq->whereDate('tanggal', '<=', $this->filterSampaiTanggal)))
@@ -116,9 +129,12 @@ final class RiwayatNilai extends Component
                 )
                 ->paginate(10);
 
-            // Get subjects for filter dropdown
+            // Get subjects for filter dropdown (only from context year)
             $mataPelajaran = MataPelajaran::query()
-                ->whereHas('aktivitasPembelajaran.detailAktivitas', fn ($q) => $q->where('siswa_id', $siswa->id))
+                ->whereHas('aktivitasPembelajaran.detailAktivitas', function ($q) use ($siswa, $contextTahunAjaran): void {
+                    $q->where('siswa_id', $siswa->id)
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('aktivitasPembelajaran.kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                })
                 ->orderBy('nama_mapel')
                 ->get();
         }

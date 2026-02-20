@@ -50,12 +50,41 @@ final class CreateAktivitas extends Component
     {
         // Default to today's date
         $this->tanggal = now()->format('Y-m-d');
+
+        // Validation: Check if context year is active
+        $contextTahunAjaran = TahunAjaran::getContext();
+
+        if (! $contextTahunAjaran instanceof TahunAjaran) {
+            session()->flash('error', 'Tidak ada tahun ajaran yang dipilih. Silakan pilih tahun ajaran terlebih dahulu.');
+            $this->redirect(route('teacher.dashboard'), navigate: true);
+
+            return;
+        }
+
+        if (! $contextTahunAjaran->status) {
+            session()->flash('error', 'Tidak dapat membuat aktivitas pada tahun ajaran yang tidak aktif. Silakan pilih tahun ajaran yang aktif.');
+            $this->redirect(route('teacher.dashboard'), navigate: true);
+
+            return;
+        }
+
+        // Validation: Check if teacher has any assigned subjects in context year
+        $hasSubjects = MataPelajaran::where('guru_id', Auth::id())
+            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $contextTahunAjaran->id))
+            ->exists();
+
+        if (! $hasSubjects) {
+            session()->flash('error', 'Anda belum ditugaskan sebagai guru mata pelajaran pada tahun ajaran ini. Silakan hubungi admin.');
+            $this->redirect(route('teacher.dashboard'), navigate: true);
+
+            return;
+        }
     }
 
     #[Computed]
     public function tingkatKelasList()
     {
-        $activeTahunAjaran = TahunAjaran::getActive();
+        $activeTahunAjaran = TahunAjaran::getContext();
 
         if (! $activeTahunAjaran instanceof TahunAjaran) {
             return collect();
@@ -79,7 +108,7 @@ final class CreateAktivitas extends Component
             return collect();
         }
 
-        $activeTahunAjaran = TahunAjaran::getActive();
+        $activeTahunAjaran = TahunAjaran::getContext();
 
         if (! $activeTahunAjaran instanceof TahunAjaran) {
             return collect();
@@ -100,7 +129,7 @@ final class CreateAktivitas extends Component
     #[Computed]
     public function mataPelajaran()
     {
-        $activeTahunAjaran = TahunAjaran::getActive();
+        $activeTahunAjaran = TahunAjaran::getContext();
 
         if (! $activeTahunAjaran instanceof TahunAjaran) {
             return collect();
@@ -227,6 +256,32 @@ final class CreateAktivitas extends Component
 
     public function save(): void
     {
+        // Re-validate: Check if context year is active
+        $contextTahunAjaran = TahunAjaran::getContext();
+
+        if (! $contextTahunAjaran instanceof TahunAjaran) {
+            session()->flash('error', 'Tidak ada tahun ajaran yang dipilih.');
+
+            return;
+        }
+
+        if (! $contextTahunAjaran->status) {
+            session()->flash('error', 'Tidak dapat membuat aktivitas pada tahun ajaran yang tidak aktif.');
+
+            return;
+        }
+
+        // Re-validate: Check if teacher has assigned subjects
+        $hasSubjects = MataPelajaran::where('guru_id', Auth::id())
+            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $contextTahunAjaran->id))
+            ->exists();
+
+        if (! $hasSubjects) {
+            session()->flash('error', 'Anda belum ditugaskan sebagai guru mata pelajaran pada tahun ajaran ini.');
+
+            return;
+        }
+
         // Validate both steps
         $this->validate(
             array_merge($this->rulesForStep1(), $this->rulesForStep2()),
@@ -269,7 +324,9 @@ final class CreateAktivitas extends Component
             return;
         }
 
-        Cache::forget('teacher_dashboard_stats_'.$userId);
+        // Clear dashboard cache for current context
+        $contextYear = TahunAjaran::getContext();
+        Cache::forget('teacher_dashboard_stats_'.$userId.'_'.($contextYear?->id ?? 'none'));
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil disimpan!');
 

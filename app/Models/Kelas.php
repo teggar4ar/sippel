@@ -66,6 +66,14 @@ final class Kelas extends Model
     }
 
     /**
+     * Get all student enrollment history records for this class
+     */
+    public function siswaHistory(): HasMany
+    {
+        return $this->hasMany(SiswaKelasHistory::class);
+    }
+
+    /**
      * Get the full class name (e.g., "7A", "8B")
      */
     public function getNamaLengkapAttribute(): string

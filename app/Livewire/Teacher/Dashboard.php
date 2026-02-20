@@ -24,7 +24,7 @@ final class Dashboard extends Component
     #[Computed]
     public function activeTahunAjaran(): ?TahunAjaran
     {
-        return TahunAjaran::where('status', true)->first();
+        return TahunAjaran::getContext();
     }
 
     #[Computed]
@@ -44,10 +44,10 @@ final class Dashboard extends Component
     #[Computed]
     public function dashboardStats(): array
     {
-        $cacheKey = 'teacher_dashboard_stats_'.Auth::id();
+        $tahunAjaran = $this->activeTahunAjaran();
+        $cacheKey = 'teacher_dashboard_stats_'.Auth::id().'_'.($tahunAjaran?->id ?? 'none');
 
-        return Cache::remember($cacheKey, 300, function (): array {
-            $tahunAjaran = $this->activeTahunAjaran();
+        return Cache::remember($cacheKey, 300, function () use ($tahunAjaran): array {
             if (! $tahunAjaran instanceof TahunAjaran) {
                 return [
                     'aktivitas_bulan_ini' => 0,
@@ -56,8 +56,9 @@ final class Dashboard extends Component
                 ];
             }
 
-            // Activities this month by this teacher
+            // Activities this month by this teacher (filtered by context year)
             $aktivitasBulanIni = AktivitasPembelajaran::where('guru_id', Auth::id())
+                ->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $tahunAjaran->id))
                 ->whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->count();

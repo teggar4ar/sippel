@@ -62,6 +62,28 @@ final class Siswa extends Model
         return $this->hasMany(Laporan::class);
     }
 
+    /**
+     * Get all class enrollment history records for this student
+     */
+    public function kelasHistory(): HasMany
+    {
+        return $this->hasMany(SiswaKelasHistory::class);
+    }
+
+    /**
+     * Look up which Kelas this student was enrolled in during a given academic year.
+     * Falls back to the current kelas_id if no history record is found.
+     */
+    public function getKelasForTahunAjaran(int $tahunAjaranId): ?Kelas
+    {
+        $history = $this->kelasHistory()
+            ->where('tahun_ajaran_id', $tahunAjaranId)
+            ->with('kelas')
+            ->first();
+
+        return $history?->kelas ?? ($this->kelas?->tahun_ajaran_id === $tahunAjaranId ? $this->kelas : null);
+    }
+
     // =========================================================================
     // ACCESSORS - Automatic Calculations
     // =========================================================================
@@ -73,14 +95,16 @@ final class Siswa extends Model
      * @param  int|null  $mataPelajaranId  Filter by specific subject (optional)
      * @param  string|null  $startDate  Filter from date (optional)
      * @param  string|null  $endDate  Filter to date (optional)
+     * @param  int|null  $tahunAjaranId  Filter by academic year (optional)
      */
     public function getAttendancePercentage(
         ?int $mataPelajaranId = null,
         ?string $startDate = null,
-        ?string $endDate = null
+        ?string $endDate = null,
+        ?int $tahunAjaranId = null
     ): float {
         // If filtering or relation not loaded, use query
-        if ($mataPelajaranId || $startDate || $endDate || ! $this->relationLoaded('detailAktivitas')) {
+        if ($mataPelajaranId || $startDate || $endDate || $tahunAjaranId || ! $this->relationLoaded('detailAktivitas')) {
             $query = $this->detailAktivitas()
                 ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
                 ->whereNull('aktivitas_pembelajaran.deleted_at');
@@ -95,6 +119,11 @@ final class Siswa extends Model
 
             if (! in_array($endDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '<=', $endDate);
+            }
+
+            if ($tahunAjaranId !== null && $tahunAjaranId !== 0) {
+                $query->join('kelas', 'aktivitas_pembelajaran.kelas_id', '=', 'kelas.id')
+                    ->where('kelas.tahun_ajaran_id', $tahunAjaranId);
             }
 
             $total = (clone $query)->count();
@@ -129,14 +158,16 @@ final class Siswa extends Model
      * @param  int|null  $mataPelajaranId  Filter by specific subject (optional)
      * @param  string|null  $startDate  Filter from date (optional)
      * @param  string|null  $endDate  Filter to date (optional)
+     * @param  int|null  $tahunAjaranId  Filter by academic year (optional)
      */
     public function getAverageGrade(
         ?int $mataPelajaranId = null,
         ?string $startDate = null,
-        ?string $endDate = null
+        ?string $endDate = null,
+        ?int $tahunAjaranId = null
     ): ?float {
         // If filtering or relation not loaded, use query
-        if ($mataPelajaranId || $startDate || $endDate || ! $this->relationLoaded('detailAktivitas')) {
+        if ($mataPelajaranId || $startDate || $endDate || $tahunAjaranId || ! $this->relationLoaded('detailAktivitas')) {
             $query = $this->detailAktivitas()
                 ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
                 ->whereNull('aktivitas_pembelajaran.deleted_at')
@@ -152,6 +183,11 @@ final class Siswa extends Model
 
             if (! in_array($endDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '<=', $endDate);
+            }
+
+            if ($tahunAjaranId !== null && $tahunAjaranId !== 0) {
+                $query->join('kelas', 'aktivitas_pembelajaran.kelas_id', '=', 'kelas.id')
+                    ->where('kelas.tahun_ajaran_id', $tahunAjaranId);
             }
 
             $avg = $query->avg('detail_aktivitas.nilai');
@@ -176,14 +212,16 @@ final class Siswa extends Model
      * @param  int|null  $mataPelajaranId  Filter by specific subject (optional)
      * @param  string|null  $startDate  Filter from date (optional)
      * @param  string|null  $endDate  Filter to date (optional)
+     * @param  int|null  $tahunAjaranId  Filter by academic year (optional)
      */
     public function getAverageParticipation(
         ?int $mataPelajaranId = null,
         ?string $startDate = null,
-        ?string $endDate = null
+        ?string $endDate = null,
+        ?int $tahunAjaranId = null
     ): ?float {
         // If filtering or relation not loaded, use query
-        if ($mataPelajaranId || $startDate || $endDate || ! $this->relationLoaded('detailAktivitas')) {
+        if ($mataPelajaranId || $startDate || $endDate || $tahunAjaranId || ! $this->relationLoaded('detailAktivitas')) {
             $query = $this->detailAktivitas()
                 ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
                 ->whereNull('aktivitas_pembelajaran.deleted_at')
@@ -199,6 +237,11 @@ final class Siswa extends Model
 
             if (! in_array($endDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '<=', $endDate);
+            }
+
+            if ($tahunAjaranId !== null && $tahunAjaranId !== 0) {
+                $query->join('kelas', 'aktivitas_pembelajaran.kelas_id', '=', 'kelas.id')
+                    ->where('kelas.tahun_ajaran_id', $tahunAjaranId);
             }
 
             $avg = $query->avg('detail_aktivitas.partisipasi');

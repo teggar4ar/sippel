@@ -8,6 +8,7 @@ use App\Filament\Resources\TahunAjarans\TahunAjaranResource;
 use App\Models\Kelas;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
+use App\Models\SiswaKelasHistory;
 use App\Models\TahunAjaran;
 use App\Models\User;
 use BackedEnum;
@@ -229,11 +230,33 @@ final class GantiSemesterPage extends Page implements HasForms
                     $kelasMapping[$oldKelas->id] = $newKelas->id;
                 }
 
-                // 4. Migrate students to new classes
+                // 4. Migrate students to new classes and record history
                 foreach ($this->currentClasses as $oldKelas) {
                     $newKelasId = $kelasMapping[$oldKelas->id];
-                    Siswa::where('kelas_id', $oldKelas->id)
-                        ->update(['kelas_id' => $newKelasId]);
+                    $siswaInClass = Siswa::where('kelas_id', $oldKelas->id)->get();
+
+                    foreach ($siswaInClass as $siswa) {
+                        // Record OLD enrollment (current semester) before it is overwritten
+                        SiswaKelasHistory::firstOrCreate(
+                            [
+                                'siswa_id' => $siswa->id,
+                                'tahun_ajaran_id' => $this->activeTahunAjaran->id,
+                            ],
+                            ['kelas_id' => $oldKelas->id]
+                        );
+
+                        // Move student to the new class
+                        $siswa->update(['kelas_id' => $newKelasId]);
+
+                        // Record NEW enrollment (new semester)
+                        SiswaKelasHistory::firstOrCreate(
+                            [
+                                'siswa_id' => $siswa->id,
+                                'tahun_ajaran_id' => $newTahunAjaran->id,
+                            ],
+                            ['kelas_id' => $newKelasId]
+                        );
+                    }
                 }
 
                 // 5. Migrate mata pelajaran to new classes

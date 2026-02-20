@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Kelas\Schemas;
 
+use App\Models\Kelas;
 use App\Models\TahunAjaran;
+use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 
@@ -26,15 +28,76 @@ final class KelasForm
                     ->native(false)
                     ->searchable()
                     ->live()
+                    ->afterStateUpdated(function (int|string|null $state, $get, $set, $record): void {
+                        // Auto-assign next available group whenever grade changes
+                        $next = self::nextAvailableLetter($state, $get('tahun_ajaran_id'), $record?->id);
+                        if ($next !== null) {
+                            $set('grup_kelas', $next);
+                        }
+                    })
                     ->columnSpan(1),
 
                 Select::make('grup_kelas')
                     ->label('Grup Kelas')
-                    ->options(fn () => collect(range('A', 'Z'))->mapWithKeys(fn ($letter): array => [$letter => $letter])->toArray())
+                    ->options(function ($get, $record): array {
+                        $tingkat = $get('tingkat_kelas');
+                        $tahunAjaranId = $get('tahun_ajaran_id');
+
+                        $taken = ($tingkat && $tahunAjaranId)
+                            ? Kelas::where('tingkat_kelas', $tingkat)
+                                ->where('tahun_ajaran_id', $tahunAjaranId)
+                                ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
+                                ->pluck('grup_kelas')
+                                ->map(fn ($l) => mb_strtoupper((string) $l))
+                                ->all()
+                            : [];
+
+                        return collect(range('A', 'Z'))
+                            ->mapWithKeys(function (string $letter) use ($taken): array {
+                                $label = in_array($letter, $taken, true)
+                                    ? "{$letter} (sudah ada)"
+                                    : $letter;
+
+                                return [$letter => $label];
+                            })
+                            ->toArray();
+                    })
                     ->required()
                     ->native(false)
                     ->searchable()
                     ->live()
+                    ->helperText(function ($get, $record): string {
+                        $tingkat = $get('tingkat_kelas');
+                        $tahunAjaranId = $get('tahun_ajaran_id');
+
+                        if (! $tingkat || ! $tahunAjaranId) {
+                            return 'Pilih tingkat kelas dan tahun ajaran terlebih dahulu.';
+                        }
+
+                        $taken = Kelas::where('tingkat_kelas', $tingkat)
+                            ->where('tahun_ajaran_id', $tahunAjaranId)
+                            ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
+                            ->pluck('grup_kelas')
+                            ->map(fn ($l) => mb_strtoupper((string) $l))
+                            ->sort()
+                            ->values()
+                            ->all();
+
+                        return $taken
+                            ? 'Grup yang sudah ada: '.implode(', ', $taken).'. Grup baru ditetapkan otomatis.'
+                            : 'Belum ada grup untuk kelas ini. Grup A ditetapkan otomatis.';
+                    })
+                    ->rule(fn ($get, $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
+                        $exists = Kelas::where('tingkat_kelas', $get('tingkat_kelas'))
+                            ->where('tahun_ajaran_id', $get('tahun_ajaran_id'))
+                            ->where('grup_kelas', mb_strtoupper((string) $value))
+                            ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
+                            ->exists();
+
+                        if ($exists) {
+                            $fail("Kelas {$get('tingkat_kelas')}{$value} sudah ada untuk tahun ajaran ini.");
+                        }
+                    })
                     ->columnSpan(1),
 
                 Select::make('tahun_ajaran_id')
@@ -48,6 +111,13 @@ final class KelasForm
                     ->native(false)
                     ->searchable()
                     ->live()
+                    ->afterStateUpdated(function (int|string|null $state, $get, $set, $record): void {
+                        // Re-auto-assign group when academic year changes
+                        $next = self::nextAvailableLetter($get('tingkat_kelas'), $state, $record?->id);
+                        if ($next !== null) {
+                            $set('grup_kelas', $next);
+                        }
+                    })
                     ->helperText('Tahun ajaran yang aktif dipilih secara default')
                     ->columnSpan(2),
 
@@ -65,5 +135,32 @@ final class KelasForm
                     ->helperText('Pilih guru yang akan menjadi wali kelas')
                     ->columnSpan(2),
             ]);
+    }
+
+    /**
+     * Return the next available group letter for the given grade + academic year,
+     * skipping any letters that are already in use (optionally ignoring $ignoreId
+     * so an edit form does not exclude the record being edited).
+     */
+    private static function nextAvailableLetter(int|string|null $tingkat, int|string|null $tahunAjaranId, ?int $ignoreId = null): ?string
+    {
+        if (! $tingkat || ! $tahunAjaranId) {
+            return null;
+        }
+
+        $taken = Kelas::where('tingkat_kelas', $tingkat)
+            ->where('tahun_ajaran_id', $tahunAjaranId)
+            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->pluck('grup_kelas')
+            ->map(fn ($l) => mb_strtoupper((string) $l))
+            ->all();
+
+        foreach (range('A', 'Z') as $letter) {
+            if (! in_array($letter, $taken, true)) {
+                return $letter;
+            }
+        }
+
+        return null;
     }
 }

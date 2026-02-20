@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Siswas\Pages;
 
 use App\Filament\Resources\Siswas\SiswaResource;
+use App\Models\Kelas;
+use App\Models\SiswaKelasHistory;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -67,6 +69,15 @@ final class EditSiswa extends EditRecord
                 'nis' => $data['nis'],
                 'kelas_id' => $data['kelas_id'],
             ]);
+
+            // Sync class assignment in history (handles both new enrollment and same-year corrections)
+            $kelas = Kelas::find($data['kelas_id']);
+            if ($kelas) {
+                SiswaKelasHistory::updateOrCreate(
+                    ['siswa_id' => $record->id, 'tahun_ajaran_id' => $kelas->tahun_ajaran_id],
+                    ['kelas_id' => $kelas->id]
+                );
+            }
 
             return $record;
         });

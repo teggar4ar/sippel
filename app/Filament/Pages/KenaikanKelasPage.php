@@ -7,6 +7,7 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\TahunAjarans\TahunAjaranResource;
 use App\Models\Kelas;
 use App\Models\Siswa;
+use App\Models\SiswaKelasHistory;
 use App\Models\TahunAjaran;
 use App\Models\User;
 use BackedEnum;
@@ -85,19 +86,19 @@ final class KenaikanKelasPage extends Page implements HasForms
                 ->orderBy('grup_kelas')
                 ->get();
 
-            // Initialize wali kelas assignments based on existing class structure
-            $uniqueGroups = $this->currentClasses
-                ->pluck('grup_kelas')
-                ->unique()
-                ->values()
-                ->toArray();
+            // Grade 8 classes in the new year receive students promoted from Grade 7,
+            // so the group structure mirrors the current Grade 7 groups.
+            // Grade 9 classes receive students promoted from Grade 8, same logic.
+            $grupPerTingkat = $this->currentClasses
+                ->groupBy('tingkat_kelas')
+                ->map(fn ($classes) => $classes->pluck('grup_kelas')->unique()->sort()->values());
 
             $assignments = [];
-            foreach ([8, 9] as $tingkat) {
-                foreach ($uniqueGroups as $grup) {
-                    $key = $tingkat.'_'.$grup;
-                    $assignments[$key] = null;
-                }
+            foreach (($grupPerTingkat->get('7') ?? collect(['A'])) as $grup) {
+                $assignments['8_'.$grup] = null;
+            }
+            foreach (($grupPerTingkat->get('8') ?? collect(['A'])) as $grup) {
+                $assignments['9_'.$grup] = null;
             }
             $defaults['waliKelasAssignments'] = $assignments;
 
@@ -152,17 +153,19 @@ final class KenaikanKelasPage extends Page implements HasForms
                         ->schema(function (): array {
                             $fields = [];
 
-                            // Get unique groups again for schema generation
-                            // We can't rely on mount-time variables perfectly in schema closures usually,
-                            // but since this page is simple and persistent we can use $this->currentClasses
-                            $uniqueGroups = $this->currentClasses
-                                ->pluck('grup_kelas')
-                                ->unique()
-                                ->values()
-                                ->toArray();
+                            // Grade 8 new classes mirror current Grade 7 groups (promotion source).
+                            // Grade 9 new classes mirror current Grade 8 groups (promotion source).
+                            $grupPerTingkat = $this->currentClasses
+                                ->groupBy('tingkat_kelas')
+                                ->map(fn ($classes) => $classes->pluck('grup_kelas')->unique()->sort()->values());
+
+                            $newYearGroups = [
+                                8 => $grupPerTingkat->get('7') ?? collect(['A']),
+                                9 => $grupPerTingkat->get('8') ?? collect(['A']),
+                            ];
 
                             foreach ([8, 9] as $tingkat) {
-                                foreach ($uniqueGroups as $grup) {
+                                foreach ($newYearGroups[$tingkat] as $grup) {
                                     $key = "{$tingkat}_{$grup}";
                                     $fields[] = Select::make("waliKelasAssignments.{$key}")
                                         ->label("Wali Kelas {$tingkat}{$grup}")
@@ -338,7 +341,17 @@ final class KenaikanKelasPage extends Page implements HasForms
                     /** @var Kelas $currentKelas */
                     $currentKelas = $siswa->kelas;
 
+                    // Always record the OLD enrollment before any change
+                    SiswaKelasHistory::firstOrCreate(
+                        [
+                            'siswa_id' => $siswa->id,
+                            'tahun_ajaran_id' => $this->activeTahunAjaran->id,
+                        ],
+                        ['kelas_id' => $currentKelas->id]
+                    );
+
                     if ($decision === 'lulus') {
+                        // History already recorded above; now delete the student
                         $user = $siswa->user;
                         $siswa->delete();
                         if ($user) {
@@ -349,7 +362,17 @@ final class KenaikanKelasPage extends Page implements HasForms
                         if ($nextTingkat !== null) {
                             $newKelasKey = $nextTingkat.'_'.$currentKelas->grup_kelas;
                             if (isset($newKelasMap[$newKelasKey])) {
-                                $siswa->update(['kelas_id' => $newKelasMap[$newKelasKey]]);
+                                $newKelasId = $newKelasMap[$newKelasKey];
+                                $siswa->update(['kelas_id' => $newKelasId]);
+
+                                // Record NEW enrollment in next academic year
+                                SiswaKelasHistory::firstOrCreate(
+                                    [
+                                        'siswa_id' => $siswa->id,
+                                        'tahun_ajaran_id' => $newTahunAjaran->id,
+                                    ],
+                                    ['kelas_id' => $newKelasId]
+                                );
                             }
                         }
                     } elseif ($decision === 'tinggal') {
@@ -364,7 +387,17 @@ final class KenaikanKelasPage extends Page implements HasForms
                             ]);
                             $newKelasMap[$newKelasKey] = $newKelas->id;
                         }
-                        $siswa->update(['kelas_id' => $newKelasMap[$newKelasKey]]);
+                        $newKelasId = $newKelasMap[$newKelasKey];
+                        $siswa->update(['kelas_id' => $newKelasId]);
+
+                        // Record NEW enrollment (repeating same grade in new year)
+                        SiswaKelasHistory::firstOrCreate(
+                            [
+                                'siswa_id' => $siswa->id,
+                                'tahun_ajaran_id' => $newTahunAjaran->id,
+                            ],
+                            ['kelas_id' => $newKelasId]
+                        );
                     }
                 }
             });
