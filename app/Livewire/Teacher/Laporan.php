@@ -243,12 +243,7 @@ final class Laporan extends Component
 
         $laporanData = LaporanModel::where('tahun_ajaran_id', $contextId)
             ->where('mata_pelajaran_id', $this->mataPelajaranId)
-            ->whereHas(
-                'siswa',
-                /** @phpstan-ignore-next-line */
-                fn ($q) => $q->withTrashed()
-                    ->whereHas('kelasHistory', fn ($q2) => $q2->where('kelas_id', $this->kelasId))
-            )
+            ->whereHas('siswa', fn($q) => $q->where('kelas_id', $this->kelasId))
             ->with(['siswa.user', 'mataPelajaran'])
             ->get();
 

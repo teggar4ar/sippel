@@ -80,7 +80,7 @@ final class LaporanSaya extends Component
         }
 
         return Laporan::where('siswa_id', $siswa->id)
-            ->where('tahun_ajaran_id', $contextId)
+            ->where('tahun_ajaran_id', $this->tahunAjaranId)
             ->when($this->mataPelajaranId, fn ($q) => $q->where('mata_pelajaran_id', $this->mataPelajaranId))
             ->with(['mataPelajaran', 'tahunAjaran'])
             ->orderBy('mata_pelajaran_id')
