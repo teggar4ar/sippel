@@ -66,11 +66,13 @@ final class Dashboard extends Component
             $subjects = MataPelajaran::where('kelas_id', $kelasId)->get();
 
             return $subjects->map(function (MataPelajaran $mapel) use ($siswa, $contextTahunAjaran): array {
-                // Calculate average only from context year
+                // Calculate average only from context year and non-deleted records
                 $avgNilai = DetailAktivitas::where('siswa_id', $siswa->id)
+                    ->whereNull('deleted_at')
                     ->whereHas('aktivitasPembelajaran', function ($q) use ($mapel, $contextTahunAjaran): void {
                         $q->where('mata_pelajaran_id', $mapel->id)
-                            ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                            ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
+                            ->whereNull('deleted_at');
                     })
                     ->whereNotNull('nilai')
                     ->avg('nilai');
