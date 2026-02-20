@@ -90,15 +90,20 @@ final class CalculateReports extends Command
                 continue;
             }
 
-            // Get all students enrolled in these classes for this year via history.
+            // Get all students enrolled in these classes for this year.
+            // Prefer kelasHistory, but fall back to current kelas_id when history has not been backfilled.
             // withTrashed() includes graduated (soft-deleted) students.
             $siswaQuery = Siswa::withTrashed()
-                ->whereHas(
-                    'kelasHistory',
-                    fn ($q) => $q
-                        ->where('tahun_ajaran_id', $tahunAjaran->id)
-                        ->whereIn('kelas_id', $kelasIds)
-                );
+                ->where(function ($query) use ($tahunAjaran, $kelasIds): void {
+                    $query
+                        ->whereHas(
+                            'kelasHistory',
+                            fn ($q) => $q
+                                ->where('tahun_ajaran_id', $tahunAjaran->id)
+                                ->whereIn('kelas_id', $kelasIds)
+                        )
+                        ->orWhereIn('kelas_id', $kelasIds);
+                });
             if ($siswaId) {
                 $siswaQuery->where('id', $siswaId);
             }
