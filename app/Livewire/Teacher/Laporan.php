@@ -111,8 +111,14 @@ final class Laporan extends Component
         // Each Kelas record belongs to exactly one academic year, so querying via
         // kelasHistory by kelas_id gives us only the students from that year.
         // withTrashed() catches graduated (soft-deleted) students in past years.
+        // Fallback on current siswa.kelas_id for systems where kelasHistory has not
+        // yet been fully backfilled.
         return Siswa::withTrashed()
-            ->whereHas('kelasHistory', fn ($q) => $q->where('kelas_id', $this->kelasId))
+            ->where(function ($query): void {
+                $query
+                    ->whereHas('kelasHistory', fn ($q) => $q->where('kelas_id', $this->kelasId))
+                    ->orWhere('kelas_id', $this->kelasId);
+            })
             ->with('user')
             ->get()
             ->sortBy(fn (Siswa $s): string => $s->user->name ?? '');
