@@ -7,8 +7,8 @@ namespace App\Livewire\Teacher\AktivitasPembelajaran;
 use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
 use App\Models\MataPelajaran;
-use App\Models\TahunAjaran;
 use App\Models\Siswa;
+use App\Models\TahunAjaran;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -165,7 +165,7 @@ final class EditAktivitas extends Component
 
         // Clear dashboard cache for current context
         $contextYear = TahunAjaran::getContext();
-        Cache::forget('teacher_dashboard_stats_' . Auth::id() . '_' . ($contextYear?->id ?? 'none'));
+        Cache::forget('teacher_dashboard_stats_'.Auth::id().'_'.($contextYear?->id ?? 'none'));
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil diperbarui!');
 

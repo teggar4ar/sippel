@@ -30,6 +30,7 @@ final class Profil extends Component
     {
         /** @var User $user */
         $user = Auth::user();
+        /** @var \App\Models\Siswa|null $siswa */
         $siswa = $user->siswa;
 
         // Context-aware stats
@@ -46,7 +47,7 @@ final class Profil extends Component
 
             // Filter activity count by context year
             $totalAktivitas = $siswa->detailAktivitas()
-                ->when($contextTahunAjaran, fn($q) => $q->whereHas('aktivitasPembelajaran.kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
+                ->when($contextTahunAjaran, fn ($q) => $q->whereHas('aktivitasPembelajaran.kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
                 ->count();
         }
 

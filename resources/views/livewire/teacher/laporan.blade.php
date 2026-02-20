@@ -75,24 +75,6 @@
                         </flux:select>
                     </div>
 
-                    {{-- Tahun Ajaran Selection --}}
-                    <div>
-                        <flux:select
-                            wire:model.live="tahunAjaranId"
-                            label="Tahun Ajaran"
-                            label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                            class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                        >
-                            <option value="">Pilih Tahun Ajaran</option>
-                            @foreach($this->tahunAjaranList as $ta)
-                                <option value="{{ $ta->id }}">
-                                    {{ $ta->nama_tahun }} - {{ $ta->semester }}
-                                    @if($ta->status) (Aktif) @endif
-                                </option>
-                            @endforeach
-                        </flux:select>
-                    </div>
-
                     @if($reportType === 'student')
                         {{-- Siswa Selection (for student report) --}}
                         <div class="sm:col-span-2">
@@ -167,7 +149,7 @@
         @if($showPreview)
             @if($reportType === 'student')
                 {{-- Student Report Preview --}}
-                @if($this->selectedSiswa && $this->selectedTahunAjaran)
+                @if($this->selectedSiswa && $this->contextTahunAjaran)
                     <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                         <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <span class="text-sm font-semibold text-slate-900 dark:text-white">Pratinjau Laporan Siswa</span>
@@ -200,7 +182,7 @@
                                     </div>
                                     <div class="col-span-2">
                                         <span class="text-slate-500">Tahun Ajaran:</span>
-                                        <span class="font-medium text-slate-900 dark:text-white ml-1">{{ $this->selectedTahunAjaran->nama_tahun }} - {{ $this->selectedTahunAjaran->semester }}</span>
+                                        <span class="font-medium text-slate-900 dark:text-white ml-1">{{ $this->contextTahunAjaran->nama_tahun }} - {{ $this->contextTahunAjaran->semester }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -254,7 +236,7 @@
                 @endif
             @else
                 {{-- Class Report Preview --}}
-                @if($this->selectedKelas && $this->selectedMataPelajaran && $this->selectedTahunAjaran)
+                @if($this->selectedKelas && $this->selectedMataPelajaran && $this->contextTahunAjaran)
                     <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                         <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <span class="text-sm font-semibold text-slate-900 dark:text-white">Pratinjau Laporan Kelas</span>
@@ -302,7 +284,7 @@
                                     </div>
                                     <div class="col-span-2">
                                         <span class="text-slate-500">Tahun Ajaran:</span>
-                                        <span class="font-medium text-slate-900 dark:text-white ml-1">{{ $this->selectedTahunAjaran->nama_tahun }} - {{ $this->selectedTahunAjaran->semester }}</span>
+                                        <span class="font-medium text-slate-900 dark:text-white ml-1">{{ $this->contextTahunAjaran->nama_tahun }} - {{ $this->contextTahunAjaran->semester }}</span>
                                     </div>
                                 </div>
                             </div>

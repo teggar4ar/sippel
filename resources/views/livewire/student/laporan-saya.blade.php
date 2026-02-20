@@ -8,37 +8,17 @@
     @if($this->siswa)
         {{-- Filter Section - Compact --}}
         <div class="bg-white dark:bg-teal-900/30 rounded-xl shadow-sm border border-teal-200 dark:border-teal-800 overflow-hidden p-3">
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <flux:select
-                        wire:model.live="tahunAjaranId"
-                        label="Tahun Ajaran"
-                        size="sm"
-                        class="border-teal-200 dark:border-teal-700 focus:border-teal-500 focus:outline-none focus:ring-0"
-                    >
-                        <option value="">Pilih</option>
-                        @foreach($this->tahunAjaranList as $ta)
-                            <option value="{{ $ta->id }}">
-                                {{ $ta->nama_tahun }} - {{ $ta->semester }}
-                                @if($ta->status) (Aktif) @endif
-                            </option>
-                        @endforeach
-                    </flux:select>
-                </div>
-                <div>
-                    <flux:select
-                        wire:model.live="mataPelajaranId"
-                        label="Mata Pelajaran"
-                        size="sm"
-                        class="border-teal-200 dark:border-teal-700 focus:border-teal-500 focus:outline-none focus:ring-0"
-                    >
-                        <option value="">Semua</option>
-                        @foreach($this->mataPelajaranList as $mapel)
-                            <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
-                        @endforeach
-                    </flux:select>
-                </div>
-            </div>
+            <flux:select
+                wire:model.live="mataPelajaranId"
+                label="Mata Pelajaran"
+                size="sm"
+                class="border-teal-200 dark:border-teal-700 focus:border-teal-500 focus:outline-none focus:ring-0"
+            >
+                <option value="">Semua Mata Pelajaran</option>
+                @foreach($this->mataPelajaranList as $mapel)
+                    <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
+                @endforeach
+            </flux:select>
         </div>
 
         {{-- Summary Stats - Inline compact --}}
@@ -124,7 +104,7 @@
                 <div class="p-8 text-center">
                     <flux:icon name="document-magnifying-glass" class="w-10 h-10 mx-auto text-teal-300 dark:text-teal-600 mb-2" />
                     <p class="text-sm text-teal-500 dark:text-teal-400">Belum ada data laporan</p>
-                    <p class="text-xs text-teal-400 dark:text-teal-500 mt-1">Pilih tahun ajaran untuk melihat laporan</p>
+                    <p class="text-xs text-teal-400 dark:text-teal-500 mt-1">Laporan tersedia setelah dihitung oleh sistem</p>
                 </div>
             @endif
         </div>

@@ -35,9 +35,9 @@ final class Dashboard extends Component
             return collect();
         }
 
-        return MataPelajaran::with(['kelas' => fn($q) => $q->withCount('siswa')])
+        return MataPelajaran::with(['kelas' => fn ($q) => $q->withCount('siswa')])
             ->where('guru_id', Auth::id())
-            ->whereHas('kelas', fn($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
+            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
             ->get();
     }
 
@@ -45,7 +45,7 @@ final class Dashboard extends Component
     public function dashboardStats(): array
     {
         $tahunAjaran = $this->activeTahunAjaran();
-        $cacheKey = 'teacher_dashboard_stats_' . Auth::id() . '_' . ($tahunAjaran?->id ?? 'none');
+        $cacheKey = 'teacher_dashboard_stats_'.Auth::id().'_'.($tahunAjaran?->id ?? 'none');
 
         return Cache::remember($cacheKey, 300, function () use ($tahunAjaran): array {
             if (! $tahunAjaran instanceof TahunAjaran) {
@@ -58,7 +58,7 @@ final class Dashboard extends Component
 
             // Activities this month by this teacher (filtered by context year)
             $aktivitasBulanIni = AktivitasPembelajaran::where('guru_id', Auth::id())
-                ->whereHas('kelas', fn($k) => $k->where('tahun_ajaran_id', $tahunAjaran->id))
+                ->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $tahunAjaran->id))
                 ->whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->count();
@@ -66,21 +66,21 @@ final class Dashboard extends Component
             // Average attendance across all activities by this teacher
             $totalDetails = DetailAktivitas::whereHas(
                 'aktivitasPembelajaran',
-                fn($q) => $q->where('guru_id', Auth::id())
-                    ->whereHas('kelas', fn($k) => $k->where('tahun_ajaran_id', $tahunAjaran->id))
+                fn ($q) => $q->where('guru_id', Auth::id())
+                    ->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $tahunAjaran->id))
             )->count();
 
             $hadirCount = DetailAktivitas::whereHas(
                 'aktivitasPembelajaran',
-                fn($q) => $q->where('guru_id', Auth::id())
-                    ->whereHas('kelas', fn($k) => $k->where('tahun_ajaran_id', $tahunAjaran->id))
+                fn ($q) => $q->where('guru_id', Auth::id())
+                    ->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $tahunAjaran->id))
             )->where('kehadiran', 'Hadir')->count();
 
             $rataKehadiran = $totalDetails > 0 ? round(($hadirCount / $totalDetails) * 100, 1) : 0;
 
             // Total subjects taught
             $totalMapel = MataPelajaran::where('guru_id', Auth::id())
-                ->whereHas('kelas', fn($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
+                ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
                 ->count();
 
             return [
@@ -101,19 +101,19 @@ final class Dashboard extends Component
 
         return MataPelajaran::with('kelas')
             ->where('guru_id', Auth::id())
-            ->whereHas('kelas', fn($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
+            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
             ->get()
             ->map(function (MataPelajaran $mapel): array {
                 $avgPartisipasi = DetailAktivitas::whereHas(
                     'aktivitasPembelajaran',
-                    fn($q) => $q->where('mata_pelajaran_id', $mapel->id)
+                    fn ($q) => $q->where('mata_pelajaran_id', $mapel->id)
                 )->whereNotNull('partisipasi')->avg('partisipasi');
 
                 /** @var Kelas $kelas */
                 $kelas = $mapel->kelas;
 
                 return [
-                    'kelas' => $kelas->tingkat_kelas . '-' . $kelas->grup_kelas,
+                    'kelas' => $kelas->tingkat_kelas.'-'.$kelas->grup_kelas,
                     'mapel' => $mapel->nama_mapel,
                     'avg' => round((float) ($avgPartisipasi ?? 0), 1),
                 ];

@@ -62,6 +62,28 @@ final class Siswa extends Model
         return $this->hasMany(Laporan::class);
     }
 
+    /**
+     * Get all class enrollment history records for this student
+     */
+    public function kelasHistory(): HasMany
+    {
+        return $this->hasMany(SiswaKelasHistory::class);
+    }
+
+    /**
+     * Look up which Kelas this student was enrolled in during a given academic year.
+     * Falls back to the current kelas_id if no history record is found.
+     */
+    public function getKelasForTahunAjaran(int $tahunAjaranId): ?Kelas
+    {
+        $history = $this->kelasHistory()
+            ->where('tahun_ajaran_id', $tahunAjaranId)
+            ->with('kelas')
+            ->first();
+
+        return $history?->kelas ?? ($this->kelas?->tahun_ajaran_id === $tahunAjaranId ? $this->kelas : null);
+    }
+
     // =========================================================================
     // ACCESSORS - Automatic Calculations
     // =========================================================================
@@ -91,11 +113,11 @@ final class Siswa extends Model
                 $query->where('aktivitas_pembelajaran.mata_pelajaran_id', $mataPelajaranId);
             }
 
-            if (!in_array($startDate, [null, '', '0'], true)) {
+            if (! in_array($startDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '>=', $startDate);
             }
 
-            if (!in_array($endDate, [null, '', '0'], true)) {
+            if (! in_array($endDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '<=', $endDate);
             }
 
@@ -124,7 +146,7 @@ final class Siswa extends Model
             return 0.0;
         }
 
-        $hadir = $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count();
+        $hadir = $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count();
 
         return round(($hadir / $total) * 100, 2);
     }
@@ -155,11 +177,11 @@ final class Siswa extends Model
                 $query->where('aktivitas_pembelajaran.mata_pelajaran_id', $mataPelajaranId);
             }
 
-            if (!in_array($startDate, [null, '', '0'], true)) {
+            if (! in_array($startDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '>=', $startDate);
             }
 
-            if (!in_array($endDate, [null, '', '0'], true)) {
+            if (! in_array($endDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '<=', $endDate);
             }
 
@@ -209,11 +231,11 @@ final class Siswa extends Model
                 $query->where('aktivitas_pembelajaran.mata_pelajaran_id', $mataPelajaranId);
             }
 
-            if (!in_array($startDate, [null, '', '0'], true)) {
+            if (! in_array($startDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '>=', $startDate);
             }
 
-            if (!in_array($endDate, [null, '', '0'], true)) {
+            if (! in_array($endDate, [null, '', '0'], true)) {
                 $query->where('aktivitas_pembelajaran.tanggal', '<=', $endDate);
             }
 
@@ -297,10 +319,10 @@ final class Siswa extends Model
 
         return [
             'total' => $details->count(),
-            'hadir' => $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count(),
-            'izin' => $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'izin')->count(),
-            'sakit' => $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'sakit')->count(),
-            'alpa' => $details->filter(fn($d): bool => mb_strtolower((string) $d->kehadiran) === 'alpa')->count(),
+            'hadir' => $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count(),
+            'izin' => $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'izin')->count(),
+            'sakit' => $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'sakit')->count(),
+            'alpa' => $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'alpa')->count(),
         ];
     }
 
@@ -310,7 +332,7 @@ final class Siswa extends Model
     protected function attendancePercentage(): Attribute
     {
         return Attribute::make(
-            get: fn(): float => $this->getAttendancePercentage(),
+            get: fn (): float => $this->getAttendancePercentage(),
         );
     }
 
@@ -320,7 +342,7 @@ final class Siswa extends Model
     protected function averageGrade(): Attribute
     {
         return Attribute::make(
-            get: fn(): ?float => $this->getAverageGrade(),
+            get: fn (): ?float => $this->getAverageGrade(),
         );
     }
 
@@ -330,7 +352,7 @@ final class Siswa extends Model
     protected function averageParticipation(): Attribute
     {
         return Attribute::make(
-            get: fn(): ?float => $this->getAverageParticipation(),
+            get: fn (): ?float => $this->getAverageParticipation(),
         );
     }
 }

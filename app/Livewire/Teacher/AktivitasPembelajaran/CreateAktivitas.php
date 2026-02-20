@@ -57,23 +57,26 @@ final class CreateAktivitas extends Component
         if (! $contextTahunAjaran instanceof TahunAjaran) {
             session()->flash('error', 'Tidak ada tahun ajaran yang dipilih. Silakan pilih tahun ajaran terlebih dahulu.');
             $this->redirect(route('teacher.dashboard'), navigate: true);
+
             return;
         }
 
         if (! $contextTahunAjaran->status) {
             session()->flash('error', 'Tidak dapat membuat aktivitas pada tahun ajaran yang tidak aktif. Silakan pilih tahun ajaran yang aktif.');
             $this->redirect(route('teacher.dashboard'), navigate: true);
+
             return;
         }
 
         // Validation: Check if teacher has any assigned subjects in context year
         $hasSubjects = MataPelajaran::where('guru_id', Auth::id())
-            ->whereHas('kelas', fn($q) => $q->where('tahun_ajaran_id', $contextTahunAjaran->id))
+            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $contextTahunAjaran->id))
             ->exists();
 
         if (! $hasSubjects) {
             session()->flash('error', 'Anda belum ditugaskan sebagai guru mata pelajaran pada tahun ajaran ini. Silakan hubungi admin.');
             $this->redirect(route('teacher.dashboard'), navigate: true);
+
             return;
         }
     }
@@ -258,21 +261,24 @@ final class CreateAktivitas extends Component
 
         if (! $contextTahunAjaran instanceof TahunAjaran) {
             session()->flash('error', 'Tidak ada tahun ajaran yang dipilih.');
+
             return;
         }
 
         if (! $contextTahunAjaran->status) {
             session()->flash('error', 'Tidak dapat membuat aktivitas pada tahun ajaran yang tidak aktif.');
+
             return;
         }
 
         // Re-validate: Check if teacher has assigned subjects
         $hasSubjects = MataPelajaran::where('guru_id', Auth::id())
-            ->whereHas('kelas', fn($q) => $q->where('tahun_ajaran_id', $contextTahunAjaran->id))
+            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $contextTahunAjaran->id))
             ->exists();
 
         if (! $hasSubjects) {
             session()->flash('error', 'Anda belum ditugaskan sebagai guru mata pelajaran pada tahun ajaran ini.');
+
             return;
         }
 
@@ -320,7 +326,7 @@ final class CreateAktivitas extends Component
 
         // Clear dashboard cache for current context
         $contextYear = TahunAjaran::getContext();
-        Cache::forget('teacher_dashboard_stats_' . $userId . '_' . ($contextYear?->id ?? 'none'));
+        Cache::forget('teacher_dashboard_stats_'.$userId.'_'.($contextYear?->id ?? 'none'));
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil disimpan!');
 

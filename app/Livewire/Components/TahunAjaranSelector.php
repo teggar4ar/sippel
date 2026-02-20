@@ -32,7 +32,7 @@ final class TahunAjaranSelector extends Component
             ->get();
     }
 
-    public function updatedSelectedTahunAjaranId($value): void
+    public function updatedSelectedTahunAjaranId(?int $value): void
     {
         TahunAjaran::setContext($value);
 
@@ -40,7 +40,7 @@ final class TahunAjaranSelector extends Component
         $this->dispatch('tahun-ajaran-changed');
     }
 
-    public function render()
+    public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
         return view('livewire.components.tahun-ajaran-selector');
     }

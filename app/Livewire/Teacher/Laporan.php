@@ -28,11 +28,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * @property-read bool $hasKelasWali
  * @property-read Collection<int, Siswa> $siswaList
  * @property-read Collection<int, MataPelajaran> $mataPelajaranList
- * @property-read Collection<int, TahunAjaran> $tahunAjaranList
  * @property-read Kelas|null $selectedKelas
  * @property-read Siswa|null $selectedSiswa
  * @property-read MataPelajaran|null $selectedMataPelajaran
- * @property-read TahunAjaran|null $selectedTahunAjaran
+ * @property-read TahunAjaran|null $contextTahunAjaran
  * @property-read Collection<int, LaporanModel> $studentReportData
  * @property-read Collection<int, LaporanModel> $classReportData
  * @property-read User $teacher
@@ -48,8 +47,6 @@ final class Laporan extends Component
     public ?int $siswaId = null;
 
     public ?int $mataPelajaranId = null;
-
-    public ?int $tahunAjaranId = null;
 
     public string $sortBy = 'nilai';
 
@@ -76,11 +73,18 @@ final class Laporan extends Component
     #[Computed]
     public function kelasWali(): Collection
     {
-        return Kelas::where('wali_kelas_id', Auth::id())
+        $query = Kelas::where('wali_kelas_id', Auth::id())
             ->with('tahunAjaran')
             ->orderBy('tingkat_kelas')
-            ->orderBy('grup_kelas')
-            ->get();
+            ->orderBy('grup_kelas');
+
+        // Always scope to the context academic year
+        $contextId = TahunAjaran::getContext()?->id;
+        if ($contextId) {
+            $query->where('tahun_ajaran_id', $contextId);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -104,10 +108,14 @@ final class Laporan extends Component
             return new Collection();
         }
 
-        return Siswa::where('kelas_id', $this->kelasId)
+        // Each Kelas record belongs to exactly one academic year, so querying via
+        // kelasHistory by kelas_id gives us only the students from that year.
+        // withTrashed() catches graduated (soft-deleted) students in past years.
+        return Siswa::withTrashed()
+            ->whereHas('kelasHistory', fn ($q) => $q->where('kelas_id', $this->kelasId))
             ->with('user')
             ->get()
-            ->sortBy(fn(Siswa $s): string => $s->user->name ?? '');
+            ->sortBy(fn (Siswa $s): string => $s->user->name ?? '');
     }
 
     /**
@@ -125,19 +133,6 @@ final class Laporan extends Component
         return MataPelajaran::where('kelas_id', $this->kelasId)
             ->with('guru')
             ->orderBy('nama_mapel')
-            ->get();
-    }
-
-    /**
-     * Get available academic years
-     *
-     * @return Collection<int, TahunAjaran>
-     */
-    #[Computed]
-    public function tahunAjaranList(): Collection
-    {
-        return TahunAjaran::orderByDesc('status')
-            ->orderByDesc('id')
             ->get();
     }
 
@@ -168,13 +163,22 @@ final class Laporan extends Component
             return null;
         }
 
-        // Security: Only return if siswa is in a class where teacher is wali kelas
+        // Security: verify student was (or is currently) in teacher's wali kelas
         $kelasWaliIds = $this->kelasWali->pluck('id');
 
-        return Siswa::with(['user', 'kelas.waliKelas'])
-            ->where('id', $this->siswaId)
-            ->whereIn('kelas_id', $kelasWaliIds)
-            ->first();
+        $siswa = Siswa::withTrashed()
+            ->with(['user', 'kelas.waliKelas'])
+            ->find($this->siswaId);
+
+        if (! $siswa) {
+            return null;
+        }
+
+        // Check current class OR any historical class
+        $inCurrentClass = $kelasWaliIds->contains($siswa->kelas_id);
+        $inHistoricalClass = $siswa->kelasHistory()->whereIn('kelas_id', $kelasWaliIds)->exists();
+
+        return ($inCurrentClass || $inHistoricalClass) ? $siswa : null;
     }
 
     /**
@@ -197,16 +201,12 @@ final class Laporan extends Component
     }
 
     /**
-     * Get selected tahun ajaran model
+     * Get the context academic year (from sidebar switcher)
      */
     #[Computed]
-    public function selectedTahunAjaran(): ?TahunAjaran
+    public function contextTahunAjaran(): ?TahunAjaran
     {
-        if ($this->tahunAjaranId === null || $this->tahunAjaranId === 0) {
-            return null;
-        }
-
-        return TahunAjaran::find($this->tahunAjaranId);
+        return TahunAjaran::getContext();
     }
 
     /**
@@ -217,12 +217,13 @@ final class Laporan extends Component
     #[Computed]
     public function studentReportData(): Collection
     {
-        if ($this->siswaId === null || $this->siswaId === 0 || ($this->tahunAjaranId === null || $this->tahunAjaranId === 0)) {
+        $contextId = $this->contextTahunAjaran?->id;
+        if ($this->siswaId === null || $this->siswaId === 0 || ! $contextId) {
             return new Collection();
         }
 
         return LaporanModel::where('siswa_id', $this->siswaId)
-            ->where('tahun_ajaran_id', $this->tahunAjaranId)
+            ->where('tahun_ajaran_id', $contextId)
             ->with('mataPelajaran')
             ->get();
     }
@@ -235,13 +236,19 @@ final class Laporan extends Component
     #[Computed]
     public function classReportData(): Collection
     {
-        if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) || ($this->tahunAjaranId === null || $this->tahunAjaranId === 0)) {
+        $contextId = $this->contextTahunAjaran?->id;
+        if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) || ! $contextId) {
             return new Collection();
         }
 
-        $laporanData = LaporanModel::where('tahun_ajaran_id', $this->tahunAjaranId)
+        $laporanData = LaporanModel::where('tahun_ajaran_id', $contextId)
             ->where('mata_pelajaran_id', $this->mataPelajaranId)
-            ->whereHas('siswa', fn($q) => $q->where('kelas_id', $this->kelasId))
+            ->whereHas(
+                'siswa',
+                /** @phpstan-ignore-next-line */
+                fn ($q) => $q->withTrashed()
+                    ->whereHas('kelasHistory', fn ($q2) => $q2->where('kelas_id', $this->kelasId))
+            )
             ->with(['siswa.user', 'mataPelajaran'])
             ->get();
 
@@ -250,7 +257,7 @@ final class Laporan extends Component
             'nilai' => $laporanData->sortByDesc('rata_nilai')->values(),
             'nilai_asc' => $laporanData->sortBy('rata_nilai')->values(),
             'kehadiran' => $laporanData->sortByDesc('rata_kehadiran')->values(),
-            'nama' => $laporanData->sortBy(fn(LaporanModel $l): string => $l->siswa->user->name ?? '')->values(),
+            'nama' => $laporanData->sortBy(fn (LaporanModel $l): string => $l->siswa->user->name ?? '')->values(),
             default => $laporanData->sortByDesc('rata_nilai')->values(),
         };
     }
@@ -260,10 +267,6 @@ final class Laporan extends Component
      */
     public function mount(): void
     {
-        // Set default to context academic year
-        $contextTahunAjaran = TahunAjaran::getContext();
-        $this->tahunAjaranId = $contextTahunAjaran?->id;
-
         // Auto-select first class if teacher has only one
         if ($this->kelasWali->count() === 1) {
             $this->kelasId = $this->kelasWali->first()?->id;
@@ -307,14 +310,6 @@ final class Laporan extends Component
     }
 
     /**
-     * Reset preview when academic year changes
-     */
-    public function updatedTahunAjaranId(): void
-    {
-        $this->showPreview = false;
-    }
-
-    /**
      * Reset preview when sort changes (for class report)
      */
     public function updatedSortBy(): void
@@ -328,22 +323,27 @@ final class Laporan extends Component
     public function generatePreview(): void
     {
         if ($this->reportType === 'student') {
-            if ($this->siswaId === null || $this->siswaId === 0 || ($this->tahunAjaranId === null || $this->tahunAjaranId === 0)) {
-                $this->dispatch('notify', type: 'error', message: 'Pilih siswa dan tahun ajaran terlebih dahulu.');
+            if ($this->siswaId === null || $this->siswaId === 0) {
+                $this->dispatch('notify', type: 'error', message: 'Pilih siswa terlebih dahulu.');
 
                 return;
             }
 
-            // Verify siswa belongs to teacher's class
-            $siswa = Siswa::find($this->siswaId);
-            if (! $siswa || ! $this->kelasWali->contains('id', $siswa->kelas_id)) {
+            // Verify siswa belongs to (or has been in) teacher's wali kelas
+            $siswa = Siswa::withTrashed()->find($this->siswaId);
+            $kelasWaliIds = $this->kelasWali->pluck('id');
+            $hasAccess = $siswa && (
+                $kelasWaliIds->contains($siswa->kelas_id) ||
+                $siswa->kelasHistory()->whereIn('kelas_id', $kelasWaliIds)->exists()
+            );
+            if (! $hasAccess) {
                 $this->dispatch('notify', type: 'error', message: 'Anda tidak memiliki akses ke data siswa ini.');
 
                 return;
             }
         } else {
-            if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) || ($this->tahunAjaranId === null || $this->tahunAjaranId === 0)) {
-                $this->dispatch('notify', type: 'error', message: 'Pilih kelas, mata pelajaran, dan tahun ajaran terlebih dahulu.');
+            if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0)) {
+                $this->dispatch('notify', type: 'error', message: 'Pilih kelas dan mata pelajaran terlebih dahulu.');
 
                 return;
             }
@@ -364,24 +364,23 @@ final class Laporan extends Component
      */
     public function downloadStudentPdf(): ?StreamedResponse
     {
-        if ($this->siswaId === null || $this->siswaId === 0 || ($this->tahunAjaranId === null || $this->tahunAjaranId === 0)) {
+        $tahunAjaran = $this->contextTahunAjaran;
+        if ($this->siswaId === null || $this->siswaId === 0 || ! $tahunAjaran) {
             $this->dispatch('notify', type: 'error', message: 'Data tidak lengkap.');
 
             return null;
         }
 
-        $siswa = Siswa::with(['user', 'kelas.waliKelas'])->find($this->siswaId);
-        $tahunAjaran = TahunAjaran::find($this->tahunAjaranId);
+        $siswa = Siswa::withTrashed()->with(['user', 'kelas.waliKelas'])->find($this->siswaId);
 
-        // Security check: verify siswa belongs to teacher's class
-        if (! $siswa || ! $this->kelasWali->contains('id', $siswa->kelas_id)) {
+        // Security check: verify siswa belongs to (or has been in) teacher's wali kelas
+        $kelasWaliIds = $this->kelasWali->pluck('id');
+        $hasAccess = $siswa && (
+            $kelasWaliIds->contains($siswa->kelas_id) ||
+            $siswa->kelasHistory()->whereIn('kelas_id', $kelasWaliIds)->exists()
+        );
+        if (! $hasAccess) {
             $this->dispatch('notify', type: 'error', message: 'Anda tidak memiliki akses ke data siswa ini.');
-
-            return null;
-        }
-
-        if (! $tahunAjaran) {
-            $this->dispatch('notify', type: 'error', message: 'Tahun ajaran tidak ditemukan.');
 
             return null;
         }
@@ -406,7 +405,7 @@ final class Laporan extends Component
         $pdf->setPaper('A4', 'portrait');
 
         $sanitizedTahun = str_replace(['/', '\\'], '-', $tahunAjaran->nama_tahun);
-        $filename = 'laporan-siswa-' . $siswa->nis . '-' . $sanitizedTahun . '.pdf';
+        $filename = 'laporan-siswa-'.$siswa->nis.'-'.$sanitizedTahun.'.pdf';
 
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();
@@ -418,7 +417,8 @@ final class Laporan extends Component
      */
     public function downloadClassPdf(): ?StreamedResponse
     {
-        if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) || ($this->tahunAjaranId === null || $this->tahunAjaranId === 0)) {
+        $tahunAjaran = $this->contextTahunAjaran;
+        if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) || ! $tahunAjaran) {
             $this->dispatch('notify', type: 'error', message: 'Data tidak lengkap.');
 
             return null;
@@ -433,7 +433,6 @@ final class Laporan extends Component
 
         $kelas = Kelas::with('waliKelas')->find($this->kelasId);
         $mataPelajaran = MataPelajaran::with('guru')->find($this->mataPelajaranId);
-        $tahunAjaran = TahunAjaran::find($this->tahunAjaranId);
 
         if (! $kelas || ! $mataPelajaran || ! $tahunAjaran) {
             $this->dispatch('notify', type: 'error', message: 'Data tidak ditemukan.');
@@ -459,7 +458,7 @@ final class Laporan extends Component
         $pdf->setPaper('A4', 'portrait');
 
         $sanitizedTahun = str_replace(['/', '\\'], '-', $tahunAjaran->nama_tahun);
-        $filename = 'laporan-kelas-' . $kelas->tingkat_kelas . $kelas->grup_kelas . '-' . $sanitizedTahun . '.pdf';
+        $filename = 'laporan-kelas-'.$kelas->tingkat_kelas.$kelas->grup_kelas.'-'.$sanitizedTahun.'.pdf';
 
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();
@@ -471,7 +470,8 @@ final class Laporan extends Component
      */
     public function exportClassExcel(): mixed
     {
-        if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) || ($this->tahunAjaranId === null || $this->tahunAjaranId === 0)) {
+        $tahunAjaran = $this->contextTahunAjaran;
+        if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) || ! $tahunAjaran) {
             $this->dispatch('notify', type: 'error', message: 'Data tidak lengkap.');
 
             return null;
@@ -485,7 +485,6 @@ final class Laporan extends Component
         }
 
         $kelas = Kelas::find($this->kelasId);
-        $tahunAjaran = TahunAjaran::find($this->tahunAjaranId);
 
         if (! $kelas || ! $tahunAjaran) {
             $this->dispatch('notify', type: 'error', message: 'Data tidak ditemukan.');

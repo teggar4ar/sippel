@@ -22,8 +22,6 @@ use Livewire\Component;
 #[Title('Laporan Saya - SIPPEL Siswa')]
 final class LaporanSaya extends Component
 {
-    public ?int $tahunAjaranId = null;
-
     public ?int $mataPelajaranId = null;
 
     public function mount(): void
@@ -34,12 +32,6 @@ final class LaporanSaya extends Component
         // Ensure only students can access
         if (! $user || ! $user->hasRole('student')) {
             abort(403);
-        }
-
-        // Default to context academic year
-        $contextTahunAjaran = TahunAjaran::getContext();
-        if ($contextTahunAjaran) {
-            $this->tahunAjaranId = $contextTahunAjaran->id;
         }
     }
 
@@ -53,22 +45,27 @@ final class LaporanSaya extends Component
     }
 
     #[Computed]
-    public function tahunAjaranList(): Collection
+    public function contextTahunAjaran(): ?TahunAjaran
     {
-        return TahunAjaran::orderByDesc('status')
-            ->orderByDesc('nama_tahun')
-            ->get();
+        return TahunAjaran::getContext();
     }
 
     #[Computed]
     public function mataPelajaranList(): Collection
     {
         $siswa = $this->siswa;
-        if (! $siswa || ! $siswa->kelas_id) {
+        $contextId = $this->contextTahunAjaran?->id;
+        if (! $siswa || ! $contextId) {
             return new Collection();
         }
 
-        return MataPelajaran::where('kelas_id', $siswa->kelas_id)
+        // Look up which class the student was in during the context year
+        $kelasId = $siswa->getKelasForTahunAjaran($contextId)?->id;
+        if (! $kelasId) {
+            return new Collection();
+        }
+
+        return MataPelajaran::where('kelas_id', $kelasId)
             ->orderBy('nama_mapel')
             ->get();
     }
@@ -77,26 +74,17 @@ final class LaporanSaya extends Component
     public function laporanData(): Collection
     {
         $siswa = $this->siswa;
-        if (! $siswa || ($this->tahunAjaranId === null || $this->tahunAjaranId === 0)) {
+        $contextId = $this->contextTahunAjaran?->id;
+        if (! $siswa || ! $contextId) {
             return new Collection();
         }
 
         return Laporan::where('siswa_id', $siswa->id)
-            ->where('tahun_ajaran_id', $this->tahunAjaranId)
-            ->when($this->mataPelajaranId, fn($q) => $q->where('mata_pelajaran_id', $this->mataPelajaranId))
+            ->where('tahun_ajaran_id', $contextId)
+            ->when($this->mataPelajaranId, fn ($q) => $q->where('mata_pelajaran_id', $this->mataPelajaranId))
             ->with(['mataPelajaran', 'tahunAjaran'])
             ->orderBy('mata_pelajaran_id')
             ->get();
-    }
-
-    #[Computed]
-    public function selectedTahunAjaran(): ?TahunAjaran
-    {
-        if ($this->tahunAjaranId === null || $this->tahunAjaranId === 0) {
-            return null;
-        }
-
-        return TahunAjaran::find($this->tahunAjaranId);
     }
 
     #[Computed]
@@ -124,7 +112,8 @@ final class LaporanSaya extends Component
     public function downloadPdf(): mixed
     {
         $siswa = $this->siswa;
-        if (! $siswa || ($this->tahunAjaranId === null || $this->tahunAjaranId === 0)) {
+        $tahunAjaran = $this->contextTahunAjaran;
+        if (! $siswa || ! $tahunAjaran) {
             session()->flash('error', 'Tidak dapat mengunduh laporan. Data tidak lengkap.');
 
             return null;
@@ -137,8 +126,6 @@ final class LaporanSaya extends Component
             return null;
         }
 
-        $tahunAjaran = $this->selectedTahunAjaran;
-
         $pdf = Pdf::loadView('reports.student-report', [
             'siswa' => $siswa->load(['user', 'kelas']),
             'laporanData' => $laporanData,
@@ -147,7 +134,7 @@ final class LaporanSaya extends Component
 
         // Sanitize filename - replace / and \ with -
         $tahunAjaranSafe = str_replace(['/', '\\'], '-', $tahunAjaran?->nama_tahun ?? 'unknown');
-        $filename = 'laporan-' . $siswa->nis . '-' . $tahunAjaranSafe . '.pdf';
+        $filename = 'laporan-'.$siswa->nis.'-'.$tahunAjaranSafe.'.pdf';
 
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();

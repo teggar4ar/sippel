@@ -90,8 +90,15 @@ final class CalculateReports extends Command
                 continue;
             }
 
-            // Get all students in these classes
-            $siswaQuery = Siswa::whereIn('kelas_id', $kelasIds);
+            // Get all students enrolled in these classes for this year via history.
+            // withTrashed() includes graduated (soft-deleted) students.
+            $siswaQuery = Siswa::withTrashed()
+                ->whereHas(
+                    'kelasHistory',
+                    fn ($q) => $q
+                        ->where('tahun_ajaran_id', $tahunAjaran->id)
+                        ->whereIn('kelas_id', $kelasIds)
+                );
             if ($siswaId) {
                 $siswaQuery->where('id', $siswaId);
             }
@@ -108,8 +115,9 @@ final class CalculateReports extends Command
 
             foreach ($siswaList as $siswa) {
                 foreach ($mataPelajaranList as $mataPelajaran) {
-                    // Only process if the subject is for the student's class
-                    if ($mataPelajaran->kelas_id !== $siswa->kelas_id) {
+                    // Only process if the subject belongs to the student's class in THIS year
+                    $studentKelasId = $siswa->getKelasForTahunAjaran($tahunAjaran->id)?->id;
+                    if ($mataPelajaran->kelas_id !== $studentKelasId) {
                         $bar->advance();
 
                         continue;

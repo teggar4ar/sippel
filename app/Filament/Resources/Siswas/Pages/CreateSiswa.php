@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Siswas\Pages;
 
 use App\Filament\Resources\Siswas\SiswaResource;
+use App\Models\Kelas;
 use App\Models\Siswa;
+use App\Models\SiswaKelasHistory;
 use App\Models\User;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +42,15 @@ final class CreateSiswa extends CreateRecord
                 'user_id' => $user->id,
                 'kelas_id' => $data['kelas_id'],
             ]);
+
+            // Step 4: Record initial class enrollment in history
+            $kelas = Kelas::find($data['kelas_id']);
+            if ($kelas) {
+                SiswaKelasHistory::updateOrCreate(
+                    ['siswa_id' => $siswa->id, 'tahun_ajaran_id' => $kelas->tahun_ajaran_id],
+                    ['kelas_id' => $kelas->id]
+                );
+            }
 
             return $siswa;
         });

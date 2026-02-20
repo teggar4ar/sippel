@@ -72,19 +72,19 @@ final class RiwayatNilai extends Component
 
         // Get subjects that have activities for this student (filtered by context year)
         $mataPelajaran = MataPelajaran::query()
-            ->whereHas('aktivitasPembelajaran.detailAktivitas', function ($q) use ($siswa, $contextTahunAjaran) {
+            ->whereHas('aktivitasPembelajaran.detailAktivitas', function ($q) use ($siswa, $contextTahunAjaran): void {
                 $q->where('siswa_id', $siswa->id)
-                    ->when($contextTahunAjaran, fn($query) => $query->whereHas('aktivitasPembelajaran.kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                    ->when($contextTahunAjaran, fn ($query) => $query->whereHas('aktivitasPembelajaran.kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
             })
             ->get();
 
         return $mataPelajaran->map(function (MataPelajaran $mapel) use ($siswa, $contextTahunAjaran): array {
             $nilai = DetailAktivitas::query()
                 ->where('siswa_id', $siswa->id)
-                ->whereHas('aktivitasPembelajaran', function ($q) use ($mapel, $contextTahunAjaran) {
+                ->whereHas('aktivitasPembelajaran', function ($q) use ($mapel, $contextTahunAjaran): void {
                     $q->where('mata_pelajaran_id', $mapel->id)
                         ->whereNull('deleted_at')
-                        ->when($contextTahunAjaran, fn($query) => $query->whereHas('kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
                 })
                 ->whereNotNull('nilai')
                 ->pluck('nilai');
@@ -113,13 +113,13 @@ final class RiwayatNilai extends Component
             $riwayat = DetailAktivitas::query()
                 ->where('siswa_id', $siswa->id)
                 ->with(['aktivitasPembelajaran.mataPelajaran', 'aktivitasPembelajaran.kelas'])
-                ->whereHas('aktivitasPembelajaran', function ($q) use ($contextTahunAjaran) {
+                ->whereHas('aktivitasPembelajaran', function ($q) use ($contextTahunAjaran): void {
                     $q->whereNull('deleted_at')
-                        ->when($contextTahunAjaran, fn($query) => $query->whereHas('kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
                 })
-                ->when($this->filterMapel, fn($q) => $q->whereHas('aktivitasPembelajaran', fn($sq) => $sq->where('mata_pelajaran_id', $this->filterMapel)))
-                ->when($this->filterDariTanggal, fn($q) => $q->whereHas('aktivitasPembelajaran', fn($sq) => $sq->whereDate('tanggal', '>=', $this->filterDariTanggal)))
-                ->when($this->filterSampaiTanggal, fn($q) => $q->whereHas('aktivitasPembelajaran', fn($sq) => $sq->whereDate('tanggal', '<=', $this->filterSampaiTanggal)))
+                ->when($this->filterMapel, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($sq) => $sq->where('mata_pelajaran_id', $this->filterMapel)))
+                ->when($this->filterDariTanggal, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($sq) => $sq->whereDate('tanggal', '>=', $this->filterDariTanggal)))
+                ->when($this->filterSampaiTanggal, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($sq) => $sq->whereDate('tanggal', '<=', $this->filterSampaiTanggal)))
                 ->orderByDesc(
                     DetailAktivitas::query()
                         ->select('tanggal')
@@ -131,9 +131,9 @@ final class RiwayatNilai extends Component
 
             // Get subjects for filter dropdown (only from context year)
             $mataPelajaran = MataPelajaran::query()
-                ->whereHas('aktivitasPembelajaran.detailAktivitas', function ($q) use ($siswa, $contextTahunAjaran) {
+                ->whereHas('aktivitasPembelajaran.detailAktivitas', function ($q) use ($siswa, $contextTahunAjaran): void {
                     $q->where('siswa_id', $siswa->id)
-                        ->when($contextTahunAjaran, fn($query) => $query->whereHas('aktivitasPembelajaran.kelas', fn($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('aktivitasPembelajaran.kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
                 })
                 ->orderBy('nama_mapel')
                 ->get();
