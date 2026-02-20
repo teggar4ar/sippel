@@ -79,7 +79,8 @@ final class ManageLaporan extends Page
                         ->label('Tahun Ajaran')
                         ->options(TahunAjaran::query()->orderByDesc('status')->orderByDesc('id')->pluck('nama_tahun', 'id'))
                         ->placeholder('Semua Tahun Ajaran Aktif')
-                        ->helperText('Kosongkan untuk memproses tahun ajaran aktif saja'),
+                        ->helperText('Kosongkan untuk memproses tahun ajaran aktif saja')
+                        ->native(false),
                 ])
                 ->action(function (array $data): void {
                     $options = [];

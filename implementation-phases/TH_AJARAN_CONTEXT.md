@@ -5,7 +5,7 @@
 - [x] Add `setContext()` method to `TahunAjaran` model
 - [x] Create shared `Components\TahunAjaranSelector` Livewire component (with `$variant` prop)
 - [x] Create view for selector component (`livewire/components/tahun-ajaran-selector.blade.php`)
-- [ ] Add unit tests for `getContext()` and `setContext()` methods (deferred)
+- [x] Add unit tests for `getContext()` and `setContext()` methods (`tests/Unit/Models/TahunAjaranContextTest.php`)
 
 ## Phase 2: UI Integration — Teacher
 - [x] Update teacher layout to include selector in header (desktop sidebar + mobile header)
