@@ -102,8 +102,7 @@ final class Siswa extends Model
         ?string $startDate = null,
         ?string $endDate = null,
         ?int $tahunAjaranId = null
-    ): float
-    {
+    ): float {
         // If filtering or relation not loaded, use query
         if ($mataPelajaranId || $startDate || $endDate || $tahunAjaranId || ! $this->relationLoaded('detailAktivitas')) {
             $query = $this->detailAktivitas()
