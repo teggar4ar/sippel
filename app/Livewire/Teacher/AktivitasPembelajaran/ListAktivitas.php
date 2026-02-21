@@ -46,6 +46,11 @@ final class ListAktivitas extends Component
 
     public ?string $deleteTopik = null;
 
+    // Inline feedback for same-page actions (shown in component view, not layout)
+    public ?string $inlineError = null;
+
+    public ?string $inlineSuccess = null;
+
     public function updatingFilterMapel(): void
     {
         $this->resetPage();
@@ -231,6 +236,8 @@ final class ListAktivitas extends Component
     {
         $this->deleteId = $id;
         $this->deleteTopik = $topik;
+        $this->inlineError = null;
+        $this->inlineSuccess = null;
         $this->showDeleteModal = true;
     }
 
@@ -240,9 +247,26 @@ final class ListAktivitas extends Component
             return;
         }
 
-        $aktivitas = AktivitasPembelajaran::where('guru_id', Auth::id())->find($this->deleteId);
+        $aktivitas = AktivitasPembelajaran::where('guru_id', Auth::id())
+            ->with('kelas')
+            ->find($this->deleteId);
 
         if ($aktivitas) {
+            // Same guard as CreateAktivitas: context year must be set, active,
+            // and the activity must belong to it.
+            $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
+
+            if (
+                ! $contextTahunAjaran instanceof \App\Models\TahunAjaran
+                || ! $contextTahunAjaran->status
+                || $aktivitas->kelas?->tahun_ajaran_id !== $contextTahunAjaran->id
+            ) {
+                $this->inlineError = 'Tidak dapat menghapus aktivitas pada tahun ajaran yang tidak aktif.';
+                $this->closeDeleteModal();
+
+                return;
+            }
+
             try {
                 $aktivitas->delete();
 
@@ -250,9 +274,10 @@ final class ListAktivitas extends Component
                 $contextYear = \App\Models\TahunAjaran::getContext();
                 Cache::forget('teacher_dashboard_stats_'.Auth::id().'_'.($contextYear?->id ?? 'none'));
 
-                session()->flash('success', 'Aktivitas berhasil dihapus.');
-            } catch (Exception) {
-                session()->flash('error', 'Gagal menghapus aktivitas. Silakan coba lagi.');
+                $this->inlineSuccess = 'Aktivitas berhasil dihapus.';
+            } catch (Exception $e) {
+                report($e);
+                $this->inlineError = 'Gagal menghapus aktivitas. Silakan coba lagi.';
             }
         }
 

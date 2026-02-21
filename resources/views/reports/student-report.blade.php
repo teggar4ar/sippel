@@ -275,7 +275,7 @@
                     <td class="label">Nama Siswa</td>
                     <td>: {{ $siswa->user->name }}</td>
                     <td class="label">Kelas</td>
-                    <td>: {{ $siswa->kelas->tingkat_kelas }}-{{ $siswa->kelas->grup_kelas }}</td>
+                    <td>: {{ ($contextKelas ?? $siswa->kelas)?->tingkat_kelas }}-{{ ($contextKelas ?? $siswa->kelas)?->grup_kelas }}</td>
                 </tr>
             </table>
         </div>
@@ -369,7 +369,7 @@
                     <div>Mengetahui,</div>
                     <div>Wali Kelas</div>
                     <div class="signature-line"></div>
-                    <div class="signature-name">{{ $siswa->kelas->waliKelas?->name ?? '.............................' }}</div>
+                    <div class="signature-name">{{ ($contextKelas ?? $siswa->kelas)?->waliKelas?->name ?? '.............................' }}</div>
                 </div>
                 <div class="signature-box">
                     <div>Orang Tua/Wali</div>

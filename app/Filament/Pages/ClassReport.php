@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Exports\ClassReportExport;
+use App\Models\AktivitasPembelajaran;
 use App\Models\Kelas;
 use App\Models\Laporan;
 use App\Models\MataPelajaran;
@@ -194,16 +195,18 @@ final class ClassReport extends Page implements HasForms
             return null;
         }
 
-        $laporanData = $this->getLaporanData(
-            $kelas,
-            MataPelajaran::find($this->mata_pelajaran_id),
-            $tahunAjaran
-        );
+        $mataPelajaran = MataPelajaran::with('guru')->find($this->mata_pelajaran_id);
 
-        if ($laporanData->isEmpty()) {
+        // Guard using the same data source the export queries (DetailAktivitas),
+        // not Laporan aggregates which require kelasHistory to be complete.
+        $hasActivities = AktivitasPembelajaran::where('kelas_id', $kelas->id)
+            ->when($mataPelajaran, fn ($q) => $q->where('mata_pelajaran_id', $mataPelajaran->id))
+            ->exists();
+
+        if (! $hasActivities) {
             Notification::make()
-                ->title('Tidak ada data laporan')
-                ->body('Kelas ini belum memiliki data laporan untuk mata pelajaran dan tahun ajaran yang dipilih.')
+                ->title('Tidak ada data aktivitas')
+                ->body('Kelas ini belum memiliki data aktivitas untuk mata pelajaran yang dipilih.')
                 ->warning()
                 ->send();
 
@@ -218,7 +221,7 @@ final class ClassReport extends Page implements HasForms
             $sanitizedTahun
         );
 
-        return Excel::download(new ClassReportExport($kelas), $filename);
+        return Excel::download(new ClassReportExport($kelas, null, null, $mataPelajaran), $filename);
     }
 
     /**
@@ -315,9 +318,16 @@ final class ClassReport extends Page implements HasForms
      */
     private function getLaporanData(Kelas $kelas, MataPelajaran $mataPelajaran, TahunAjaran $tahunAjaran): Collection
     {
+        // Use kelasHistory so that previous-semester classes (where siswa.kelas_id
+        // has already been updated to the new class) still return their data.
         $laporanData = Laporan::where('tahun_ajaran_id', $tahunAjaran->id)
             ->where('mata_pelajaran_id', $mataPelajaran->id)
-            ->whereHas('siswa', fn ($q) => $q->where('kelas_id', $kelas->id))
+            ->whereHas(
+                'siswa.kelasHistory',
+                fn ($q) => $q
+                    ->where('tahun_ajaran_id', $tahunAjaran->id)
+                    ->where('kelas_id', $kelas->id),
+            )
             ->with(['siswa.user', 'mataPelajaran'])
             ->get();
 

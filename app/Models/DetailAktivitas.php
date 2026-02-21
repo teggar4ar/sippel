@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\KehadiranStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -24,6 +25,7 @@ final class DetailAktivitas extends Model
     ];
 
     protected $casts = [
+        'kehadiran' => KehadiranStatus::class,
         'nilai' => 'decimal:2',
         'partisipasi' => 'decimal:2',
     ];

@@ -1,4 +1,16 @@
 <div class="space-y-4">
+    {{-- Inline feedback for same-page actions (delete). Redirect-based flashes are shown by the layout. --}}
+    @if ($inlineSuccess)
+        <div class="p-3 bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200 rounded-lg text-sm">
+            {{ $inlineSuccess }}
+        </div>
+    @endif
+    @if ($inlineError)
+        <div class="p-3 bg-red-50 dark:bg-red-900/50 text-red-700 dark:text-red-200 rounded-lg text-sm">
+            {{ $inlineError }}
+        </div>
+    @endif
+
     {{-- Header - Compact --}}
     <div class="flex items-center justify-between">
         <div>
@@ -163,7 +175,7 @@
 
                                 {{-- Stats --}}
                                 @php
-                                    $hadir = $aktivitas->detailAktivitas->filter(fn($d) => strtolower($d->kehadiran) === 'hadir')->count();
+                                    $hadir = $aktivitas->detailAktivitas->filter(fn($d) => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir)->count();
                                     $total = $aktivitas->detailAktivitas->count();
                                     $percentage = $total > 0 ? round(($hadir / $total) * 100) : 0;
                                 @endphp
@@ -190,22 +202,22 @@
                                    class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded transition-colors">
                                     <flux:icon name="pencil" class="w-4 h-4" />
                                 </a>
-                                <button 
+                                <button
                                     wire:click="confirmDelete({{ $aktivitas->id }}, '{{ addslashes($aktivitas->topik) }}')"
                                     wire:loading.attr="disabled"
                                     class="relative p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors disabled:opacity-75 disabled:cursor-wait">
-                                    
+
                                     {{-- Trash icon - hide when this specific button is loading --}}
-                                    <span wire:loading.remove 
+                                    <span wire:loading.remove
                                           wire:target="confirmDelete({{ $aktivitas->id }}, '{{ addslashes($aktivitas->topik) }}')">
                                         <flux:icon name="trash" class="w-4 h-4" />
                                     </span>
-                                    
+
                                     {{-- Loading spinner - show only for this specific button --}}
-                                    <svg wire:loading 
+                                    <svg wire:loading
                                          wire:target="confirmDelete({{ $aktivitas->id }}, '{{ addslashes($aktivitas->topik) }}')"
-                                         class="w-4 h-4 animate-spin text-red-600" 
-                                         fill="none" 
+                                         class="w-4 h-4 animate-spin text-red-600"
+                                         fill="none"
                                          viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

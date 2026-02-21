@@ -6,6 +6,7 @@ namespace App\Exports;
 
 use App\Models\DetailAktivitas;
 use App\Models\Kelas;
+use App\Models\MataPelajaran;
 use App\Models\Siswa;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -28,20 +29,29 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
         private readonly Kelas $kelas,
         private readonly ?Carbon $startDate = null,
         private readonly ?Carbon $endDate = null,
+        private readonly ?MataPelajaran $mataPelajaran = null,
     ) {}
 
     public function collection()
     {
-        // Get all detail aktivitas for the class
+        // Get all detail aktivitas for the class, scoped to the selected subject when provided
         $query = DetailAktivitas::query()
             ->with([
                 'siswa.user',
                 'siswa.kelas',
                 'aktivitasPembelajaran',
-                'aktivitasPembelajaran.mataPelajaran.guru',
+                'aktivitasPembelajaran.mataPelajaran' => fn ($q) => $q->withTrashed()->with('guru'),
             ])
-            ->whereHas('siswa', fn ($q) => $q->where('kelas_id', $this->kelas->id))
+            ->whereHas('aktivitasPembelajaran', fn ($q) => $q->where('kelas_id', $this->kelas->id))
             ->orderBy('created_at');
+
+        // Scope to a specific subject when one is selected
+        if ($this->mataPelajaran instanceof MataPelajaran) {
+            $query->whereHas(
+                'aktivitasPembelajaran',
+                fn ($q) => $q->where('mata_pelajaran_id', $this->mataPelajaran->id),
+            );
+        }
 
         if ($this->startDate && $this->endDate) {
             $query->whereHas('aktivitasPembelajaran', function ($q): void {
@@ -60,11 +70,23 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
             ->values()
             ->toArray();
 
-        // Get unique students
-        $students = Siswa::where('kelas_id', $this->kelas->id)
+        // Get unique students who appear in the activities (respects kelas scope above)
+        $studentIds = $records->pluck('siswa_id')->unique();
+        $students = Siswa::whereIn('id', $studentIds)
             ->with('user')
             ->orderBy('nis')
             ->get();
+
+        // Resolve subject and teacher from the injected MataPelajaran (most reliable).
+        // Fall back to the first activity record only when no subject was pre-selected.
+        $subjectName = $this->mataPelajaran?->nama_mapel;
+        $teacherName = $this->mataPelajaran?->guru?->name;
+
+        if ($subjectName === null || $teacherName === null) {
+            $firstOverall = $records->first();
+            $subjectName ??= $firstOverall?->aktivitasPembelajaran?->mataPelajaran?->nama_mapel;
+            $teacherName ??= $firstOverall?->aktivitasPembelajaran?->mataPelajaran?->guru?->name;
+        }
 
         // Build pivot data
         $pivotData = [];
@@ -92,16 +114,13 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
         foreach ($students as $student) {
             $rowNumber++;
 
-            // Get first record to extract common data
-            $firstRecord = $records->firstWhere('siswa_id', $student->id);
-
             $row = [
                 $rowNumber,
                 $student->nis,
                 $student->user->name,
                 $this->kelas->tingkat_kelas.'-'.$this->kelas->grup_kelas,
-                $firstRecord?->aktivitasPembelajaran?->mataPelajaran?->nama_mapel ?? '-',
-                $firstRecord?->aktivitasPembelajaran?->mataPelajaran?->guru?->name ?? '-',
+                $subjectName ?? '-',
+                $teacherName ?? '-',
                 $this->kelas->waliKelas?->name ?? '-',
             ];
 
@@ -110,7 +129,7 @@ final class ClassReportExport implements FromCollection, WithEvents, WithStyles
                 $record = $records->first(fn ($r): bool => $r->siswa_id === $student->id
                     && $r->aktivitasPembelajaran?->tanggal?->isSameDay($date));
 
-                $row[] = $record ? ucfirst((string) $record->kehadiran) : '';
+                $row[] = $record ? $record->kehadiran->label() : '';
                 $row[] = $record?->nilai ?? '';
                 $row[] = $record?->partisipasi ?? '';
             }

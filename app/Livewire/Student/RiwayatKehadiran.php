@@ -88,10 +88,10 @@ final class RiwayatKehadiran extends Component
         }
 
         $total = (clone $query)->count();
-        $hadir = (clone $query)->where('kehadiran', 'Hadir')->count();
-        $izin = (clone $query)->where('kehadiran', 'Izin')->count();
-        $sakit = (clone $query)->where('kehadiran', 'Sakit')->count();
-        $alpa = (clone $query)->where('kehadiran', 'Alpa')->count();
+        $hadir = (clone $query)->where('kehadiran', \App\Enums\KehadiranStatus::Hadir)->count();
+        $izin = (clone $query)->where('kehadiran', \App\Enums\KehadiranStatus::Izin)->count();
+        $sakit = (clone $query)->where('kehadiran', \App\Enums\KehadiranStatus::Sakit)->count();
+        $alpa = (clone $query)->where('kehadiran', \App\Enums\KehadiranStatus::Alpa)->count();
 
         return [
             'hadir' => $hadir,

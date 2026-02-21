@@ -23,9 +23,6 @@ final class TahunAjaranObserver
                     'status' => 'Tidak dapat membuat tahun ajaran dengan status aktif karena ada tahun ajaran lain yang masih aktif. Harap nonaktifkan tahun ajaran yang aktif terlebih dahulu.',
                 ]);
             }
-
-            // Deactivate all others as backup
-            TahunAjaran::query()->update(['status' => false]);
         }
     }
 

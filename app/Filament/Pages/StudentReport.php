@@ -134,8 +134,12 @@ final class StudentReport extends Page implements HasForms
             return null;
         }
 
+        $contextKelas = $siswa->getKelasForTahunAjaran($tahunAjaran->id);
+        $contextKelas?->load('waliKelas');
+
         $pdf = Pdf::loadView('reports.student-report', [
             'siswa' => $siswa,
+            'contextKelas' => $contextKelas,
             'tahunAjaran' => $tahunAjaran,
             'laporanData' => $laporanData,
         ]);

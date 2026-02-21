@@ -285,6 +285,7 @@ final class GantiSemesterPage extends Page implements HasForms
 
             $this->redirect(TahunAjaranResource::getUrl());
         } catch (Exception $e) {
+            report($e);
             Notification::make()
                 ->title('Gagal Ganti Semester')
                 ->body('Terjadi kesalahan: '.$e->getMessage())

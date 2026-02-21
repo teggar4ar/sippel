@@ -296,7 +296,7 @@ final class CreateAktivitas extends Component
                 $aktivitas = AktivitasPembelajaran::create([
                     'tanggal' => $this->tanggal,
                     'topik' => $this->topik,
-                    'catatan' => $this->catatan !== '' && $this->catatan !== '0' ? $this->catatan : null,
+                    'catatan' => $this->catatan !== '' ? $this->catatan : null,
                     'mata_pelajaran_id' => $this->mata_pelajaran_id,
                     'kelas_id' => $this->kelas_id,
                     'guru_id' => $userId,
@@ -314,11 +314,12 @@ final class CreateAktivitas extends Component
                         'kehadiran' => $kehadiran,
                         'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
                         'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
-                        'catatan' => $detail['catatan'] ?: null,
+                        'catatan' => ($detail['catatan'] !== '') ? $detail['catatan'] : null,
                     ]);
                 }
             });
-        } catch (Exception) {
+        } catch (Exception $e) {
+            report($e);
             session()->flash('error', 'Gagal menyimpan data. Silakan coba lagi.');
 
             return;

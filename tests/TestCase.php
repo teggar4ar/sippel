@@ -16,9 +16,8 @@ abstract class TestCase extends BaseTestCase
         $this->seed(RolePermissionSeeder::class);
 
         $user = User::factory()->create([
-            'name' => config('app.default_user.name'),
-            'email' => config('app.default_user.email'),
-            'password' => config('app.default_user.password'),
+            'name'  => 'Test Admin',
+            'email' => 'admin@test.example.com',
         ]);
 
         // Assign admin role for testing (required for RBAC)
