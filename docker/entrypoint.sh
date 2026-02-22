@@ -39,6 +39,7 @@ fi
 mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache
 
 # Optimize Laravel for production
+php artisan filament:assets
 php artisan config:cache
 # Note: route:cache disabled because routes/web.php contains closures
 # Convert closure routes to controllers before enabling route caching
