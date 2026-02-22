@@ -51,9 +51,19 @@ final class Profil extends Component
                 ->count();
         }
 
+        // Resolve the class for the selected academic year via kelasHistory,
+        // falling back to the student's current class when no context is set.
+        $contextKelas = null;
+        if ($siswa) {
+            $contextKelas = $contextTahunAjaran instanceof \App\Models\TahunAjaran
+                ? $siswa->getKelasForTahunAjaran($contextTahunAjaran->id)
+                : $siswa->kelas;
+        }
+
         return view('livewire.student.profil', [
             'user' => $user,
             'siswa' => $siswa,
+            'contextKelas' => $contextKelas,
             'attendancePercentage' => $attendancePercentage,
             'averageGrade' => $averageGrade,
             'averageParticipation' => $averageParticipation,

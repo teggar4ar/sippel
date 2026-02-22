@@ -91,8 +91,8 @@
                                 'Alpa' => 'bg-red-500',
                             ];
                         @endphp
-                        <span class="px-2 py-0.5 text-[10px] font-medium text-white rounded flex-shrink-0 {{ $badgeColors[$detail->kehadiran] ?? 'bg-slate-500' }}">
-                            {{ $detail->kehadiran }}
+                        <span class="px-2 py-0.5 text-[10px] font-medium text-white rounded flex-shrink-0 {{ $badgeColors[$detail->kehadiran->label()] ?? 'bg-slate-500' }}">
+                            {{ $detail->kehadiran->label() }}
                         </span>
                     </div>
                     {{-- Row 2: Scores --}}

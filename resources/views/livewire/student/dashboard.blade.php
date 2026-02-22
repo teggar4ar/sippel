@@ -2,8 +2,8 @@
     {{-- Greeting - Compact --}}
     <div>
         <h1 class="text-xl font-bold text-teal-900 dark:text-white">Hai, {{ explode(' ', auth()->user()->name ?? 'Siswa')[0] }}!</h1>
-        @if($siswa && $siswa->kelas)
-            <p class="text-sm text-teal-600 dark:text-teal-300">Kelas {{ $siswa->kelas->tingkat_kelas }}-{{ $siswa->kelas->grup_kelas }}</p>
+        @if($siswa && $contextKelas)
+            <p class="text-sm text-teal-600 dark:text-teal-300">Kelas {{ $contextKelas->tingkat_kelas }}-{{ $contextKelas->grup_kelas }}</p>
         @endif
     </div>
 
@@ -93,8 +93,8 @@
                                     'Alpa' => 'bg-red-500',
                                 ];
                             @endphp
-                            <span class="px-2 py-0.5 text-[10px] font-medium text-white rounded {{ $badgeColors[$detail->kehadiran] ?? 'bg-teal-500' }}">
-                                {{ $detail->kehadiran }}
+                            <span class="px-2 py-0.5 text-[10px] font-medium text-white rounded {{ $badgeColors[$detail->kehadiran->label()] ?? 'bg-teal-500' }}">
+                                {{ $detail->kehadiran->label() }}
                             </span>
                         </div>
                         <p class="text-sm font-medium text-teal-900 dark:text-white truncate">{{ $detail->aktivitasPembelajaran->topik }}</p>

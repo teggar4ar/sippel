@@ -286,7 +286,7 @@ final class KenaikanKelasPage extends Page implements HasForms
         $tanggalMulai = $data['tanggalMulai'];
         $tanggalSelesai = $data['tanggalSelesai'];
         $waliKelasAssignments = $data['waliKelasAssignments'] ?? [];
-        $studentDecisions = $this->data['studentDecisions'] ?? [];
+        $studentDecisions = $data['studentDecisions'] ?? [];
 
         // Manual validation for duplicate
         $exists = TahunAjaran::where('nama_tahun', $namaTahun)
@@ -405,6 +405,7 @@ final class KenaikanKelasPage extends Page implements HasForms
             Notification::make()->title('Kenaikan Kelas Berhasil')->success()->send();
             $this->redirect(TahunAjaranResource::getUrl());
         } catch (Exception $e) {
+            report($e);
             Notification::make()->title('Gagal Kenaikan Kelas')->body($e->getMessage())->danger()->send();
         }
     }

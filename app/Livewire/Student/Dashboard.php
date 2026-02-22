@@ -198,9 +198,6 @@ final class Dashboard extends Component
         $averageParticipation = 0;
 
         if ($siswa instanceof Siswa) {
-            // Eager load relationships for stats
-            $siswa->load('detailAktivitas.aktivitasPembelajaran.mataPelajaran', 'kelas');
-
             $totalAktivitas = $siswa->detailAktivitas()
                 ->when($contextTahunAjaran, fn ($q) => $q->whereHas('aktivitasPembelajaran.kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
                 ->count();
@@ -229,8 +226,18 @@ final class Dashboard extends Component
             $averageParticipation = $siswa->getAverageParticipation(null, null, null, $contextTahunAjaran?->id) ?? 0;
         }
 
+        // Resolve the class for the selected academic year via kelasHistory,
+        // falling back to the student's current class when no context is set.
+        $contextKelas = null;
+        if ($siswa instanceof Siswa) {
+            $contextKelas = $contextTahunAjaran instanceof \App\Models\TahunAjaran
+                ? $siswa->getKelasForTahunAjaran($contextTahunAjaran->id)
+                : $siswa->kelas;
+        }
+
         return view('livewire.student.dashboard', [
             'siswa' => $siswa,
+            'contextKelas' => $contextKelas,
             'totalAktivitas' => $totalAktivitas,
             'recentAktivitas' => $recentAktivitas,
             'attendancePercentage' => $attendancePercentage,

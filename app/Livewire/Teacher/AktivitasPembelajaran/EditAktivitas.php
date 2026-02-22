@@ -42,8 +42,26 @@ final class EditAktivitas extends Component
     {
         $this->aktivitas = AktivitasPembelajaran::query()
             ->where('guru_id', Auth::id())
-            ->with(['mataPelajaran.kelas', 'detailAktivitas.siswa.user'])
+            ->with(['kelas', 'mataPelajaran.kelas', 'detailAktivitas.siswa.user'])
             ->findOrFail($id);
+
+        // Same guard as CreateAktivitas: context year must be set and active,
+        // and this activity must belong to it.
+        $contextTahunAjaran = TahunAjaran::getContext();
+
+        if (! $contextTahunAjaran instanceof TahunAjaran || ! $contextTahunAjaran->status) {
+            session()->flash('error', 'Tidak dapat mengubah aktivitas pada tahun ajaran yang tidak aktif. Silakan pilih tahun ajaran yang aktif.');
+            $this->redirect(route('teacher.aktivitas.list'), navigate: true);
+
+            return;
+        }
+
+        if ($this->aktivitas->kelas?->tahun_ajaran_id !== $contextTahunAjaran->id) {
+            session()->flash('error', 'Aktivitas ini tidak termasuk dalam tahun ajaran yang sedang dipilih.');
+            $this->redirect(route('teacher.aktivitas.list'), navigate: true);
+
+            return;
+        }
 
         // Load activity data
         $this->tanggal = $this->aktivitas->tanggal->format('Y-m-d');
@@ -119,6 +137,20 @@ final class EditAktivitas extends Component
 
     public function save(): void
     {
+        // Re-verify the context guard (mirrors the mount() check).
+        $contextTahunAjaran = TahunAjaran::getContext();
+
+        if (
+            ! $contextTahunAjaran instanceof TahunAjaran
+            || ! $contextTahunAjaran->status
+            || $this->aktivitas->kelas?->tahun_ajaran_id !== $contextTahunAjaran->id
+        ) {
+            session()->flash('error', 'Tidak dapat mengubah aktivitas pada tahun ajaran yang tidak aktif.');
+            $this->redirect(route('teacher.aktivitas.list'), navigate: true);
+
+            return;
+        }
+
         $this->validate();
 
         try {
@@ -127,7 +159,7 @@ final class EditAktivitas extends Component
                 $this->aktivitas->update([
                     'tanggal' => $this->tanggal,
                     'topik' => $this->topik,
-                    'catatan' => $this->catatan !== '' && $this->catatan !== '0' ? $this->catatan : null,
+                    'catatan' => $this->catatan !== '' ? $this->catatan : null,
                     'mata_pelajaran_id' => $this->mata_pelajaran_id,
                     'kelas_id' => $this->kelas_id,
                 ]);
@@ -147,7 +179,7 @@ final class EditAktivitas extends Component
                             'kehadiran' => $kehadiran,
                             'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
                             'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
-                            'catatan' => $detail['catatan'] ?: null,
+                            'catatan' => ($detail['catatan'] !== '') ? $detail['catatan'] : null,
                         ]
                     );
                 }
@@ -157,7 +189,8 @@ final class EditAktivitas extends Component
                     ->whereNotIn('siswa_id', array_keys($this->detailAktivitas))
                     ->delete();
             });
-        } catch (Exception) {
+        } catch (Exception $e) {
+            report($e);
             session()->flash('error', 'Gagal memperbarui data. Silakan coba lagi.');
 
             return;
@@ -230,9 +263,9 @@ final class EditAktivitas extends Component
         foreach ($siswaInClass as $siswa) {
             $existing = $existingDetails->get($siswa->id);
 
-            // Normalize kehadiran to capitalized format (database stores lowercase, UI expects capitalized)
-            $kehadiran = $existing?->kehadiran
-                ? ucfirst(mb_strtolower((string) $existing->kehadiran))
+            // Normalize kehadiran enum to capitalized string (UI expects 'Hadir', 'Izin', etc.)
+            $kehadiran = $existing?->kehadiran instanceof \App\Enums\KehadiranStatus
+                ? ucfirst($existing->kehadiran->value)
                 : 'Hadir';
 
             $this->detailAktivitas[$siswa->id] = [

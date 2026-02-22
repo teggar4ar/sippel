@@ -55,17 +55,27 @@ final class UserForm
                 Select::make('role')
                     ->label('Role')
                     ->native(false)
-                    ->options([
+                    ->options(fn (?User $record): array => array_filter([
                         'admin' => 'Admin',
                         'teacher' => 'Guru',
-                        'student' => 'Siswa',
-                    ])
+                        // Only show 'student' when editing an existing student user.
+                        // Student accounts must be created through the Siswa page.
+                        'student' => $record?->roles->first()?->name === 'student' ? 'Siswa' : null,
+                    ]))
                     ->required()
                     ->placeholder('Pilih role pengguna')
                     ->helperText('Role menentukan hak akses pengguna di sistem')
                     ->rules([
                         fn (?User $record): Closure => function (string $attribute, $value, Closure $fail) use ($record): void {
-                            // Only validate on edit (when record exists)
+                            // Prevent creating a user with the 'student' role directly.
+                            // Students must be created via the Siswa page.
+                            if (! $record instanceof User && $value === 'student') {
+                                $fail('Akun siswa hanya dapat dibuat melalui halaman Data Siswa.');
+
+                                return;
+                            }
+
+                            // Only validate the remaining rules on edit (when record exists)
                             if (! $record instanceof User) {
                                 return;
                             }

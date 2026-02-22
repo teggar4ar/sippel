@@ -49,18 +49,18 @@
                     <div class="flex-1">
                         <p class="text-[10px] font-medium text-teal-500 dark:text-teal-400">Kelas</p>
                         <p class="text-sm font-semibold text-teal-900 dark:text-white">
-                            @if($siswa->kelas)
-                                {{ $siswa->kelas->nama_lengkap ?? $siswa->kelas->tingkat . '-' . $siswa->kelas->grup }}
+                            @if($contextKelas)
+                                {{ $contextKelas->tingkat_kelas }}-{{ $contextKelas->grup_kelas }}
                             @else
                                 <span class="text-teal-400 italic text-xs">Belum ditentukan</span>
                             @endif
                         </p>
                     </div>
                 </div>
-                @if($siswa->kelas && $siswa->kelas->waliKelas)
+                @if($contextKelas && $contextKelas->waliKelas)
                     <div class="pt-2 border-t border-teal-50 dark:border-teal-800">
                         <p class="text-[10px] font-medium text-teal-500 dark:text-teal-400">Wali Kelas</p>
-                        <p class="text-sm text-teal-900 dark:text-white">{{ $siswa->kelas->waliKelas->nama }}</p>
+                        <p class="text-sm text-teal-900 dark:text-white">{{ $contextKelas->waliKelas->name }}</p>
                     </div>
                 @endif
             </div>

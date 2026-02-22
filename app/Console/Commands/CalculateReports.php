@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\KehadiranStatus;
 use App\Models\DetailAktivitas;
 use App\Models\Kelas;
 use App\Models\Laporan;
@@ -107,7 +108,7 @@ final class CalculateReports extends Command
             if ($siswaId) {
                 $siswaQuery->where('id', $siswaId);
             }
-            $siswaList = $siswaQuery->get();
+            $siswaList = $siswaQuery->with(['kelasHistory.kelas'])->get();
 
             if ($siswaList->isEmpty()) {
                 $this->warn('  No students found for this academic year.');
@@ -119,9 +120,11 @@ final class CalculateReports extends Command
             $bar->start();
 
             foreach ($siswaList as $siswa) {
+                // Resolve once per student per year — uses eager-loaded kelasHistory
+                $studentKelasId = $siswa->getKelasForTahunAjaran($tahunAjaran->id)?->id;
+
                 foreach ($mataPelajaranList as $mataPelajaran) {
                     // Only process if the subject belongs to the student's class in THIS year
-                    $studentKelasId = $siswa->getKelasForTahunAjaran($tahunAjaran->id)?->id;
                     if ($mataPelajaran->kelas_id !== $studentKelasId) {
                         $bar->advance();
 
@@ -240,10 +243,10 @@ final class CalculateReports extends Command
         $total = $detailAktivitas->count();
 
         // Calculate attendance counts by status
-        $hadirCount = $detailAktivitas->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count();
-        $izinCount = $detailAktivitas->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'izin')->count();
-        $sakitCount = $detailAktivitas->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'sakit')->count();
-        $alpaCount = $detailAktivitas->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'alpa')->count();
+        $hadirCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Hadir)->count();
+        $izinCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Izin)->count();
+        $sakitCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Sakit)->count();
+        $alpaCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Alpa)->count();
 
         // Calculate attendance percentage
         $rataKehadiran = $total > 0 ? round(($hadirCount / $total) * 100, 2) : 0;

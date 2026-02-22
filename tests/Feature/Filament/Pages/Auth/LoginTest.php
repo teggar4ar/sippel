@@ -34,8 +34,8 @@ test('an unauthenticated user can login with email', function (): void {
     Filament::auth()->logout();
 
     livewire(Login::class)
-        ->set('data.identifier', config('app.default_user.email'))
-        ->set('data.password', config('app.default_user.password'))
+        ->set('data.identifier', 'admin@test.example.com')
+        ->set('data.password', 'password')
         ->call('authenticate')
         ->assertHasNoFormErrors();
 });

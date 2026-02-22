@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Teacher;
 
 use App\Exports\ClassReportExport;
+use App\Models\AktivitasPembelajaran;
 use App\Models\Kelas;
 use App\Models\Laporan as LaporanModel;
 use App\Models\MataPelajaran;
@@ -402,8 +403,12 @@ final class Laporan extends Component
             return null;
         }
 
+        $contextKelas = $siswa->getKelasForTahunAjaran($tahunAjaran->id);
+        $contextKelas?->load('waliKelas');
+
         $pdf = Pdf::loadView('reports.student-report', [
             'siswa' => $siswa,
+            'contextKelas' => $contextKelas,
             'tahunAjaran' => $tahunAjaran,
             'laporanData' => $laporanData,
         ]);
@@ -490,7 +495,8 @@ final class Laporan extends Component
             return null;
         }
 
-        $kelas = Kelas::find($this->kelasId);
+        $kelas = Kelas::with('waliKelas')->find($this->kelasId);
+        $mataPelajaran = MataPelajaran::with('guru')->find($this->mataPelajaranId);
 
         if (! $kelas || ! $tahunAjaran) {
             $this->dispatch('notify', type: 'error', message: 'Data tidak ditemukan.');
@@ -498,10 +504,15 @@ final class Laporan extends Component
             return null;
         }
 
-        $laporanData = $this->classReportData;
+        // Guard against exporting when there are no learning-activity records for
+        // the selected class + subject combination. The export queries DetailAktivitas
+        // directly (not LaporanModel), so we check the same source here.
+        $hasActivities = AktivitasPembelajaran::where('kelas_id', $kelas->id)
+            ->when($mataPelajaran, fn ($q) => $q->where('mata_pelajaran_id', $mataPelajaran->id))
+            ->exists();
 
-        if ($laporanData->isEmpty()) {
-            $this->dispatch('notify', type: 'warning', message: 'Belum ada data laporan untuk kelas dan mata pelajaran ini.');
+        if (! $hasActivities) {
+            $this->dispatch('notify', type: 'warning', message: 'Belum ada data aktivitas untuk kelas dan mata pelajaran ini.');
 
             return null;
         }
@@ -514,7 +525,7 @@ final class Laporan extends Component
             $sanitizedTahun
         );
 
-        return Excel::download(new ClassReportExport($kelas), $filename);
+        return Excel::download(new ClassReportExport($kelas, null, null, $mataPelajaran), $filename);
     }
 
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View

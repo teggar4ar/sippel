@@ -74,7 +74,7 @@ final class Dashboard extends Component
                 'aktivitasPembelajaran',
                 fn ($q) => $q->where('guru_id', Auth::id())
                     ->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $tahunAjaran->id))
-            )->where('kehadiran', 'Hadir')->count();
+            )->where('kehadiran', \App\Enums\KehadiranStatus::Hadir)->count();
 
             $rataKehadiran = $totalDetails > 0 ? round(($hadirCount / $totalDetails) * 100, 1) : 0;
 

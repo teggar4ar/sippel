@@ -14,9 +14,11 @@ Route::get('/health', function () {
     try {
         DB::connection()->getPdo();
 
-        return response()->json(['status' => 'ok', 'database' => 'connected']);
+        return response()->json(['status' => 'ok']);
     } catch (Exception $e) {
-        return response()->json(['status' => 'error', 'database' => 'disconnected'], 503);
+        report($e);
+
+        return response()->json(['status' => 'error'], 503);
     }
 });
 
@@ -34,11 +36,8 @@ Route::get('/app/api/check-role', function () {
         return response()->json(['authorized' => true]);
     }
 
-    // Teachers and students are not authorized - log them out
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-
+    // Teachers and students are not authorized — return 403.
+    // The client-side inactivity-timer.js will redirect to login on any non-2xx response.
     return response()->json(['authorized' => false], 403);
 })->middleware(['web']);
 

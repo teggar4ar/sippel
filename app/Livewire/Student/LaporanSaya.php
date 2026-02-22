@@ -80,7 +80,7 @@ final class LaporanSaya extends Component
         }
 
         return Laporan::where('siswa_id', $siswa->id)
-            ->where('tahun_ajaran_id', $this->tahunAjaranId)
+            ->where('tahun_ajaran_id', $contextId)
             ->when($this->mataPelajaranId, fn ($q) => $q->where('mata_pelajaran_id', $this->mataPelajaranId))
             ->with(['mataPelajaran', 'tahunAjaran'])
             ->orderBy('mata_pelajaran_id')
@@ -126,8 +126,12 @@ final class LaporanSaya extends Component
             return null;
         }
 
+        $contextKelas = $siswa->getKelasForTahunAjaran($tahunAjaran->id);
+        $contextKelas?->load('waliKelas');
+
         $pdf = Pdf::loadView('reports.student-report', [
             'siswa' => $siswa->load(['user', 'kelas']),
+            'contextKelas' => $contextKelas,
             'laporanData' => $laporanData,
             'tahunAjaran' => $tahunAjaran,
         ]);

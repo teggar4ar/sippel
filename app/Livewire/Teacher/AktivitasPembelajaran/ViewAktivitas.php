@@ -36,11 +36,10 @@ final class ViewAktivitas extends Component
         $details = $this->aktivitas->detailAktivitas;
         $total = $details->count();
 
-        // Use case-insensitive comparison for kehadiran
-        $hadir = $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'hadir')->count();
-        $izin = $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'izin')->count();
-        $sakit = $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'sakit')->count();
-        $alpa = $details->filter(fn ($d): bool => mb_strtolower((string) $d->kehadiran) === 'alpa')->count();
+        $hadir = $details->filter(fn ($d): bool => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir)->count();
+        $izin = $details->filter(fn ($d): bool => $d->kehadiran === \App\Enums\KehadiranStatus::Izin)->count();
+        $sakit = $details->filter(fn ($d): bool => $d->kehadiran === \App\Enums\KehadiranStatus::Sakit)->count();
+        $alpa = $details->filter(fn ($d): bool => $d->kehadiran === \App\Enums\KehadiranStatus::Alpa)->count();
 
         return [
             'total' => $total,
