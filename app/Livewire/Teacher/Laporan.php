@@ -39,6 +39,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 final class Laporan extends Component
 {
+    private const string MSG_NO_CLASS_ACCESS = 'Anda tidak memiliki akses ke kelas ini.';
+
+    private const string MSG_INCOMPLETE_DATA = 'Data tidak lengkap.';
+
     // Report type: 'student' or 'class'
     public string $reportType = 'student';
 
@@ -60,10 +64,7 @@ final class Laporan extends Component
     #[Computed]
     public function teacher(): User
     {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
+        return Auth::user();
     }
 
     /**
@@ -357,7 +358,7 @@ final class Laporan extends Component
 
             // Verify class belongs to teacher
             if (! $this->kelasWali->contains('id', $this->kelasId)) {
-                $this->dispatch('notify', type: 'error', message: 'Anda tidak memiliki akses ke kelas ini.');
+                $this->dispatch('notify', type: 'error', message: self::MSG_NO_CLASS_ACCESS);
 
                 return;
             }
@@ -373,7 +374,7 @@ final class Laporan extends Component
     {
         $tahunAjaran = $this->contextTahunAjaran;
         if ($this->siswaId === null || $this->siswaId === 0 || ! $tahunAjaran) {
-            $this->dispatch('notify', type: 'error', message: 'Data tidak lengkap.');
+            $this->dispatch('notify', type: 'error', message: self::MSG_INCOMPLETE_DATA);
 
             return null;
         }
@@ -437,7 +438,7 @@ final class Laporan extends Component
 
         // Security check: verify class belongs to teacher
         if (! $this->kelasWali->contains('id', $this->kelasId)) {
-            $this->dispatch('notify', type: 'error', message: 'Anda tidak memiliki akses ke kelas ini.');
+            $this->dispatch('notify', type: 'error', message: self::MSG_NO_CLASS_ACCESS);
 
             return null;
         }
@@ -483,14 +484,14 @@ final class Laporan extends Component
     {
         $tahunAjaran = $this->contextTahunAjaran;
         if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) || ! $tahunAjaran) {
-            $this->dispatch('notify', type: 'error', message: 'Data tidak lengkap.');
+            $this->dispatch('notify', type: 'error', message: self::MSG_INCOMPLETE_DATA);
 
             return null;
         }
 
         // Security check: verify class belongs to teacher
         if (! $this->kelasWali->contains('id', $this->kelasId)) {
-            $this->dispatch('notify', type: 'error', message: 'Anda tidak memiliki akses ke kelas ini.');
+            $this->dispatch('notify', type: 'error', message: self::MSG_NO_CLASS_ACCESS);
 
             return null;
         }

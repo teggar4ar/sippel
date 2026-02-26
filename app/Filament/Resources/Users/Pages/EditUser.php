@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Pages;
 
+use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
@@ -25,7 +26,7 @@ final class EditUser extends EditRecord
                     if ($record->siswa()->exists()) {
                         Notification::make()
                             ->danger()
-                            ->title('Tidak dapat menghapus user')
+                            ->title(UsersTable::MSG_CANNOT_DELETE)
                             ->body('User ini terhubung dengan data siswa. Hapus data siswa terlebih dahulu.')
                             ->persistent()
                             ->send();
@@ -40,7 +41,7 @@ final class EditUser extends EditRecord
                         if ($record->kelasAsWali()->exists()) {
                             Notification::make()
                                 ->danger()
-                                ->title('Tidak dapat menghapus user')
+                                ->title(UsersTable::MSG_CANNOT_DELETE)
                                 ->body('User ini adalah wali kelas. Hapus atau pindahkan kelas terlebih dahulu.')
                                 ->persistent()
                                 ->send();
@@ -53,14 +54,12 @@ final class EditUser extends EditRecord
                         if ($record->mataPelajaranAsGuru()->exists()) {
                             Notification::make()
                                 ->danger()
-                                ->title('Tidak dapat menghapus user')
+                                ->title(UsersTable::MSG_CANNOT_DELETE)
                                 ->body('User ini mengajar mata pelajaran. Hapus atau pindahkan mata pelajaran terlebih dahulu.')
                                 ->persistent()
                                 ->send();
 
                             $action->cancel();
-
-                            return;
                         }
                     }
                 }),

@@ -76,8 +76,6 @@ final class CreateAktivitas extends Component
         if (! $hasSubjects) {
             session()->flash('error', 'Anda belum ditugaskan sebagai guru mata pelajaran pada tahun ajaran ini. Silakan hubungi admin.');
             $this->redirect(route('teacher.dashboard'), navigate: true);
-
-            return;
         }
     }
 

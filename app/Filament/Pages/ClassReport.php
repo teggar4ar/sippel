@@ -29,6 +29,8 @@ final class ClassReport extends Page implements HasForms
 {
     use InteractsWithForms;
 
+    private const string MSG_DATA_NOT_FOUND = 'Data tidak ditemukan';
+
     public ?int $kelas_id = null;
 
     public ?int $mata_pelajaran_id = null;
@@ -89,7 +91,7 @@ final class ClassReport extends Page implements HasForms
 
         if (! $kelas || ! $mataPelajaran || ! $tahunAjaran) {
             Notification::make()
-                ->title('Data tidak ditemukan')
+                ->title(self::MSG_DATA_NOT_FOUND)
                 ->danger()
                 ->send();
 
@@ -124,7 +126,7 @@ final class ClassReport extends Page implements HasForms
 
         if (! $kelas || ! $mataPelajaran || ! $tahunAjaran) {
             Notification::make()
-                ->title('Data tidak ditemukan')
+                ->title(self::MSG_DATA_NOT_FOUND)
                 ->danger()
                 ->send();
 
@@ -177,7 +179,7 @@ final class ClassReport extends Page implements HasForms
 
         if (! $kelas || ! $tahunAjaran) {
             Notification::make()
-                ->title('Data tidak ditemukan')
+                ->title(self::MSG_DATA_NOT_FOUND)
                 ->danger()
                 ->send();
 

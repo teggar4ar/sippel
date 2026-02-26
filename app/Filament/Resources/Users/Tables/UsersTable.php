@@ -16,6 +16,8 @@ use Filament\Tables\Table;
 
 final class UsersTable
 {
+    public const string MSG_CANNOT_DELETE = 'Tidak dapat menghapus user';
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -108,7 +110,7 @@ final class UsersTable
                         if ($record->siswa()->exists()) {
                             Notification::make()
                                 ->danger()
-                                ->title('Tidak dapat menghapus user')
+                                ->title(self::MSG_CANNOT_DELETE)
                                 ->body('User ini terhubung dengan data siswa. Hapus data siswa terlebih dahulu.')
                                 ->persistent()
                                 ->send();
@@ -121,7 +123,7 @@ final class UsersTable
                             if ($record->kelasAsWali()->exists()) {
                                 Notification::make()
                                     ->danger()
-                                    ->title('Tidak dapat menghapus user')
+                                    ->title(self::MSG_CANNOT_DELETE)
                                     ->body('User ini adalah wali kelas. Hapus atau pindahkan kelas terlebih dahulu.')
                                     ->persistent()
                                     ->send();
@@ -132,7 +134,7 @@ final class UsersTable
                             if ($record->mataPelajaranAsGuru()->exists()) {
                                 Notification::make()
                                     ->danger()
-                                    ->title('Tidak dapat menghapus user')
+                                    ->title(self::MSG_CANNOT_DELETE)
                                     ->body('User ini mengajar mata pelajaran. Hapus atau pindahkan mata pelajaran terlebih dahulu.')
                                     ->persistent()
                                     ->send();
