@@ -44,7 +44,7 @@ final class MataPelajaranForm
             ->placeholder('Contoh: Matematika, Bahasa Indonesia')
             ->helperText('Masukkan nama mata pelajaran')
             ->rules([
-                fn(Get $get, ?MataPelajaran $record): Closure => function (string $_, $value, Closure $fail) use ($get, $record): void {
+                fn (Get $get, ?MataPelajaran $record): Closure => function (string $_, $value, Closure $fail) use ($get, $record): void {
                     $kelasId = $get('kelas_id');
                     if (! $kelasId) {
                         return;
@@ -94,7 +94,7 @@ final class MataPelajaranForm
                 $tingkat = $get('tingkat_kelas');
 
                 $query = Kelas::with('tahunAjaran')
-                    ->whereHas('tahunAjaran', fn($q) => $q->where('status', true));
+                    ->whereHas('tahunAjaran', fn ($q) => $q->where('status', true));
 
                 if ($tingkat) {
                     $query->where('tingkat_kelas', $tingkat);
@@ -104,7 +104,7 @@ final class MataPelajaranForm
                     ->orderBy('tingkat_kelas')
                     ->orderBy('grup_kelas')
                     ->get()
-                    ->mapWithKeys(fn($kelas): array => [
+                    ->mapWithKeys(fn ($kelas): array => [
                         $kelas->id => "{$kelas->tingkat_kelas}{$kelas->grup_kelas} - {$kelas->tahunAjaran->nama_tahun} {$kelas->tahunAjaran->semester}",
                     ])
                     ->toArray();
@@ -130,9 +130,9 @@ final class MataPelajaranForm
             ->relationship(
                 name: 'guru',
                 titleAttribute: 'name',
-                modifyQueryUsing: fn($query) => $query->role('teacher')
+                modifyQueryUsing: fn ($query) => $query->role('teacher')
             )
-            ->getOptionLabelFromRecordUsing(fn($record): string => $record->name . ' (' . $record->email . ')')
+            ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name.' ('.$record->email.')')
             ->searchable(['name', 'email'])
             ->preload()
             ->required()
@@ -148,7 +148,7 @@ final class MataPelajaranForm
         return Section::make('Terapkan ke Grup Kelas Lain')
             ->description('Buat mata pelajaran yang sama untuk grup kelas lain di tingkat yang sama sekaligus. Setiap grup dapat memiliki guru yang berbeda.')
             ->hiddenOn('edit')
-            ->visible(fn(Get $get): bool => (bool) $get('kelas_id'))
+            ->visible(fn (Get $get): bool => (bool) $get('kelas_id'))
             ->schema([
                 Toggle::make('apply_to_other_groups')
                     ->label('Terapkan ke grup kelas lain di tingkat yang sama')
@@ -212,7 +212,7 @@ final class MataPelajaranForm
                         foreach ($others as $other) {
                             $items[] = [
                                 'kelas_id' => (string) $other->id,
-                                'kelas_label' => $other->tingkat_kelas . $other->grup_kelas,
+                                'kelas_label' => $other->tingkat_kelas.$other->grup_kelas,
                                 'guru_id' => $guruId ? (string) $guruId : null,
                                 'enabled' => true,
                             ];
@@ -228,21 +228,21 @@ final class MataPelajaranForm
                         Grid::make(3)
                             ->schema([
                                 Checkbox::make('enabled')
-                                    ->label(fn(Get $get): string => 'Kelas ' . ($get('kelas_label') ?? ''))
+                                    ->label(fn (Get $get): string => 'Kelas '.($get('kelas_label') ?? ''))
                                     ->default(true)
                                     ->live()
                                     ->columnSpan(1),
 
                                 Select::make('guru_id')
                                     ->label('Guru Pengampu')
-                                    ->options(fn(): array => User::role('teacher')
+                                    ->options(fn (): array => User::role('teacher')
                                         ->orderBy('name')
                                         ->pluck('name', 'id')
                                         ->toArray())
                                     ->searchable()
                                     ->native(false)
                                     ->required()
-                                    ->disabled(fn(Get $get): bool => ! (bool) $get('enabled'))
+                                    ->disabled(fn (Get $get): bool => ! (bool) $get('enabled'))
                                     ->dehydratedWhenHidden()
                                     ->columnSpan(2),
                             ]),
@@ -254,7 +254,7 @@ final class MataPelajaranForm
                     ->addable(false)
                     ->deletable(false)
                     ->reorderable(false)
-                    ->visible(fn(Get $get): bool => (bool) $get('apply_to_other_groups'))
+                    ->visible(fn (Get $get): bool => (bool) $get('apply_to_other_groups'))
                     ->columnSpanFull(),
             ])
             ->columnSpanFull();
