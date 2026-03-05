@@ -34,7 +34,7 @@
             {{-- Subject selection --}}
             <div>
                 <flux:select
-                    wire:model.live="mata_pelajaran_id"
+                    wire:model.live="mataPelajaranId"
                     label="Mata Pelajaran *"
                     label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
                     class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
@@ -46,7 +46,7 @@
                         </option>
                     @endforeach
                 </flux:select>
-                @error('mata_pelajaran_id')
+                @error('mataPelajaranId')
                     <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                 @enderror
             </div>

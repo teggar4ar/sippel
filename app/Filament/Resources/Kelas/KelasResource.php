@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Kelas;
 
+use App\Filament\Concerns\AdminOnlyResource;
 use App\Filament\Resources\Kelas\Pages\CreateKelas;
 use App\Filament\Resources\Kelas\Pages\EditKelas;
 use App\Filament\Resources\Kelas\Pages\ListKelas;
@@ -17,10 +18,11 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Auth;
 
 final class KelasResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = Kelas::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
@@ -55,22 +57,6 @@ final class KelasResource extends Resource
     public static function getNavigationGroup(): string
     {
         return 'Master Data';
-    }
-
-    public static function shouldRegisterNavigation(): bool
-    {
-        $user = Auth::user();
-
-        /** @var \App\Models\User|null $user */
-        return Auth::check() && $user && $user->hasRole('admin');
-    }
-
-    public static function canAccess(): bool
-    {
-        $user = Auth::user();
-
-        /** @var \App\Models\User|null $user */
-        return Auth::check() && $user && $user->hasRole('admin');
     }
 
     public static function form(Schema $schema): Schema

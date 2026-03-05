@@ -157,32 +157,7 @@ final class Dashboard extends Component
                 return 0;
             }
 
-            $streak = 0;
-            $lastDate = null;
-
-            foreach ($activities as $activity) {
-                $kehadiran = $activity->kehadiran;
-                $tanggal = $activity->tanggal;
-
-                if (mb_strtolower($kehadiran) === 'hadir') {
-                    $activityDate = \Carbon\Carbon::parse($tanggal);
-
-                    // If first activity or consecutive day (allowing same day)
-                    if (! $lastDate instanceof \Carbon\Carbon) {
-                        $streak++;
-                        $lastDate = $activityDate;
-                    } elseif ($activityDate->isSameDay($lastDate) || $activityDate->diffInDays($lastDate) <= 1) {
-                        $streak++;
-                        $lastDate = $activityDate;
-                    } else {
-                        break; // Gap in attendance, stop counting
-                    }
-                } else {
-                    break; // Not present, stop counting
-                }
-            }
-
-            return $streak;
+            return $this->calculateStreakFromActivities($activities);
         });
     }
 
@@ -244,5 +219,36 @@ final class Dashboard extends Component
             'averageGrade' => $averageGrade,
             'averageParticipation' => $averageParticipation,
         ]);
+    }
+
+    /**
+     * Calculate consecutive attendance streak from a descending-date activity list.
+     *
+     * @param  iterable<object{kehadiran: string, tanggal: string}>  $activities
+     */
+    private function calculateStreakFromActivities(iterable $activities): int
+    {
+        $streak = 0;
+        $lastDate = null;
+
+        foreach ($activities as $activity) {
+            if (mb_strtolower($activity->kehadiran) !== 'hadir') {
+                break; // Not present, stop counting
+            }
+
+            $activityDate = \Carbon\Carbon::parse($activity->tanggal);
+
+            if (! $lastDate instanceof \Carbon\Carbon) {
+                $streak++;
+                $lastDate = $activityDate;
+            } elseif ($activityDate->isSameDay($lastDate) || $activityDate->diffInDays($lastDate) <= 1) {
+                $streak++;
+                $lastDate = $activityDate;
+            } else {
+                break; // Gap in attendance, stop counting
+            }
+        }
+
+        return $streak;
     }
 }

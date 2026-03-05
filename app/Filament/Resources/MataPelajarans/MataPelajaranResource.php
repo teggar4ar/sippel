@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\MataPelajarans;
 
+use App\Filament\Concerns\AdminOnlyResource;
 use App\Filament\Resources\MataPelajarans\Pages\CreateMataPelajaran;
 use App\Filament\Resources\MataPelajarans\Pages\EditMataPelajaran;
 use App\Filament\Resources\MataPelajarans\Pages\ListMataPelajarans;
 use App\Filament\Resources\MataPelajarans\Schemas\MataPelajaranForm;
 use App\Filament\Resources\MataPelajarans\Tables\MataPelajaransTable;
 use App\Models\MataPelajaran;
-use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -18,10 +18,11 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Auth;
 
 final class MataPelajaranResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = MataPelajaran::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
@@ -36,38 +37,9 @@ final class MataPelajaranResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    /**
-     * Set navigation group to Master Data
-     */
     public static function getNavigationGroup(): string
     {
         return 'Master Data';
-    }
-
-    /**
-     * Hide navigation from non-admin users
-     */
-    public static function shouldRegisterNavigation(): bool
-    {
-        $user = Auth::user();
-        if (! $user instanceof User) {
-            return false;
-        }
-
-        return $user->hasRole('admin');
-    }
-
-    /**
-     * Restrict access to admin users only
-     */
-    public static function canAccess(): bool
-    {
-        $user = Auth::user();
-        if (! $user instanceof User) {
-            return false;
-        }
-
-        return $user->hasRole('admin');
     }
 
     public static function form(Schema $schema): Schema

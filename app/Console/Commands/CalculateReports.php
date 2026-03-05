@@ -46,19 +46,7 @@ final class CalculateReports extends Command
     {
         $this->info('Starting report calculation...');
 
-        $tahunAjaranId = $this->option('tahun-ajaran');
-        $siswaId = $this->option('siswa');
-        $force = $this->option('force');
-
-        // Get academic years to process
-        $tahunAjaranQuery = TahunAjaran::query();
-        if ($tahunAjaranId) {
-            $tahunAjaranQuery->where('id', $tahunAjaranId);
-        } else {
-            // By default, only process active academic year
-            $tahunAjaranQuery->where('status', true);
-        }
-        $tahunAjaranList = $tahunAjaranQuery->get();
+        $tahunAjaranList = $this->resolveTahunAjaranList($this->option('tahun-ajaran'));
 
         if ($tahunAjaranList->isEmpty()) {
             $this->warn('No academic years found to process.');
@@ -73,78 +61,11 @@ final class CalculateReports extends Command
         foreach ($tahunAjaranList as $tahunAjaran) {
             $this->info("Processing academic year: {$tahunAjaran->nama_tahun} - {$tahunAjaran->semester}");
 
-            // Get all classes for this academic year
-            $kelasIds = Kelas::where('tahun_ajaran_id', $tahunAjaran->id)->pluck('id');
+            $stats = $this->processTahunAjaran($tahunAjaran, $this->option('siswa'), (bool) $this->option('force'));
 
-            if ($kelasIds->isEmpty()) {
-                $this->warn('  No classes found for this academic year.');
-
-                continue;
-            }
-
-            // Get all subjects for these classes
-            $mataPelajaranList = MataPelajaran::whereIn('kelas_id', $kelasIds)->get();
-
-            if ($mataPelajaranList->isEmpty()) {
-                $this->warn('  No subjects found for this academic year.');
-
-                continue;
-            }
-
-            // Get all students enrolled in these classes for this year.
-            // Prefer kelasHistory, but fall back to current kelas_id when history has not been backfilled.
-            // withTrashed() includes graduated (soft-deleted) students.
-            $siswaQuery = Siswa::withTrashed()
-                ->where(function ($query) use ($tahunAjaran, $kelasIds): void {
-                    $query
-                        ->whereHas(
-                            'kelasHistory',
-                            fn ($q) => $q
-                                ->where('tahun_ajaran_id', $tahunAjaran->id)
-                                ->whereIn('kelas_id', $kelasIds)
-                        )
-                        ->orWhereIn('kelas_id', $kelasIds);
-                });
-            if ($siswaId) {
-                $siswaQuery->where('id', $siswaId);
-            }
-            $siswaList = $siswaQuery->with(['kelasHistory.kelas'])->get();
-
-            if ($siswaList->isEmpty()) {
-                $this->warn('  No students found for this academic year.');
-
-                continue;
-            }
-
-            $bar = $this->output->createProgressBar($siswaList->count() * $mataPelajaranList->count());
-            $bar->start();
-
-            foreach ($siswaList as $siswa) {
-                // Resolve once per student per year — uses eager-loaded kelasHistory
-                $studentKelasId = $siswa->getKelasForTahunAjaran($tahunAjaran->id)?->id;
-
-                foreach ($mataPelajaranList as $mataPelajaran) {
-                    // Only process if the subject belongs to the student's class in THIS year
-                    if ($mataPelajaran->kelas_id !== $studentKelasId) {
-                        $bar->advance();
-
-                        continue;
-                    }
-
-                    $result = $this->calculateAndSaveReport($siswa, $mataPelajaran, $tahunAjaran, $force);
-
-                    match ($result) {
-                        'created' => $totalCreated++,
-                        'updated' => $totalUpdated++,
-                        default => $totalSkipped++,
-                    };
-
-                    $bar->advance();
-                }
-            }
-
-            $bar->finish();
-            $this->newLine();
+            $totalCreated += $stats['created'];
+            $totalUpdated += $stats['updated'];
+            $totalSkipped += $stats['skipped'];
         }
 
         $this->newLine();
@@ -159,6 +80,114 @@ final class CalculateReports extends Command
         );
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Resolve the list of academic years to process based on CLI option.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, TahunAjaran>
+     */
+    private function resolveTahunAjaranList(?string $tahunAjaranId): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = TahunAjaran::query();
+
+        if ($tahunAjaranId) {
+            $query->where('id', $tahunAjaranId);
+        } else {
+            // By default, only process active academic year
+            $query->where('status', true);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Process all students × subjects for one academic year.
+     *
+     * @return array{created: int, updated: int, skipped: int}
+     */
+    private function processTahunAjaran(TahunAjaran $tahunAjaran, ?string $siswaId, bool $force): array
+    {
+        $created = 0;
+        $updated = 0;
+        $skipped = 0;
+
+        // Get all classes for this academic year
+        $kelasIds = Kelas::where('tahun_ajaran_id', $tahunAjaran->id)->pluck('id');
+
+        if ($kelasIds->isEmpty()) {
+            $this->warn('  No classes found for this academic year.');
+
+            return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped];
+        }
+
+        // Get all subjects for these classes
+        $mataPelajaranList = MataPelajaran::whereIn('kelas_id', $kelasIds)->get();
+
+        if ($mataPelajaranList->isEmpty()) {
+            $this->warn('  No subjects found for this academic year.');
+
+            return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped];
+        }
+
+        // Get all students enrolled in these classes for this year.
+        // Prefer kelasHistory, but fall back to current kelas_id when history has not been backfilled.
+        // withTrashed() includes graduated (soft-deleted) students.
+        $siswaQuery = Siswa::withTrashed()
+            ->where(function ($query) use ($tahunAjaran, $kelasIds): void {
+                $query
+                    ->whereHas(
+                        'kelasHistory',
+                        fn ($q) => $q
+                            ->where('tahun_ajaran_id', $tahunAjaran->id)
+                            ->whereIn('kelas_id', $kelasIds)
+                    )
+                    ->orWhereIn('kelas_id', $kelasIds);
+            });
+
+        if ($siswaId) {
+            $siswaQuery->where('id', $siswaId);
+        }
+
+        $siswaList = $siswaQuery->with(['kelasHistory.kelas'])->get();
+
+        if ($siswaList->isEmpty()) {
+            $this->warn('  No students found for this academic year.');
+
+            return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped];
+        }
+
+        $bar = $this->output->createProgressBar($siswaList->count() * $mataPelajaranList->count());
+        $bar->start();
+
+        foreach ($siswaList as $siswa) {
+            // Resolve once per student per year — uses eager-loaded kelasHistory
+            $studentKelasId = $siswa->getKelasForTahunAjaran($tahunAjaran->id)?->id;
+
+            foreach ($mataPelajaranList as $mataPelajaran) {
+                // Only process if the subject belongs to the student's class in THIS year
+                if ($mataPelajaran->kelas_id !== $studentKelasId) {
+                    $bar->advance();
+
+                    continue;
+                }
+
+                $result = $this->calculateAndSaveReport($siswa, $mataPelajaran, $tahunAjaran, $force);
+
+                match ($result) {
+                    'created' => $created++,
+                    'updated' => $updated++,
+                    default => $skipped++,
+                };
+
+                $bar->advance();
+            }
+        }
+
+        $bar->finish();
+        $this->newLine();
+
+        return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped];
     }
 
     /**

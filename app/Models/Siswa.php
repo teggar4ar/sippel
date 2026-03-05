@@ -103,27 +103,16 @@ final class Siswa extends Model
         if ($this->needsQuery($mataPelajaranId, $startDate, $endDate, $tahunAjaranId)) {
             $query = $this->buildFilteredDetailQuery($mataPelajaranId, $startDate, $endDate, $tahunAjaranId);
             $total = (clone $query)->count();
-
-            if ($total === 0) {
-                return 0.0;
-            }
-
             $hadir = (clone $query)->whereRaw('LOWER(detail_aktivitas.kehadiran) = ?', ['hadir'])->count();
 
-            return round(($hadir / $total) * 100, 2);
+            return $this->computeAttendancePercent($hadir, $total);
         }
 
         // Use pre-loaded relation for better performance
         $details = $this->detailAktivitas;
-        $total = $details->count();
-
-        if ($total === 0) {
-            return 0.0;
-        }
-
         $hadir = $details->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Hadir)->count();
 
-        return round(($hadir / $total) * 100, 2);
+        return $this->computeAttendancePercent($hadir, $details->count());
     }
 
     /**
@@ -279,6 +268,19 @@ final class Siswa extends Model
         return Attribute::make(
             get: fn (): ?float => $this->getAverageParticipation(),
         );
+    }
+
+    /**
+     * Compute the attendance percentage from raw hadir/total counts.
+     * Returns 0.0 when total is zero to avoid division by zero.
+     */
+    private function computeAttendancePercent(int $hadir, int $total): float
+    {
+        if ($total === 0) {
+            return 0.0;
+        }
+
+        return round(($hadir / $total) * 100, 2);
     }
 
     // =========================================================================

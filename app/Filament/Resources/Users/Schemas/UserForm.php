@@ -34,12 +34,12 @@ final class UserForm
                 TextInput::make('password')
                     ->label('Password')
                     ->password()
-                    ->required(fn ($livewire): bool => $livewire instanceof CreateUser)
+                    ->required(fn($livewire): bool => $livewire instanceof CreateUser)
                     ->revealable(filament()->arePasswordsRevealable())
                     ->minLength(8)
                     ->maxLength(255)
                     ->autocomplete('new-password')
-                    ->dehydrated(fn ($state): bool => filled($state))
+                    ->dehydrated(fn($state): bool => filled($state))
                     ->helperText('Minimal 8 karakter. Kosongkan jika tidak ingin mengubah password.'),
 
                 Select::make('jenis_kelamin')
@@ -55,7 +55,7 @@ final class UserForm
                 Select::make('role')
                     ->label('Role')
                     ->native(false)
-                    ->options(fn (?User $record): array => array_filter([
+                    ->options(fn(?User $record): array => array_filter([
                         'admin' => 'Admin',
                         'teacher' => 'Guru',
                         // Only show 'student' when editing an existing student user.
@@ -66,7 +66,7 @@ final class UserForm
                     ->placeholder('Pilih role pengguna')
                     ->helperText('Role menentukan hak akses pengguna di sistem')
                     ->rules([
-                        fn (?User $record): Closure => function (string $attribute, $value, Closure $fail) use ($record): void {
+                        fn(?User $record): Closure => function (string $_, $value, Closure $fail) use ($record): void {
                             // Prevent creating a user with the 'student' role directly.
                             // Students must be created via the Siswa page.
                             if (! $record instanceof User && $value === 'student') {

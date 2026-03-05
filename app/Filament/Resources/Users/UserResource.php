@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users;
 
+use App\Filament\Concerns\AdminOnlyResource;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
@@ -16,41 +17,16 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 
 final class UserResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = User::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
     protected static ?string $recordTitleAttribute = 'name';
-
-    /**
-     * Hide Users navigation from non-admin users
-     */
-    public static function shouldRegisterNavigation(): bool
-    {
-        $user = Auth::user();
-        if (! $user instanceof User) {
-            return false;
-        }
-
-        return $user->hasRole('admin');
-    }
-
-    /**
-     * Restrict access to admin users only
-     */
-    public static function canAccess(): bool
-    {
-        $user = Auth::user();
-        if (! $user instanceof User) {
-            return false;
-        }
-
-        return $user->hasRole('admin');
-    }
 
     public static function getNavigationGroup(): string
     {

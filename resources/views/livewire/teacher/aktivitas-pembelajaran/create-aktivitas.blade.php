@@ -83,7 +83,7 @@
                 {{-- Tingkat Kelas --}}
                 <div>
                     <flux:select
-                        wire:model.live="tingkat_kelas"
+                        wire:model.live="tingkatKelas"
                         label="Tingkat Kelas *"
                         label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
                         class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
@@ -93,16 +93,16 @@
                             <option value="{{ $tingkat }}">Kelas {{ $tingkat }}</option>
                         @endforeach
                     </flux:select>
-                    @error('tingkat_kelas')
+                    @error('tingkatKelas')
                         <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
 
                 {{-- Grup Kelas --}}
-                @if($tingkat_kelas !== null)
+                @if($tingkatKelas !== null)
                     <div>
                         <flux:select
-                            wire:model.live="grup_kelas"
+                            wire:model.live="grupKelas"
                             label="Grup Kelas *"
                             label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
                             class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
@@ -112,17 +112,17 @@
                                 <option value="{{ $grup }}">{{ $grup }}</option>
                             @endforeach
                         </flux:select>
-                        @error('grup_kelas')
+                        @error('grupKelas')
                             <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
                 @endif
 
                 {{-- Subject selection --}}
-                @if($grup_kelas !== null && $grup_kelas !== '')
+                @if($grupKelas !== null && $grupKelas !== '')
                     <div>
                         <flux:select
-                            wire:model.live="mata_pelajaran_id"
+                            wire:model.live="mataPelajaranId"
                             label="Mata Pelajaran *"
                             label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
                             class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
@@ -134,7 +134,7 @@
                                 </option>
                             @endforeach
                         </flux:select>
-                        @error('mata_pelajaran_id')
+                        @error('mataPelajaranId')
                             <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
@@ -188,7 +188,7 @@
                     wire:loading.attr="disabled"
                     wire:loading.class="opacity-50 cursor-not-allowed"
                     class="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    {{ !$mata_pelajaran_id ? 'disabled' : '' }}>
+                    {{ !$mataPelajaranId ? 'disabled' : '' }}>
                 <span wire:loading.remove wire:target="nextStep">Lanjut ke Absensi</span>
                 <span wire:loading wire:target="nextStep">Memproses...</span>
                 <flux:icon wire:loading.remove wire:target="nextStep" name="arrow-right" class="w-4 h-4" />

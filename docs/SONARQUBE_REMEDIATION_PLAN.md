@@ -314,7 +314,7 @@ Kemudian ganti di `EditUser.php` dan `UsersTable.php`:
 
 ---
 
-## Fase 3 — Method Identik → Deduplikasi
+## Fase 3 — Method Identik → Deduplikasi ***DONE***
 
 **Issues:** #24, #26, #31, #33, #36, #47, #55 (7 issues)
 **Rule:** `php:S4144`
@@ -463,7 +463,7 @@ Lalu `use AdminOnlyResource;` di setiap resource yang terpengaruh, dan hapus met
 
 ---
 
-## Fase 4 — Cognitive Complexity → Extract Method
+## Fase 4 — Cognitive Complexity → Extract Method ***DONE*** ***TEST PASSED***
 
 **Issues:** #1, #3, #4, #5, #6, #8, #9, #12, #14, #15, #16 (11 issues)
 **Rule:** `php:S3776`
@@ -474,7 +474,7 @@ Lalu `use AdminOnlyResource;` di setiap resource yang terpengaruh, dan hapus met
 
 ---
 
-### 4.1 CalculateReports — Complexity 21
+### 4.1 CalculateReports — Complexity 21 ***TEST PASSED***
 
 #### [CalculateReports.php](../app/Console/Commands/CalculateReports.php) — Issue #1, L45
 
@@ -488,7 +488,7 @@ Lalu `use AdminOnlyResource;` di setiap resource yang terpengaruh, dan hapus met
 
 ---
 
-### 4.2 GantiSemesterPage — Complexity 16
+### 4.2 GantiSemesterPage — Complexity 16 ***TEST PASSED***
 
 #### [GantiSemesterPage.php](../app/Filament/Pages/GantiSemesterPage.php) — Issue #3, L178
 
@@ -499,7 +499,7 @@ Lalu `use AdminOnlyResource;` di setiap resource yang terpengaruh, dan hapus met
 
 ---
 
-### 4.3 KenaikanKelasPage — Complexity 40 dan 36
+### 4.3 KenaikanKelasPage — Complexity 40 dan 36 ***TEST PASSED***
 
 #### [KenaikanKelasPage.php](../app/Filament/Pages/KenaikanKelasPage.php) — Issue #4 (L118, CC=40), #5 (L280, CC=36)
 
@@ -543,7 +543,7 @@ private function processStudentPromotion(Kelas $kelas): void { /* ... */ }
 
 ---
 
-### 4.4 KelasForm — Complexity 18
+### 4.4 KelasForm — Complexity 18 ***TEST PASSED***
 
 #### [KelasForm.php](../app/Filament/Resources/Kelas/Schemas/KelasForm.php) — Issue #6, L15
 
@@ -554,7 +554,7 @@ private function processStudentPromotion(Kelas $kelas): void { /* ... */ }
 
 ---
 
-### 4.5 CreateMataPelajaran — Complexity 29
+### 4.5 CreateMataPelajaran — Complexity 29 ***TEST PASSED***
 
 #### [CreateMataPelajaran.php](../app/Filament/Resources/MataPelajarans/Pages/CreateMataPelajaran.php) — Issue #8, L24
 
@@ -562,7 +562,7 @@ private function processStudentPromotion(Kelas $kelas): void { /* ... */ }
 
 ---
 
-### 4.6 MataPelajaranForm — Complexity 30
+### 4.6 MataPelajaranForm — Complexity 30 ***TEST PASSED***
 
 #### [MataPelajaranForm.php](../app/Filament/Resources/MataPelajarans/Schemas/MataPelajaranForm.php) — Issue #9, L24
 
@@ -586,7 +586,7 @@ public static function configure(Schema $schema): Schema
 
 ---
 
-### 4.7 UsersTable — Complexity 20
+### 4.7 UsersTable — Complexity 20 ***TEST PASSED***
 
 #### [UsersTable.php](../app/Filament/Resources/Users/Tables/UsersTable.php) — Issue #12, L19
 
@@ -597,7 +597,7 @@ public static function configure(Schema $schema): Schema
 
 ---
 
-### 4.8 Student Dashboard — Complexity 18
+### 4.8 Student Dashboard — Complexity 18  ***TEST PASSED***
 
 #### [Dashboard.php](../app/Livewire/Student/Dashboard.php) — Issue #14, L128
 
@@ -621,7 +621,7 @@ Juga terkait Issue #39 (branch duplikat).
 
 ---
 
-### 4.9 CreateAktivitas — Complexity 25
+### 4.9 CreateAktivitas — Complexity 25 ***TEST PASSED***
 
 #### [CreateAktivitas.php](../app/Livewire/Teacher/AktivitasPembelajaran/CreateAktivitas.php) — Issue #15, L257
 
@@ -633,7 +633,7 @@ Juga terkait Issue #39 (branch duplikat).
 
 ---
 
-### 4.10 EditAktivitas — Complexity 24
+### 4.10 EditAktivitas — Complexity 24 ***TEST PASSED***
 
 #### [EditAktivitas.php](../app/Livewire/Teacher/AktivitasPembelajaran/EditAktivitas.php) — Issue #16, L138
 
@@ -641,7 +641,7 @@ Juga terkait Issue #39 (branch duplikat).
 
 ---
 
-## Fase 5 — Terlalu Banyak Return → Early Return / Extract Method
+## Fase 5 — Terlalu Banyak Return → Early Return / Extract Method ***DONE***
 
 **Issues:** #21, #22, #23, #29, #37, #38, #40, #48, #49, #50, #51, #52, #54 (13 issues)
 **Rules:** `php:S1142`, `php:S3358`, `php:S1871`
@@ -770,7 +770,7 @@ Perlakuan sama.
 
 ---
 
-## Fase 6 — Penamaan & Konvensi
+## Fase 6 — Penamaan & Konvensi ***DONE***
 
 **Issues:** #25, #28, #30, #35, #91–#104 (16 issues)
 **Rules:** `php:S116`, `php:S1172`
