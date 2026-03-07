@@ -28,13 +28,9 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Force HTTPS in production (Cloud Run, etc.)
-        if ($this->app->environment('production')) {
-            if (config('app.force_https')) {
-                URL::forceScheme('https');
-                $this->app['request']->server->set('HTTPS', 'on');
-            }
-            // Note: Not forcing HTTP scheme when force_https is false
-            // to allow proper scheme detection from proxy headers
+        if ($this->app->environment('production') && config('app.force_https')) {
+            URL::forceScheme('https');
+            $this->app['request']->server->set('HTTPS', 'on');
         }
 
         $this->configureTable();

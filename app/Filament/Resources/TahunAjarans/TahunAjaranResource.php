@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\TahunAjarans;
 
+use App\Filament\Concerns\AdminOnlyResource;
 use App\Filament\Resources\TahunAjarans\Pages\EditTahunAjaran;
 use App\Filament\Resources\TahunAjarans\Pages\ListTahunAjarans;
 use App\Filament\Resources\TahunAjarans\Schemas\TahunAjaranForm;
@@ -16,10 +17,11 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Auth;
 
 final class TahunAjaranResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = TahunAjaran::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
@@ -37,22 +39,6 @@ final class TahunAjaranResource extends Resource
     public static function getNavigationGroup(): string
     {
         return 'Master Data';
-    }
-
-    public static function shouldRegisterNavigation(): bool
-    {
-        $user = Auth::user();
-
-        /** @var \App\Models\User|null $user */
-        return Auth::check() && $user && $user->hasRole('admin');
-    }
-
-    public static function canAccess(): bool
-    {
-        $user = Auth::user();
-
-        /** @var \App\Models\User|null $user */
-        return Auth::check() && $user && $user->hasRole('admin');
     }
 
     public static function canCreate(): bool

@@ -70,7 +70,7 @@ final class SiswaForm
                                 ->label('Email')
                                 ->required()
                                 ->email()
-                                ->unique('users', 'email', modifyRuleUsing: function ($rule, $get, $record) {
+                                ->unique('users', 'email', modifyRuleUsing: function ($rule, $_, $record) {
                                     // When editing, ignore the current user's email
                                     if ($record && $record->user) {
                                         return $rule->ignore($record->user->id);

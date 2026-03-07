@@ -39,65 +39,13 @@ final class KelasForm
 
                 Select::make('grup_kelas')
                     ->label('Grup Kelas')
-                    ->options(function ($get, $record): array {
-                        $tingkat = $get('tingkat_kelas');
-                        $tahunAjaranId = $get('tahun_ajaran_id');
-
-                        $taken = ($tingkat && $tahunAjaranId)
-                            ? Kelas::where('tingkat_kelas', $tingkat)
-                                ->where('tahun_ajaran_id', $tahunAjaranId)
-                                ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
-                                ->pluck('grup_kelas')
-                                ->map(fn ($l) => mb_strtoupper((string) $l))
-                                ->all()
-                            : [];
-
-                        return collect(range('A', 'Z'))
-                            ->mapWithKeys(function (string $letter) use ($taken): array {
-                                $label = in_array($letter, $taken, true)
-                                    ? "{$letter} (sudah ada)"
-                                    : $letter;
-
-                                return [$letter => $label];
-                            })
-                            ->toArray();
-                    })
+                    ->options(fn ($get, $record): array => self::grupKelasOptions($get, $record))
                     ->required()
                     ->native(false)
                     ->searchable()
                     ->live()
-                    ->helperText(function ($get, $record): string {
-                        $tingkat = $get('tingkat_kelas');
-                        $tahunAjaranId = $get('tahun_ajaran_id');
-
-                        if (! $tingkat || ! $tahunAjaranId) {
-                            return 'Pilih tingkat kelas dan tahun ajaran terlebih dahulu.';
-                        }
-
-                        $taken = Kelas::where('tingkat_kelas', $tingkat)
-                            ->where('tahun_ajaran_id', $tahunAjaranId)
-                            ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
-                            ->pluck('grup_kelas')
-                            ->map(fn ($l) => mb_strtoupper((string) $l))
-                            ->sort()
-                            ->values()
-                            ->all();
-
-                        return $taken
-                            ? 'Grup yang sudah ada: '.implode(', ', $taken).'. Grup baru ditetapkan otomatis.'
-                            : 'Belum ada grup untuk kelas ini. Grup A ditetapkan otomatis.';
-                    })
-                    ->rule(fn ($get, $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
-                        $exists = Kelas::where('tingkat_kelas', $get('tingkat_kelas'))
-                            ->where('tahun_ajaran_id', $get('tahun_ajaran_id'))
-                            ->where('grup_kelas', mb_strtoupper((string) $value))
-                            ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
-                            ->exists();
-
-                        if ($exists) {
-                            $fail("Kelas {$get('tingkat_kelas')}{$value} sudah ada untuk tahun ajaran ini.");
-                        }
-                    })
+                    ->helperText(fn ($get, $record): string => self::grupKelasHelperText($get, $record))
+                    ->rule(fn ($get, $record): Closure => self::grupKelasValidationRule($get, $record))
                     ->columnSpan(1),
 
                 Select::make('tahun_ajaran_id')
@@ -135,6 +83,78 @@ final class KelasForm
                     ->helperText('Pilih guru yang akan menjadi wali kelas')
                     ->columnSpan(2),
             ]);
+    }
+
+    /**
+     * Build the dropdown options for grup_kelas, marking already-taken letters.
+     */
+    private static function grupKelasOptions(mixed $get, mixed $record): array
+    {
+        $tingkat = $get('tingkat_kelas');
+        $tahunAjaranId = $get('tahun_ajaran_id');
+
+        $taken = ($tingkat && $tahunAjaranId)
+            ? Kelas::where('tingkat_kelas', $tingkat)
+                ->where('tahun_ajaran_id', $tahunAjaranId)
+                ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
+                ->pluck('grup_kelas')
+                ->map(fn ($l) => mb_strtoupper((string) $l))
+                ->all()
+            : [];
+
+        return collect(range('A', 'Z'))
+            ->mapWithKeys(function (string $letter) use ($taken): array {
+                $label = in_array($letter, $taken, true)
+                    ? "{$letter} (sudah ada)"
+                    : $letter;
+
+                return [$letter => $label];
+            })
+            ->toArray();
+    }
+
+    /**
+     * Build the helper text for grup_kelas describing which letters are already taken.
+     */
+    private static function grupKelasHelperText(mixed $get, mixed $record): string
+    {
+        $tingkat = $get('tingkat_kelas');
+        $tahunAjaranId = $get('tahun_ajaran_id');
+
+        if (! $tingkat || ! $tahunAjaranId) {
+            return 'Pilih tingkat kelas dan tahun ajaran terlebih dahulu.';
+        }
+
+        $taken = Kelas::where('tingkat_kelas', $tingkat)
+            ->where('tahun_ajaran_id', $tahunAjaranId)
+            ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
+            ->pluck('grup_kelas')
+            ->map(fn ($l) => mb_strtoupper((string) $l))
+            ->sort()
+            ->values()
+            ->all();
+
+        return $taken
+            ? 'Grup yang sudah ada: '.implode(', ', $taken).'. Grup baru ditetapkan otomatis.'
+            : 'Belum ada grup untuk kelas ini. Grup A ditetapkan otomatis.';
+    }
+
+    /**
+     * Build the validation rule closure for grup_kelas uniqueness.
+     */
+    private static function grupKelasValidationRule(mixed $get, mixed $record): Closure
+    {
+        return function (string $_, mixed $value, Closure $fail) use ($get, $record): void {
+            $exists = Kelas::where('tingkat_kelas', $get('tingkat_kelas'))
+                ->where('tahun_ajaran_id', $get('tahun_ajaran_id'))
+                ->where('grup_kelas', mb_strtoupper((string) $value))
+                ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
+                ->exists();
+
+            if ($exists) {
+                $fail("Kelas {$get('tingkat_kelas')}{$value} sudah ada untuk tahun ajaran ini.");
+            }
+        };
     }
 
     /**

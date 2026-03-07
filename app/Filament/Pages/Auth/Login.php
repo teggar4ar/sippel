@@ -16,6 +16,12 @@ use SensitiveParameter;
 
 final class Login extends BasePage
 {
+    /** @var array<string,string> Role → redirect path map (admin/unknown falls through to Filament). */
+    private const array ROLE_REDIRECTS = [
+        'teacher' => '/teacher',
+        'student' => '/student',
+    ];
+
     /**
      * Custom heading for login page.
      */
@@ -106,32 +112,19 @@ final class Login extends BasePage
 
     /**
      * Get the appropriate redirect URL based on user role.
+     * Admin and unknown roles fall back to the Filament dashboard.
      */
     private function getRoleBasedRedirectUrl(): string
     {
         /** @var User|null $user */
         $user = Auth::user();
 
-        if (! $user) {
-            return Filament::getUrl();
+        foreach (self::ROLE_REDIRECTS as $role => $route) {
+            if ($user?->hasRole($role)) {
+                return $route;
+            }
         }
 
-        // Admin goes to FilamentPHP dashboard
-        if ($user->hasRole('admin')) {
-            return Filament::getUrl();
-        }
-
-        // Teacher goes to Flux UI teacher interface
-        if ($user->hasRole('teacher')) {
-            return '/teacher';
-        }
-
-        // Student goes to Flux UI student interface
-        if ($user->hasRole('student')) {
-            return '/student';
-        }
-
-        // Fallback to FilamentPHP dashboard
         return Filament::getUrl();
     }
 }

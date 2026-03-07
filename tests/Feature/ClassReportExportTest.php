@@ -202,9 +202,9 @@ it('only includes activities for the specified subject when mata pelajaran is pa
 
 it('scopes activities to kelas via aktivitas_pembelajaran when spanning multiple semesters', function () {
     // Simulate GantiSemester: student moved to new kelas, old kelas has old activities
-    $newTahunAjaran = TahunAjaran::factory()->create(['status' => false]);
+    $oldTahunAjaran = TahunAjaran::factory()->create(['status' => false]);
     $oldKelas = Kelas::factory()->create([
-        'tahun_ajaran_id' => $this->tahunAjaran->id,
+        'tahun_ajaran_id' => $oldTahunAjaran->id,
         'wali_kelas_id' => $this->teacher->id,
     ]);
     $oldMapel = MataPelajaran::create([

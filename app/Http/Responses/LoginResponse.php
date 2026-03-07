@@ -13,31 +13,24 @@ use Livewire\Features\SupportRedirects\Redirector;
 
 final class LoginResponse implements LoginResponseContract
 {
+    /** @var array<string,string> Role → redirect path (admin/unknown falls through to Filament). */
+    private const array ROLE_REDIRECTS = [
+        'teacher' => '/teacher',
+        'student' => '/student',
+    ];
+
     public function toResponse($request): RedirectResponse|Redirector
     {
         /** @var User|null $user */
         $user = Auth::user();
 
-        if (! $user) {
-            return redirect()->intended(Filament::getUrl());
+        foreach (self::ROLE_REDIRECTS as $role => $route) {
+            if ($user?->hasRole($role)) {
+                return redirect($route);
+            }
         }
 
-        // Admin goes to FilamentPHP dashboard
-        if ($user->hasRole('admin')) {
-            return redirect()->intended(Filament::getUrl());
-        }
-
-        // Teacher goes to Flux UI teacher interface
-        if ($user->hasRole('teacher')) {
-            return redirect('/teacher');
-        }
-
-        // Student goes to Flux UI student interface
-        if ($user->hasRole('student')) {
-            return redirect('/student');
-        }
-
-        // Fallback to FilamentPHP dashboard
+        // Admin and unknown roles go to FilamentPHP dashboard
         return redirect()->intended(Filament::getUrl());
     }
 }

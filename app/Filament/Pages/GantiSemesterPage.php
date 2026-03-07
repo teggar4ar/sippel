@@ -14,11 +14,11 @@ use App\Models\User;
 use BackedEnum;
 use Exception;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
@@ -153,20 +153,20 @@ final class GantiSemesterPage extends Page implements HasForms
                         ->schema([
                             Section::make('Ringkasan')
                                 ->schema([
-                                    Placeholder::make('summary_tahun')
+                                    TextEntry::make('summary_tahun')
                                         ->label('Tahun Ajaran Baru')
-                                        ->content(fn ($get): string => "{$get('namaTahun')} - Semester {$get('semester')}"),
-                                    Placeholder::make('summary_dates')
+                                        ->state(fn ($get): string => "{$get('namaTahun')} - Semester {$get('semester')}"),
+                                    TextEntry::make('summary_dates')
                                         ->label('Periode')
-                                        ->content(fn ($get): string => "{$get('tanggalMulai')} s/d {$get('tanggalSelesai')}"),
-                                    Placeholder::make('summary_classes')
+                                        ->state(fn ($get): string => "{$get('tanggalMulai')} s/d {$get('tanggalSelesai')}"),
+                                    TextEntry::make('summary_classes')
                                         ->label('Jumlah Kelas')
-                                        ->content($this->currentClasses->count()),
-                                    Placeholder::make('summary_students')
+                                        ->state($this->currentClasses->count()),
+                                    TextEntry::make('summary_students')
                                         ->label('Total Siswa')
-                                        ->content($this->getTotalStudentsProperty()),
-                                    Placeholder::make('info')
-                                        ->content(new HtmlString('<span class="text-warning-600 font-medium">Perhatian: Tahun ajaran lama akan dinonaktifkan. Pastikan semua data sudah benar.</span>')),
+                                        ->state($this->getTotalStudentsProperty()),
+                                    TextEntry::make('info')
+                                        ->state(new HtmlString('<span class="text-warning-600 font-medium">Perhatian: Tahun ajaran lama akan dinonaktifkan. Pastikan semua data sudah benar.</span>')),
                                 ]),
                         ]),
                 ])
@@ -185,12 +185,7 @@ final class GantiSemesterPage extends Page implements HasForms
         $tanggalSelesai = $data['tanggalSelesai'];
         $waliKelasAssignments = $data['waliKelasAssignments'] ?? [];
 
-        // Manual validation for duplicate/existing year
-        $exists = TahunAjaran::where('nama_tahun', $namaTahun)
-            ->where('semester', $semester)
-            ->exists();
-
-        if ($exists) {
+        if ($this->tahunAjaranAlreadyExists($namaTahun, $semester)) {
             Notification::make()
                 ->title('Tahun Ajaran Sudah Ada')
                 ->body("Tahun ajaran {$namaTahun} semester {$semester} sudah ada.")
@@ -216,65 +211,10 @@ final class GantiSemesterPage extends Page implements HasForms
                     'status' => true,
                 ]);
 
-                // 3. Create new classes and migrate students
-                $kelasMapping = []; // old_kelas_id => new_kelas_id
-
-                foreach ($this->currentClasses as $oldKelas) {
-                    $newKelas = Kelas::create([
-                        'tingkat_kelas' => $oldKelas->tingkat_kelas,
-                        'grup_kelas' => $oldKelas->grup_kelas,
-                        'wali_kelas_id' => $waliKelasAssignments[$oldKelas->id] ?? null,
-                        'tahun_ajaran_id' => $newTahunAjaran->id,
-                    ]);
-
-                    $kelasMapping[$oldKelas->id] = $newKelas->id;
-                }
-
-                // 4. Migrate students to new classes and record history
-                foreach ($this->currentClasses as $oldKelas) {
-                    $newKelasId = $kelasMapping[$oldKelas->id];
-                    $siswaInClass = Siswa::where('kelas_id', $oldKelas->id)->get();
-
-                    foreach ($siswaInClass as $siswa) {
-                        // Record OLD enrollment (current semester) before it is overwritten
-                        SiswaKelasHistory::firstOrCreate(
-                            [
-                                'siswa_id' => $siswa->id,
-                                'tahun_ajaran_id' => $this->activeTahunAjaran->id,
-                            ],
-                            ['kelas_id' => $oldKelas->id]
-                        );
-
-                        // Move student to the new class
-                        $siswa->update(['kelas_id' => $newKelasId]);
-
-                        // Record NEW enrollment (new semester)
-                        SiswaKelasHistory::firstOrCreate(
-                            [
-                                'siswa_id' => $siswa->id,
-                                'tahun_ajaran_id' => $newTahunAjaran->id,
-                            ],
-                            ['kelas_id' => $newKelasId]
-                        );
-                    }
-                }
-
-                // 5. Migrate mata pelajaran to new classes
-                foreach ($this->currentClasses as $oldKelas) {
-                    $newKelasId = $kelasMapping[$oldKelas->id];
-
-                    // Get all mata pelajaran from old class
-                    $oldMataPelajaran = MataPelajaran::where('kelas_id', $oldKelas->id)->get();
-
-                    // Create new mata pelajaran for each subject in the new class
-                    foreach ($oldMataPelajaran as $mapel) {
-                        MataPelajaran::create([
-                            'nama_mapel' => $mapel->nama_mapel,
-                            'guru_id' => $mapel->guru_id,
-                            'kelas_id' => $newKelasId,
-                        ]);
-                    }
-                }
+                // 3–5. Create new classes, migrate students, migrate subjects
+                $kelasMapping = $this->createNewKelasMapping($newTahunAjaran, $waliKelasAssignments);
+                $this->migrateStudentsToNewSemester($newTahunAjaran, $kelasMapping);
+                $this->migrateSubjectsToNewSemester($kelasMapping);
             });
 
             Notification::make()
@@ -297,5 +237,93 @@ final class GantiSemesterPage extends Page implements HasForms
     public function getTotalStudentsProperty(): int
     {
         return $this->currentClasses->sum(fn ($kelas) => $kelas->siswa->count());
+    }
+
+    private function tahunAjaranAlreadyExists(string $namaTahun, string $semester): bool
+    {
+        return TahunAjaran::where('nama_tahun', $namaTahun)
+            ->where('semester', $semester)
+            ->exists();
+    }
+
+    /**
+     * Create new Kelas records for the incoming semester and return an old → new ID map.
+     *
+     * @param  array<int|string, mixed>  $waliKelasAssignments
+     * @return array<int, int>
+     */
+    private function createNewKelasMapping(TahunAjaran $newTahunAjaran, array $waliKelasAssignments): array
+    {
+        $kelasMapping = [];
+
+        foreach ($this->currentClasses as $oldKelas) {
+            $newKelas = Kelas::create([
+                'tingkat_kelas' => $oldKelas->tingkat_kelas,
+                'grup_kelas' => $oldKelas->grup_kelas,
+                'wali_kelas_id' => $waliKelasAssignments[$oldKelas->id] ?? null,
+                'tahun_ajaran_id' => $newTahunAjaran->id,
+            ]);
+
+            $kelasMapping[$oldKelas->id] = $newKelas->id;
+        }
+
+        return $kelasMapping;
+    }
+
+    /**
+     * Move all students to their new class and record SiswaKelasHistory for both semesters.
+     *
+     * @param  array<int, int>  $kelasMapping
+     */
+    private function migrateStudentsToNewSemester(TahunAjaran $newTahunAjaran, array $kelasMapping): void
+    {
+        foreach ($this->currentClasses as $oldKelas) {
+            $newKelasId = $kelasMapping[$oldKelas->id];
+            $siswaInClass = Siswa::where('kelas_id', $oldKelas->id)->get();
+
+            foreach ($siswaInClass as $siswa) {
+                // Record OLD enrollment (current semester) before it is overwritten
+                SiswaKelasHistory::firstOrCreate(
+                    [
+                        'siswa_id' => $siswa->id,
+                        'tahun_ajaran_id' => $this->activeTahunAjaran->id,
+                    ],
+                    ['kelas_id' => $oldKelas->id]
+                );
+
+                // Move student to the new class
+                $siswa->update(['kelas_id' => $newKelasId]);
+
+                // Record NEW enrollment (new semester)
+                SiswaKelasHistory::firstOrCreate(
+                    [
+                        'siswa_id' => $siswa->id,
+                        'tahun_ajaran_id' => $newTahunAjaran->id,
+                    ],
+                    ['kelas_id' => $newKelasId]
+                );
+            }
+        }
+    }
+
+    /**
+     * Duplicate all MataPelajaran records into the corresponding new classes.
+     *
+     * @param  array<int, int>  $kelasMapping
+     */
+    private function migrateSubjectsToNewSemester(array $kelasMapping): void
+    {
+        foreach ($this->currentClasses as $oldKelas) {
+            $newKelasId = $kelasMapping[$oldKelas->id];
+            $oldMataPelajaran = MataPelajaran::where('kelas_id', $oldKelas->id)->get();
+
+            foreach ($oldMataPelajaran as $mapel) {
+                MataPelajaran::create([
+                    'nama_mapel' => $mapel->nama_mapel,
+                    'guru_id' => $mapel->guru_id,
+                    'kelas_id' => $newKelasId,
+                ]);
+            }
+        }
     }
 }

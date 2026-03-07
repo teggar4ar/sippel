@@ -83,7 +83,7 @@
                 {{-- Tingkat Kelas --}}
                 <div>
                     <flux:select
-                        wire:model.live="tingkat_kelas"
+                        wire:model.live="tingkatKelas"
                         label="Tingkat Kelas *"
                         label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
                         class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
@@ -93,16 +93,16 @@
                             <option value="{{ $tingkat }}">Kelas {{ $tingkat }}</option>
                         @endforeach
                     </flux:select>
-                    @error('tingkat_kelas')
+                    @error('tingkatKelas')
                         <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
 
                 {{-- Grup Kelas --}}
-                @if($tingkat_kelas !== null)
+                @if($tingkatKelas !== null)
                     <div>
                         <flux:select
-                            wire:model.live="grup_kelas"
+                            wire:model.live="grupKelas"
                             label="Grup Kelas *"
                             label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
                             class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
@@ -112,17 +112,17 @@
                                 <option value="{{ $grup }}">{{ $grup }}</option>
                             @endforeach
                         </flux:select>
-                        @error('grup_kelas')
+                        @error('grupKelas')
                             <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
                 @endif
 
                 {{-- Subject selection --}}
-                @if($grup_kelas !== null && $grup_kelas !== '')
+                @if($grupKelas !== null && $grupKelas !== '')
                     <div>
                         <flux:select
-                            wire:model.live="mata_pelajaran_id"
+                            wire:model.live="mataPelajaranId"
                             label="Mata Pelajaran *"
                             label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
                             class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
@@ -134,7 +134,7 @@
                                 </option>
                             @endforeach
                         </flux:select>
-                        @error('mata_pelajaran_id')
+                        @error('mataPelajaranId')
                             <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
@@ -188,7 +188,7 @@
                     wire:loading.attr="disabled"
                     wire:loading.class="opacity-50 cursor-not-allowed"
                     class="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    {{ !$mata_pelajaran_id ? 'disabled' : '' }}>
+                    {{ !$mataPelajaranId ? 'disabled' : '' }}>
                 <span wire:loading.remove wire:target="nextStep">Lanjut ke Absensi</span>
                 <span wire:loading wire:target="nextStep">Memproses...</span>
                 <flux:icon wire:loading.remove wire:target="nextStep" name="arrow-right" class="w-4 h-4" />
@@ -337,8 +337,9 @@
                                 {{-- Grade and participation (inline) --}}
                                 <div class="flex gap-2 {{ !$isHadir ? 'opacity-40 pointer-events-none' : '' }}">
                                     <div class="flex-1">
-                                        <label class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Nilai</label>
+                                        <label for="nilai-{{ $siswa->id }}" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Nilai</label>
                                     <flux:input
+                                        id="nilai-{{ $siswa->id }}"
                                         type="number"
                                         wire:model="detailAktivitas.{{ $siswa->id }}.nilai"
                                         min="0"
@@ -349,8 +350,9 @@
                                     />
                                     </div>
                                     <div class="flex-1">
-                                        <label class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Partisipasi</label>
+                                        <label for="partisipasi-{{ $siswa->id }}" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Partisipasi</label>
                                     <flux:select
+                                        id="partisipasi-{{ $siswa->id }}"
                                         wire:model="detailAktivitas.{{ $siswa->id }}.partisipasi"
                                         :disabled="!$isHadir"
                                         class="h-9 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
@@ -365,8 +367,9 @@
 
                                 {{-- Notes (collapsible) --}}
                                 <div>
-                                    <label class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Catatan</label>
+                                    <label for="catatan-{{ $siswa->id }}" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Catatan</label>
                                     <flux:input
+                                        id="catatan-{{ $siswa->id }}"
                                         type="text"
                                         wire:model="detailAktivitas.{{ $siswa->id }}.catatan"
                                         placeholder="Catatan siswa (opsional)"

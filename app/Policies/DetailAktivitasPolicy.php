@@ -77,22 +77,7 @@ final class DetailAktivitasPolicy
      */
     public function update(User $user, DetailAktivitas $detailAktivitas): bool
     {
-        // Admin can update all
-        if ($user->hasRole('admin')) {
-            return true;
-        }
-
-        // Teacher can update activities from their class
-        if ($user->hasRole('teacher')) {
-            $allowedKelasIds = $this->getTeacherKelasIds($user);
-            /** @var AktivitasPembelajaran|null $aktivitas */
-            $aktivitas = $detailAktivitas->aktivitasPembelajaran;
-
-            return $aktivitas !== null && in_array($aktivitas->kelas_id, $allowedKelasIds, true);
-        }
-
-        // Students cannot update
-        return false;
+        return $this->canModify($user, $detailAktivitas);
     }
 
     /**
@@ -100,22 +85,7 @@ final class DetailAktivitasPolicy
      */
     public function delete(User $user, DetailAktivitas $detailAktivitas): bool
     {
-        // Admin can delete all
-        if ($user->hasRole('admin')) {
-            return true;
-        }
-
-        // Teacher can delete activities from their class
-        if ($user->hasRole('teacher')) {
-            $allowedKelasIds = $this->getTeacherKelasIds($user);
-            /** @var AktivitasPembelajaran|null $aktivitas */
-            $aktivitas = $detailAktivitas->aktivitasPembelajaran;
-
-            return $aktivitas !== null && in_array($aktivitas->kelas_id, $allowedKelasIds, true);
-        }
-
-        // Students cannot delete
-        return false;
+        return $this->canModify($user, $detailAktivitas);
     }
 
     /**
@@ -134,6 +104,27 @@ final class DetailAktivitasPolicy
     {
         // Only admin can force delete
         return $user->hasRole('admin');
+    }
+
+    /**
+     * Shared logic for update and delete: admin can always modify,
+     * teachers can modify activities from their own classes.
+     */
+    private function canModify(User $user, DetailAktivitas $detailAktivitas): bool
+    {
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        if ($user->hasRole('teacher')) {
+            $allowedKelasIds = $this->getTeacherKelasIds($user);
+            /** @var AktivitasPembelajaran|null $aktivitas */
+            $aktivitas = $detailAktivitas->aktivitasPembelajaran;
+
+            return $aktivitas !== null && in_array($aktivitas->kelas_id, $allowedKelasIds, true);
+        }
+
+        return false;
     }
 
     /**

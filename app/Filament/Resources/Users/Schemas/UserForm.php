@@ -66,7 +66,7 @@ final class UserForm
                     ->placeholder('Pilih role pengguna')
                     ->helperText('Role menentukan hak akses pengguna di sistem')
                     ->rules([
-                        fn (?User $record): Closure => function (string $attribute, $value, Closure $fail) use ($record): void {
+                        fn (?User $record): Closure => function (string $_, $value, Closure $fail) use ($record): void {
                             // Prevent creating a user with the 'student' role directly.
                             // Students must be created via the Siswa page.
                             if (! $record instanceof User && $value === 'student') {

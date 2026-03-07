@@ -22,6 +22,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -29,13 +30,13 @@ final class ClassReport extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    public ?int $kelas_id = null;
+    public ?int $kelasId = null;
 
-    public ?int $mata_pelajaran_id = null;
+    public ?int $mataPelajaranId = null;
 
-    public ?int $tahun_ajaran_id = null;
+    public ?int $tahunAjaranId = null;
 
-    public string $sort_by = 'nilai';
+    public string $sortBy = 'nilai';
 
     /**
      * @var array<string, mixed>|null
@@ -69,7 +70,7 @@ final class ClassReport extends Page implements HasForms
     {
         // Set default to active academic year
         $activeTahunAjaran = TahunAjaran::where('status', true)->first();
-        $this->tahun_ajaran_id = $activeTahunAjaran?->id;
+        $this->tahunAjaranId = $activeTahunAjaran?->id;
     }
 
     /**
@@ -78,14 +79,14 @@ final class ClassReport extends Page implements HasForms
     public function generatePreview(): void
     {
         $this->validate([
-            'kelas_id' => ['required', 'exists:kelas,id'],
-            'mata_pelajaran_id' => ['required', 'exists:mata_pelajaran,id'],
-            'tahun_ajaran_id' => ['required', 'exists:tahun_ajaran,id'],
+            'kelasId' => ['required', 'exists:kelas,id'],
+            'mataPelajaranId' => ['required', 'exists:mata_pelajaran,id'],
+            'tahunAjaranId' => ['required', 'exists:tahun_ajaran,id'],
         ]);
 
-        $kelas = Kelas::with('waliKelas')->find($this->kelas_id);
-        $mataPelajaran = MataPelajaran::with('guru')->find($this->mata_pelajaran_id);
-        $tahunAjaran = TahunAjaran::find($this->tahun_ajaran_id);
+        $kelas = Kelas::with('waliKelas')->find($this->kelasId);
+        $mataPelajaran = MataPelajaran::with('guru')->find($this->mataPelajaranId);
+        $tahunAjaran = TahunAjaran::find($this->tahunAjaranId);
 
         if (! $kelas || ! $mataPelajaran || ! $tahunAjaran) {
             Notification::make()
@@ -113,14 +114,14 @@ final class ClassReport extends Page implements HasForms
     public function downloadPdf(): ?StreamedResponse
     {
         $this->validate([
-            'kelas_id' => ['required', 'exists:kelas,id'],
-            'mata_pelajaran_id' => ['required', 'exists:mata_pelajaran,id'],
-            'tahun_ajaran_id' => ['required', 'exists:tahun_ajaran,id'],
+            'kelasId' => ['required', 'exists:kelas,id'],
+            'mataPelajaranId' => ['required', 'exists:mata_pelajaran,id'],
+            'tahunAjaranId' => ['required', 'exists:tahun_ajaran,id'],
         ]);
 
-        $kelas = Kelas::with('waliKelas')->find($this->kelas_id);
-        $mataPelajaran = MataPelajaran::with('guru')->find($this->mata_pelajaran_id);
-        $tahunAjaran = TahunAjaran::find($this->tahun_ajaran_id);
+        $kelas = Kelas::with('waliKelas')->find($this->kelasId);
+        $mataPelajaran = MataPelajaran::with('guru')->find($this->mataPelajaranId);
+        $tahunAjaran = TahunAjaran::find($this->tahunAjaranId);
 
         if (! $kelas || ! $mataPelajaran || ! $tahunAjaran) {
             Notification::make()
@@ -167,51 +168,17 @@ final class ClassReport extends Page implements HasForms
     public function exportExcel(): mixed
     {
         $this->validate([
-            'kelas_id' => ['required', 'exists:kelas,id'],
-            'mata_pelajaran_id' => ['required', 'exists:mata_pelajaran,id'],
-            'tahun_ajaran_id' => ['required', 'exists:tahun_ajaran,id'],
+            'kelasId' => ['required', 'exists:kelas,id'],
+            'mataPelajaranId' => ['required', 'exists:mata_pelajaran,id'],
+            'tahunAjaranId' => ['required', 'exists:tahun_ajaran,id'],
         ]);
 
-        $kelas = Kelas::find($this->kelas_id);
-        $tahunAjaran = TahunAjaran::find($this->tahun_ajaran_id);
-
-        if (! $kelas || ! $tahunAjaran) {
-            Notification::make()
-                ->title('Data tidak ditemukan')
-                ->danger()
-                ->send();
-
+        $resolved = $this->resolveKelasForExcelExport();
+        if ($resolved === null) {
             return null;
         }
 
-        // Check authorization
-        if (! auth()->user()?->can('export-class-report', $kelas)) {
-            Notification::make()
-                ->title('Tidak memiliki akses')
-                ->body('Anda tidak memiliki izin untuk mengekspor laporan kelas ini.')
-                ->danger()
-                ->send();
-
-            return null;
-        }
-
-        $mataPelajaran = MataPelajaran::with('guru')->find($this->mata_pelajaran_id);
-
-        // Guard using the same data source the export queries (DetailAktivitas),
-        // not Laporan aggregates which require kelasHistory to be complete.
-        $hasActivities = AktivitasPembelajaran::where('kelas_id', $kelas->id)
-            ->when($mataPelajaran, fn ($q) => $q->where('mata_pelajaran_id', $mataPelajaran->id))
-            ->exists();
-
-        if (! $hasActivities) {
-            Notification::make()
-                ->title('Tidak ada data aktivitas')
-                ->body('Kelas ini belum memiliki data aktivitas untuk mata pelajaran yang dipilih.')
-                ->warning()
-                ->send();
-
-            return null;
-        }
+        [$kelas, $tahunAjaran, $mataPelajaran] = $resolved;
 
         $sanitizedTahun = str_replace(['/', '\\'], '-', $tahunAjaran->nama_tahun);
         $filename = sprintf(
@@ -230,7 +197,7 @@ final class ClassReport extends Page implements HasForms
     protected function getFormSchema(): array
     {
         return [
-            Select::make('tahun_ajaran_id')
+            Select::make('tahunAjaranId')
                 ->label('Tahun Ajaran')
                 ->native(false)
                 ->options(
@@ -244,17 +211,17 @@ final class ClassReport extends Page implements HasForms
                 ->required()
                 ->live()
                 ->afterStateUpdated(function (): void {
-                    $this->kelas_id = null;
-                    $this->mata_pelajaran_id = null;
+                    $this->kelasId = null;
+                    $this->mataPelajaranId = null;
                     $this->previewData = null;
                 }),
 
-            Select::make('kelas_id')
+            Select::make('kelasId')
                 ->label('Pilih Kelas')
                 ->native(false)
                 ->options(function (Get $get): array {
                     /** @var int|null $tahunAjaranId */
-                    $tahunAjaranId = $get('tahun_ajaran_id');
+                    $tahunAjaranId = $get('tahunAjaranId');
                     if (! $tahunAjaranId) {
                         return [];
                     }
@@ -270,16 +237,16 @@ final class ClassReport extends Page implements HasForms
                 ->required()
                 ->live()
                 ->afterStateUpdated(function (): void {
-                    $this->mata_pelajaran_id = null;
+                    $this->mataPelajaranId = null;
                     $this->previewData = null;
                 }),
 
-            Select::make('mata_pelajaran_id')
+            Select::make('mataPelajaranId')
                 ->label('Mata Pelajaran')
                 ->native(false)
                 ->options(function (Get $get): array {
                     /** @var int|null $kelasId */
-                    $kelasId = $get('kelas_id');
+                    $kelasId = $get('kelasId');
                     if (! $kelasId) {
                         return [];
                     }
@@ -296,7 +263,7 @@ final class ClassReport extends Page implements HasForms
                 ->live()
                 ->afterStateUpdated(fn (): null => $this->previewData = null),
 
-            Select::make('sort_by')
+            Select::make('sortBy')
                 ->label('Urutkan Berdasarkan')
                 ->native(false)
                 ->options([
@@ -309,6 +276,57 @@ final class ClassReport extends Page implements HasForms
                 ->live()
                 ->afterStateUpdated(fn (): null => $this->previewData = null),
         ];
+    }
+
+    /**
+     * Load and authorise data needed for the Excel export.
+     * Sends a Filament notification and returns null on any validation/auth failure.
+     *
+     * @return array{0: Kelas, 1: TahunAjaran, 2: MataPelajaran|null}|null
+     */
+    private function resolveKelasForExcelExport(): ?array
+    {
+        $kelas = Kelas::find($this->kelasId);
+        $tahunAjaran = TahunAjaran::find($this->tahunAjaranId);
+
+        if (! $kelas || ! $tahunAjaran) {
+            Notification::make()
+                ->title('Data tidak ditemukan')
+                ->danger()
+                ->send();
+
+            return null;
+        }
+
+        if (! Gate::allows('export-class-report', $kelas)) {
+            Notification::make()
+                ->title('Tidak memiliki akses')
+                ->body('Anda tidak memiliki izin untuk mengekspor laporan kelas ini.')
+                ->danger()
+                ->send();
+
+            return null;
+        }
+
+        $mataPelajaran = MataPelajaran::with('guru')->find($this->mataPelajaranId);
+
+        // Guard using the same data source the export queries (DetailAktivitas),
+        // not Laporan aggregates which require kelasHistory to be complete.
+        $hasActivities = AktivitasPembelajaran::where('kelas_id', $kelas->id)
+            ->when($mataPelajaran, fn ($q) => $q->where('mata_pelajaran_id', $mataPelajaran->id))
+            ->exists();
+
+        if (! $hasActivities) {
+            Notification::make()
+                ->title('Tidak ada data aktivitas')
+                ->body('Kelas ini belum memiliki data aktivitas untuk mata pelajaran yang dipilih.')
+                ->warning()
+                ->send();
+
+            return null;
+        }
+
+        return [$kelas, $tahunAjaran, $mataPelajaran];
     }
 
     /**
@@ -332,7 +350,7 @@ final class ClassReport extends Page implements HasForms
             ->get();
 
         // Apply sorting
-        return match ($this->sort_by) {
+        return match ($this->sortBy) {
             'nilai' => $laporanData->sortByDesc('rata_nilai')->values(),
             'nilai_asc' => $laporanData->sortBy('rata_nilai')->values(),
             'kehadiran' => $laporanData->sortByDesc('rata_kehadiran')->values(),

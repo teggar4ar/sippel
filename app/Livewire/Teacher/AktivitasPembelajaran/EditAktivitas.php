@@ -27,13 +27,13 @@ final class EditAktivitas extends Component
     // Activity information
     public string $tanggal = '';
 
-    public ?int $mata_pelajaran_id = null;
+    public ?int $mataPelajaranId = null;
 
     public string $topik = '';
 
     public string $catatan = '';
 
-    public ?int $kelas_id = null;
+    public ?int $kelasId = null;
 
     // Student attendance details
     public array $detailAktivitas = [];
@@ -65,8 +65,8 @@ final class EditAktivitas extends Component
 
         // Load activity data
         $this->tanggal = $this->aktivitas->tanggal->format('Y-m-d');
-        $this->mata_pelajaran_id = $this->aktivitas->mata_pelajaran_id;
-        $this->kelas_id = $this->aktivitas->kelas_id;
+        $this->mataPelajaranId = $this->aktivitas->mata_pelajaran_id;
+        $this->kelasId = $this->aktivitas->kelas_id;
         $this->topik = $this->aktivitas->topik;
         $this->catatan = $this->aktivitas->catatan ?? '';
 
@@ -87,12 +87,12 @@ final class EditAktivitas extends Component
     #[Computed]
     public function siswaList()
     {
-        if ($this->kelas_id === null || $this->kelas_id === 0) {
+        if ($this->kelasId === null || $this->kelasId === 0) {
             return collect();
         }
 
         return Siswa::query()
-            ->where('kelas_id', $this->kelas_id)
+            ->where('kelas_id', $this->kelasId)
             ->with('user')
             ->orderBy('nis')
             ->get();
@@ -101,11 +101,11 @@ final class EditAktivitas extends Component
     #[Computed]
     public function selectedMapel()
     {
-        if ($this->mata_pelajaran_id === null || $this->mata_pelajaran_id === 0) {
+        if ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) {
             return null;
         }
 
-        return MataPelajaran::with('kelas')->find($this->mata_pelajaran_id);
+        return MataPelajaran::with('kelas')->find($this->mataPelajaranId);
     }
 
     public function updatedMataPelajaranId($value): void
@@ -113,8 +113,8 @@ final class EditAktivitas extends Component
         if ($value) {
             $mapel = MataPelajaran::with('kelas')->find($value);
             // Only reload if the class actually changed
-            if ($mapel && $this->kelas_id !== $mapel->kelas_id) {
-                $this->kelas_id = $mapel->kelas_id;
+            if ($mapel && $this->kelasId !== $mapel->kelas_id) {
+                $this->kelasId = $mapel->kelas_id;
                 // Reload student list for new class
                 $this->detailAktivitas = [];
                 $this->loadDetailAktivitas();
@@ -160,34 +160,11 @@ final class EditAktivitas extends Component
                     'tanggal' => $this->tanggal,
                     'topik' => $this->topik,
                     'catatan' => $this->catatan !== '' ? $this->catatan : null,
-                    'mata_pelajaran_id' => $this->mata_pelajaran_id,
-                    'kelas_id' => $this->kelas_id,
+                    'mata_pelajaran_id' => $this->mataPelajaranId,
+                    'kelas_id' => $this->kelasId,
                 ]);
 
-                // Update or create detail records
-                foreach ($this->detailAktivitas as $siswaId => $detail) {
-                    // Convert kehadiran to lowercase for database enum
-                    $kehadiran = mb_strtolower((string) $detail['kehadiran']);
-                    $isHadir = $kehadiran === 'hadir';
-
-                    DetailAktivitas::updateOrCreate(
-                        [
-                            'aktivitas_pembelajaran_id' => $this->aktivitas->id,
-                            'siswa_id' => $siswaId,
-                        ],
-                        [
-                            'kehadiran' => $kehadiran,
-                            'nilai' => $isHadir ? ($detail['nilai'] ?: null) : null,
-                            'partisipasi' => $isHadir ? ($detail['partisipasi'] ?: null) : null,
-                            'catatan' => ($detail['catatan'] !== '') ? $detail['catatan'] : null,
-                        ]
-                    );
-                }
-
-                // Remove records for students no longer in the list
-                DetailAktivitas::where('aktivitas_pembelajaran_id', $this->aktivitas->id)
-                    ->whereNotIn('siswa_id', array_keys($this->detailAktivitas))
-                    ->delete();
+                $this->updateDetailRecords();
             });
         } catch (Exception $e) {
             report($e);
@@ -196,9 +173,7 @@ final class EditAktivitas extends Component
             return;
         }
 
-        // Clear dashboard cache for current context
-        $contextYear = TahunAjaran::getContext();
-        Cache::forget('teacher_dashboard_stats_'.Auth::id().'_'.($contextYear?->id ?? 'none'));
+        $this->clearTeacherDashboardCache();
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil diperbarui!');
 
@@ -219,7 +194,7 @@ final class EditAktivitas extends Component
     {
         return [
             'tanggal' => 'required|date',
-            'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
+            'mataPelajaranId' => 'required|exists:mata_pelajaran,id',
             'topik' => 'required|string|max:200',
             'catatan' => 'nullable|string|max:500',
             'detailAktivitas' => 'required|array|min:1',
@@ -239,7 +214,7 @@ final class EditAktivitas extends Component
     {
         return [
             'tanggal.required' => 'Tanggal harus diisi.',
-            'mata_pelajaran_id.required' => 'Mata pelajaran harus dipilih.',
+            'mataPelajaranId.required' => 'Mata pelajaran harus dipilih.',
             'topik.required' => 'Topik pembelajaran harus diisi.',
             'topik.max' => 'Topik maksimal 200 karakter.',
             'detailAktivitas.*.kehadiran.required' => 'Status kehadiran harus dipilih.',
@@ -249,10 +224,56 @@ final class EditAktivitas extends Component
         ];
     }
 
+    /**
+     * Update or create DetailAktivitas records; remove records for removed students.
+     */
+    private function updateDetailRecords(): void
+    {
+        foreach ($this->detailAktivitas as $siswaId => $detail) {
+            // Convert kehadiran to lowercase for database enum
+            $kehadiran = mb_strtolower((string) $detail['kehadiran']);
+            $isHadir = $kehadiran === 'hadir';
+
+            $nilai = null;
+            $partisipasi = null;
+            if ($isHadir) {
+                $nilai = $detail['nilai'] ?: null;
+                $partisipasi = $detail['partisipasi'] ?: null;
+            }
+
+            DetailAktivitas::updateOrCreate(
+                [
+                    'aktivitas_pembelajaran_id' => $this->aktivitas->id,
+                    'siswa_id' => $siswaId,
+                ],
+                [
+                    'kehadiran' => $kehadiran,
+                    'nilai' => $nilai,
+                    'partisipasi' => $partisipasi,
+                    'catatan' => ($detail['catatan'] !== '') ? $detail['catatan'] : null,
+                ]
+            );
+        }
+
+        // Remove records for students no longer in the list
+        DetailAktivitas::where('aktivitas_pembelajaran_id', $this->aktivitas->id)
+            ->whereNotIn('siswa_id', array_keys($this->detailAktivitas))
+            ->delete();
+    }
+
+    /**
+     * Bust the cached teacher dashboard stats for the current user.
+     */
+    private function clearTeacherDashboardCache(): void
+    {
+        $contextYear = TahunAjaran::getContext();
+        Cache::forget('teacher_dashboard_stats_'.Auth::id().'_'.($contextYear?->id ?? 'none'));
+    }
+
     private function loadDetailAktivitas(): void
     {
         // Get all students in the class
-        $siswaInClass = Siswa::where('kelas_id', $this->kelas_id)
+        $siswaInClass = Siswa::where('kelas_id', $this->kelasId)
             ->with('user')
             ->orderBy('nis')
             ->get();

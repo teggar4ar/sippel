@@ -17,6 +17,12 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class EnsureUserIsAdmin
 {
+    /** @var array<string,string> Role → redirect path for non-admin users. */
+    private const array NON_ADMIN_REDIRECTS = [
+        'teacher' => '/teacher',
+        'student' => '/student',
+    ];
+
     public function handle(Request $request, Closure $next): Response
     {
         // Allow login and logout pages for all users
@@ -37,16 +43,21 @@ final class EnsureUserIsAdmin
             return $next($request);
         }
 
-        // Non-admin users should be redirected to their interface
-        if ($user->hasRole('teacher')) {
-            return redirect('/teacher');
+        // Non-admin users are redirected to their appropriate interface
+        return $this->redirectNonAdminUser($user);
+    }
+
+    /**
+     * Redirect a non-admin authenticated user to their role-specific interface.
+     */
+    private function redirectNonAdminUser(User $user): Response
+    {
+        foreach (self::NON_ADMIN_REDIRECTS as $role => $route) {
+            if ($user->hasRole($role)) {
+                return redirect($route);
+            }
         }
 
-        if ($user->hasRole('student')) {
-            return redirect('/student');
-        }
-
-        // Fallback: redirect to login
         return redirect('/app/login');
     }
 }

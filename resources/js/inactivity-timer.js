@@ -16,6 +16,18 @@
  */
 
 /**
+ * Format milliseconds as MM:SS
+ * @param {number} ms - Milliseconds to format
+ * @returns {string}
+ */
+function formatTime(ms) {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+/**
  * Initialize the inactivity timer
  * @param {Object} config - Configuration options
  * @param {number} [config.idleTimeout=1800000] - Milliseconds before warning (default: 30 min)
@@ -113,16 +125,6 @@ export function initInactivityTimer(config = {}) {
         stayBtn.addEventListener('click', dismissWarning);
 
         return modal;
-    }
-
-    /**
-     * Format milliseconds as MM:SS
-     */
-    function formatTime(ms) {
-        const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 
     /**
@@ -323,13 +325,13 @@ export function initInactivityTimer(config = {}) {
             });
 
             if (!response.ok) {
-                window.location.replace(settings.logoutUrl.replace('/logout', '/login'));
+                globalThis.location.replace(settings.logoutUrl.replace('/logout', '/login'));
                 return;
             }
 
             const data = await response.json();
             if (!data.authorized) {
-                window.location.replace(settings.logoutUrl.replace('/logout', '/login'));
+                globalThis.location.replace(settings.logoutUrl.replace('/logout', '/login'));
             }
         } catch (e) {
             console.warn('[InactivityTimer] Session check failed:', e);
@@ -356,7 +358,7 @@ export function initInactivityTimer(config = {}) {
         });
 
         // Handle bfcache restoration
-        window.addEventListener('pageshow', (event) => {
+        globalThis.addEventListener('pageshow', (event) => {
             if (event.persisted && !warningShown) {
                 checkSession();
                 resetActivity();
@@ -381,12 +383,12 @@ export function initInactivityTimer(config = {}) {
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('[data-inactivity-timer]');
     if (container) {
-        const idleMinutes = parseInt(container.dataset.idleMinutes) || 30;
-        const warningMinutes = parseInt(container.dataset.warningMinutes) || 2;
+        const idleMinutes = Number.parseInt(container.dataset.idleMinutes, 10) || 30;
+        const warningMinutes = Number.parseInt(container.dataset.warningMinutes, 10) || 2;
         const logoutUrl = container.dataset.logoutUrl || '/app/logout';
         const sessionCheckUrl = container.dataset.sessionCheckUrl || null;
 
-        window.inactivityTimer = initInactivityTimer({
+        globalThis.inactivityTimer = initInactivityTimer({
             idleTimeout: idleMinutes * 60 * 1000,
             warningDuration: warningMinutes * 60 * 1000,
             logoutUrl: logoutUrl,

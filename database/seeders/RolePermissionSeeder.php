@@ -10,6 +10,8 @@ use Spatie\Permission\Models\Role;
 
 final class RolePermissionSeeder extends Seeder
 {
+    private const string PERM_VIEW_REPORTS = 'view reports';
+
     /**
      * Run the database seeds.
      */
@@ -44,7 +46,7 @@ final class RolePermissionSeeder extends Seeder
 
             // Reports
             'generate reports',
-            'view reports',
+            self::PERM_VIEW_REPORTS,
         ];
 
         foreach ($permissions as $permission) {
@@ -73,7 +75,7 @@ final class RolePermissionSeeder extends Seeder
         $studentRole = Role::create(['name' => 'student']);
         $studentRole->givePermissionTo([
             'view own data',
-            'view reports',
+            self::PERM_VIEW_REPORTS,
         ]);
     }
 }
