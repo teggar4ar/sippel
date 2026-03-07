@@ -213,7 +213,7 @@ trait HasLaporanDownloads
     {
         $tahunAjaran = $this->contextTahunAjaran;
         if ($this->kelasId === null || $this->kelasId === 0 || ($this->mataPelajaranId === null || $this->mataPelajaranId === 0) || ! $tahunAjaran) {
-            $this->dispatch('notify', type: 'error', message: 'Data tidak lengkap.');
+            $this->dispatch('notify', type: 'error', message: self::MSG_INCOMPLETE_DATA);
 
             return null;
         }
