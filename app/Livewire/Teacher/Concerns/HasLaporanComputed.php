@@ -20,7 +20,7 @@ trait HasLaporanComputed
      * Get the current teacher (logged in user)
      */
     #[Computed]
-    public function teacher(): User
+    public function teacher(): ?User
     {
         return Auth::user();
     }
