@@ -337,8 +337,9 @@
                                 {{-- Grade and participation (inline) --}}
                                 <div class="flex gap-2 {{ !$isHadir ? 'opacity-40 pointer-events-none' : '' }}">
                                     <div class="flex-1">
-                                        <label class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Nilai</label>
+                                        <label for="nilai-{{ $siswa->id }}" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Nilai</label>
                                     <flux:input
+                                        id="nilai-{{ $siswa->id }}"
                                         type="number"
                                         wire:model="detailAktivitas.{{ $siswa->id }}.nilai"
                                         min="0"
@@ -349,8 +350,9 @@
                                     />
                                     </div>
                                     <div class="flex-1">
-                                        <label class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Partisipasi</label>
+                                        <label for="partisipasi-{{ $siswa->id }}" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Partisipasi</label>
                                     <flux:select
+                                        id="partisipasi-{{ $siswa->id }}"
                                         wire:model="detailAktivitas.{{ $siswa->id }}.partisipasi"
                                         :disabled="!$isHadir"
                                         class="h-9 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
@@ -365,8 +367,9 @@
 
                                 {{-- Notes (collapsible) --}}
                                 <div>
-                                    <label class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Catatan</label>
+                                    <label for="catatan-{{ $siswa->id }}" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Catatan</label>
                                     <flux:input
+                                        id="catatan-{{ $siswa->id }}"
                                         type="text"
                                         wire:model="detailAktivitas.{{ $siswa->id }}.catatan"
                                         placeholder="Catatan siswa (opsional)"

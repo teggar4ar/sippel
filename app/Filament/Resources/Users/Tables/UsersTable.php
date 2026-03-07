@@ -24,7 +24,7 @@ final class UsersTable
             ->columns(self::buildColumns())
             ->filters(self::buildFilters())
             ->recordActions(self::buildRecordActions())
-            ->bulkActions(self::buildBulkActions())
+            ->toolbarActions(self::buildBulkActions())
             ->defaultSort('created_at', 'desc')
             ->striped()
             ->paginated([10, 25, 50, 100]);

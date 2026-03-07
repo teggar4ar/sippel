@@ -10,7 +10,9 @@ use App\Models\Kelas;
 use App\Models\Laporan as LaporanModel;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
+use App\Models\TahunAjaran;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Collection;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -34,7 +36,7 @@ trait HasLaporanDownloads
         $pdf->setPaper('A4', 'portrait');
 
         $sanitizedTahun = str_replace(['/', '\\'], '-', $data['tahunAjaran']->nama_tahun);
-        $filename = 'laporan-siswa-' . $data['siswa']->nis . '-' . $sanitizedTahun . '.pdf';
+        $filename = 'laporan-siswa-'.$data['siswa']->nis.'-'.$sanitizedTahun.'.pdf';
 
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();
@@ -55,7 +57,7 @@ trait HasLaporanDownloads
         $pdf->setPaper('A4', 'portrait');
 
         $sanitizedTahun = str_replace(['/', '\\'], '-', $data['tahunAjaran']->nama_tahun);
-        $filename = 'laporan-kelas-' . $data['kelas']->tingkat_kelas . $data['kelas']->grup_kelas . '-' . $sanitizedTahun . '.pdf';
+        $filename = 'laporan-kelas-'.$data['kelas']->tingkat_kelas.$data['kelas']->grup_kelas.'-'.$sanitizedTahun.'.pdf';
 
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();
@@ -281,7 +283,7 @@ trait HasLaporanDownloads
         // the selected class + subject combination. The export queries DetailAktivitas
         // directly (not LaporanModel), so we check the same source here.
         $hasActivities = AktivitasPembelajaran::where('kelas_id', $kelas->id)
-            ->when($mataPelajaran, fn($q) => $q->where('mata_pelajaran_id', $mataPelajaran->id))
+            ->when($mataPelajaran, fn ($q) => $q->where('mata_pelajaran_id', $mataPelajaran->id))
             ->exists();
 
         if (! $hasActivities) {

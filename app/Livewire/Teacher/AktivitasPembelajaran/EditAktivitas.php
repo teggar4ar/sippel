@@ -267,7 +267,7 @@ final class EditAktivitas extends Component
     private function clearTeacherDashboardCache(): void
     {
         $contextYear = TahunAjaran::getContext();
-        Cache::forget('teacher_dashboard_stats_' . Auth::id() . '_' . ($contextYear?->id ?? 'none'));
+        Cache::forget('teacher_dashboard_stats_'.Auth::id().'_'.($contextYear?->id ?? 'none'));
     }
 
     private function loadDetailAktivitas(): void

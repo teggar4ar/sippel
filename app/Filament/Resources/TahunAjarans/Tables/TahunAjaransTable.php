@@ -46,7 +46,7 @@ final class TahunAjaransTable
             TextColumn::make('semester')
                 ->label('Semester')
                 ->badge()
-                ->color(fn(string $state): string => match ($state) {
+                ->color(fn (string $state): string => match ($state) {
                     'Ganjil' => 'success',
                     'Genap' => 'info',
                     default => 'gray',
@@ -204,13 +204,13 @@ final class TahunAjaransTable
                     ->label('Nonaktifkan')
                     ->icon('heroicon-o-x-circle')
                     ->requiresConfirmation()
-                    ->action(fn(Collection $records) => $records->each->update(['status' => false]))
+                    ->action(fn (Collection $records) => $records->each->update(['status' => false]))
                     ->deselectRecordsAfterCompletion()
                     ->color('danger'),
 
                 DeleteBulkAction::make()
                     ->before(function (DeleteBulkAction $action, Collection $records): void {
-                        $activeRecords = $records->filter(fn($record) => $record->status);
+                        $activeRecords = $records->filter(fn ($record) => $record->status);
 
                         if ($activeRecords->isNotEmpty()) {
                             Notification::make()
@@ -225,7 +225,7 @@ final class TahunAjaransTable
 
                 ForceDeleteBulkAction::make()
                     ->before(function (ForceDeleteBulkAction $action, Collection $records): void {
-                        $activeRecords = $records->filter(fn($record) => $record->status);
+                        $activeRecords = $records->filter(fn ($record) => $record->status);
 
                         if ($activeRecords->isNotEmpty()) {
                             Notification::make()

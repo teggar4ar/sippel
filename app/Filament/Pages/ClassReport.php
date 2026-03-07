@@ -155,7 +155,7 @@ final class ClassReport extends Page implements HasForms
 
         // Sanitize filename
         $sanitizedTahun = str_replace(['/', '\\'], '-', $tahunAjaran->nama_tahun);
-        $filename = 'laporan-kelas-' . $kelas->tingkat_kelas . $kelas->grup_kelas . '-' . $sanitizedTahun . '.pdf';
+        $filename = 'laporan-kelas-'.$kelas->tingkat_kelas.$kelas->grup_kelas.'-'.$sanitizedTahun.'.pdf';
 
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();
@@ -204,8 +204,8 @@ final class ClassReport extends Page implements HasForms
                     TahunAjaran::orderByDesc('status')
                         ->orderByDesc('id')
                         ->get()
-                        ->mapWithKeys(fn(TahunAjaran $ta): array => [
-                            $ta->id => $ta->nama_tahun . ' - ' . $ta->semester . ($ta->status ? ' (Aktif)' : ''),
+                        ->mapWithKeys(fn (TahunAjaran $ta): array => [
+                            $ta->id => $ta->nama_tahun.' - '.$ta->semester.($ta->status ? ' (Aktif)' : ''),
                         ])
                 )
                 ->required()
@@ -228,8 +228,8 @@ final class ClassReport extends Page implements HasForms
 
                     return Kelas::where('tahun_ajaran_id', $tahunAjaranId)
                         ->get()
-                        ->mapWithKeys(fn(Kelas $kelas): array => [
-                            $kelas->id => $kelas->tingkat_kelas . '-' . $kelas->grup_kelas,
+                        ->mapWithKeys(fn (Kelas $kelas): array => [
+                            $kelas->id => $kelas->tingkat_kelas.'-'.$kelas->grup_kelas,
                         ])
                         ->toArray();
                 })
@@ -253,7 +253,7 @@ final class ClassReport extends Page implements HasForms
 
                     return MataPelajaran::where('kelas_id', $kelasId)
                         ->get()
-                        ->mapWithKeys(fn(MataPelajaran $mapel): array => [
+                        ->mapWithKeys(fn (MataPelajaran $mapel): array => [
                             $mapel->id => $mapel->nama_mapel,
                         ])
                         ->toArray();
@@ -261,7 +261,7 @@ final class ClassReport extends Page implements HasForms
                 ->searchable()
                 ->required()
                 ->live()
-                ->afterStateUpdated(fn(): null => $this->previewData = null),
+                ->afterStateUpdated(fn (): null => $this->previewData = null),
 
             Select::make('sortBy')
                 ->label('Urutkan Berdasarkan')
@@ -274,7 +274,7 @@ final class ClassReport extends Page implements HasForms
                 ])
                 ->default('nilai')
                 ->live()
-                ->afterStateUpdated(fn(): null => $this->previewData = null),
+                ->afterStateUpdated(fn (): null => $this->previewData = null),
         ];
     }
 
@@ -313,7 +313,7 @@ final class ClassReport extends Page implements HasForms
         // Guard using the same data source the export queries (DetailAktivitas),
         // not Laporan aggregates which require kelasHistory to be complete.
         $hasActivities = AktivitasPembelajaran::where('kelas_id', $kelas->id)
-            ->when($mataPelajaran, fn($q) => $q->where('mata_pelajaran_id', $mataPelajaran->id))
+            ->when($mataPelajaran, fn ($q) => $q->where('mata_pelajaran_id', $mataPelajaran->id))
             ->exists();
 
         if (! $hasActivities) {
@@ -342,7 +342,7 @@ final class ClassReport extends Page implements HasForms
             ->where('mata_pelajaran_id', $mataPelajaran->id)
             ->whereHas(
                 'siswa.kelasHistory',
-                fn($q) => $q
+                fn ($q) => $q
                     ->where('tahun_ajaran_id', $tahunAjaran->id)
                     ->where('kelas_id', $kelas->id),
             )

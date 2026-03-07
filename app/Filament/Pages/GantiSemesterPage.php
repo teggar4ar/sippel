@@ -14,11 +14,11 @@ use App\Models\User;
 use BackedEnum;
 use Exception;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
@@ -153,20 +153,20 @@ final class GantiSemesterPage extends Page implements HasForms
                         ->schema([
                             Section::make('Ringkasan')
                                 ->schema([
-                                    Placeholder::make('summary_tahun')
+                                    TextEntry::make('summary_tahun')
                                         ->label('Tahun Ajaran Baru')
-                                        ->content(fn ($get): string => "{$get('namaTahun')} - Semester {$get('semester')}"),
-                                    Placeholder::make('summary_dates')
+                                        ->state(fn ($get): string => "{$get('namaTahun')} - Semester {$get('semester')}"),
+                                    TextEntry::make('summary_dates')
                                         ->label('Periode')
-                                        ->content(fn ($get): string => "{$get('tanggalMulai')} s/d {$get('tanggalSelesai')}"),
-                                    Placeholder::make('summary_classes')
+                                        ->state(fn ($get): string => "{$get('tanggalMulai')} s/d {$get('tanggalSelesai')}"),
+                                    TextEntry::make('summary_classes')
                                         ->label('Jumlah Kelas')
-                                        ->content($this->currentClasses->count()),
-                                    Placeholder::make('summary_students')
+                                        ->state($this->currentClasses->count()),
+                                    TextEntry::make('summary_students')
                                         ->label('Total Siswa')
-                                        ->content($this->getTotalStudentsProperty()),
-                                    Placeholder::make('info')
-                                        ->content(new HtmlString('<span class="text-warning-600 font-medium">Perhatian: Tahun ajaran lama akan dinonaktifkan. Pastikan semua data sudah benar.</span>')),
+                                        ->state($this->getTotalStudentsProperty()),
+                                    TextEntry::make('info')
+                                        ->state(new HtmlString('<span class="text-warning-600 font-medium">Perhatian: Tahun ajaran lama akan dinonaktifkan. Pastikan semua data sudah benar.</span>')),
                                 ]),
                         ]),
                 ])

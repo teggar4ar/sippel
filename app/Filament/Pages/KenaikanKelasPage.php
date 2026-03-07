@@ -13,11 +13,11 @@ use App\Models\User;
 use BackedEnum;
 use Exception;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
@@ -313,15 +313,15 @@ final class KenaikanKelasPage extends Page implements HasForms
             ->schema([
                 Section::make('Ringkasan')
                     ->schema([
-                        Placeholder::make('summary_tahun')
+                        TextEntry::make('summary_tahun')
                             ->label('Tahun Ajaran Baru')
-                            ->content(fn ($get): string => "{$get('namaTahun')} - Semester {$get('semester')}"),
-                        Placeholder::make('summary_dates')
+                            ->state(fn ($get): string => "{$get('namaTahun')} - Semester {$get('semester')}"),
+                        TextEntry::make('summary_dates')
                             ->label('Periode')
-                            ->content(fn ($get): string => "{$get('tanggalMulai')} s/d {$get('tanggalSelesai')}"),
-                        Placeholder::make('summary_stats')
+                            ->state(fn ($get): string => "{$get('tanggalMulai')} s/d {$get('tanggalSelesai')}"),
+                        TextEntry::make('summary_stats')
                             ->label('Statistik Siswa')
-                            ->content(function ($get): HtmlString {
+                            ->state(function ($get): HtmlString {
                                 $decisions = collect($get('studentDecisions') ?? []);
                                 $naik = $decisions->filter(fn ($d): bool => $d === 'naik')->count();
                                 $tinggal = $decisions->filter(fn ($d): bool => $d === 'tinggal')->count();
@@ -335,8 +335,8 @@ final class KenaikanKelasPage extends Page implements HasForms
                                     </div>"
                                 );
                             }),
-                        Placeholder::make('warning')
-                            ->content(new HtmlString('<span class="text-danger-600 font-medium">Perhatian: Proses ini akan menonaktifkan tahun ajaran lama dan menghapus data siswa yang lulus. Pastikan data sudah benar.</span>')),
+                        TextEntry::make('warning')
+                            ->state(new HtmlString('<span class="text-danger-600 font-medium">Perhatian: Proses ini akan menonaktifkan tahun ajaran lama dan menghapus data siswa yang lulus. Pastikan data sudah benar.</span>')),
                     ]),
             ]);
     }

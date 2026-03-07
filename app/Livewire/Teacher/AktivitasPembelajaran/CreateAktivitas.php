@@ -70,7 +70,7 @@ final class CreateAktivitas extends Component
 
         // Validation: Check if teacher has any assigned subjects in context year
         $hasSubjects = MataPelajaran::where('guru_id', Auth::id())
-            ->whereHas('kelas', fn($q) => $q->where('tahun_ajaran_id', $contextTahunAjaran->id))
+            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $contextTahunAjaran->id))
             ->exists();
 
         if (! $hasSubjects) {
@@ -322,7 +322,7 @@ final class CreateAktivitas extends Component
         }
 
         $hasSubjects = MataPelajaran::where('guru_id', Auth::id())
-            ->whereHas('kelas', fn($q) => $q->where('tahun_ajaran_id', $contextTahunAjaran->id))
+            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $contextTahunAjaran->id))
             ->exists();
 
         if (! $hasSubjects) {
@@ -367,7 +367,7 @@ final class CreateAktivitas extends Component
     private function clearTeacherDashboardCache(int $userId): void
     {
         $contextYear = TahunAjaran::getContext();
-        Cache::forget('teacher_dashboard_stats_' . $userId . '_' . ($contextYear?->id ?? 'none'));
+        Cache::forget('teacher_dashboard_stats_'.$userId.'_'.($contextYear?->id ?? 'none'));
     }
 
     private function rulesForStep1(): array

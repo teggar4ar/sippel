@@ -46,7 +46,7 @@
             </div>
 
             {{-- Navigation --}}
-            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="Navigasi Utama">
                 <a href="{{ route('student.dashboard') }}" wire:navigate
                    class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('student.dashboard') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80 hover:text-white' }}">
                     <flux:icon name="squares-2x2" variant="outline" class="w-5 h-5" />
@@ -126,7 +126,7 @@
                     @livewire('components.tahun-ajaran-selector', ['variant' => 'teal'])
                 </div>
 
-                <nav class="px-3 py-4 space-y-1">
+                <nav class="px-3 py-4 space-y-1" aria-label="Menu Sidebar">
                     <a href="{{ route('student.dashboard') }}" wire:navigate @click="open = false"
                        class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('student.dashboard') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80' }}">
                         <flux:icon name="squares-2x2" variant="outline" class="w-5 h-5" />

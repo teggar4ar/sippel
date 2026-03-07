@@ -76,12 +76,12 @@ trait HasLaporanComputed
         return Siswa::withTrashed()
             ->where(function ($query): void {
                 $query
-                    ->whereHas('kelasHistory', fn($q) => $q->where('kelas_id', $this->kelasId))
+                    ->whereHas('kelasHistory', fn ($q) => $q->where('kelas_id', $this->kelasId))
                     ->orWhere('kelas_id', $this->kelasId);
             })
             ->with('user')
             ->get()
-            ->sortBy(fn(Siswa $s): string => $s->user->name ?? '');
+            ->sortBy(fn (Siswa $s): string => $s->user->name ?? '');
     }
 
     /**
@@ -211,7 +211,7 @@ trait HasLaporanComputed
             ->where('mata_pelajaran_id', $this->mataPelajaranId)
             ->whereHas(
                 'siswa.kelasHistory',
-                fn($q) => $q
+                fn ($q) => $q
                     ->where('tahun_ajaran_id', $contextId)
                     ->where('kelas_id', $this->kelasId)
             )
@@ -223,7 +223,7 @@ trait HasLaporanComputed
             'nilai' => $laporanData->sortByDesc('rata_nilai')->values(),
             'nilai_asc' => $laporanData->sortBy('rata_nilai')->values(),
             'kehadiran' => $laporanData->sortByDesc('rata_kehadiran')->values(),
-            'nama' => $laporanData->sortBy(fn(LaporanModel $l): string => $l->siswa->user->name ?? '')->values(),
+            'nama' => $laporanData->sortBy(fn (LaporanModel $l): string => $l->siswa->user->name ?? '')->values(),
             default => $laporanData->sortByDesc('rata_nilai')->values(),
         };
     }
