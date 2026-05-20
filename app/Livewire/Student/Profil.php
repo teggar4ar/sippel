@@ -75,14 +75,11 @@ final class Profil extends Component
         /** @var User $user */
         $user = Auth::user();
 
-        if ($this->new_password !== '' && $this->new_password !== '0') {
-            if (! Hash::check($this->current_password, $user->password)) {
-                session()->flash('error', 'Password lama tidak sesuai.');
-
-                throw ValidationException::withMessages([
-                    'current_password' => 'Password lama tidak sesuai.',
-                ]);
-            }
+        if ($this->new_password !== '' && $this->new_password !== '0' && ! Hash::check($this->current_password, $user->password)) {
+            session()->flash('error', 'Password lama tidak sesuai.');
+            throw ValidationException::withMessages([
+                'current_password' => 'Password lama tidak sesuai.',
+            ]);
         }
 
         $user->email = $this->email;

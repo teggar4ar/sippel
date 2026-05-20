@@ -43,12 +43,10 @@ final class TeacherProfile extends Component
         $user = Auth::user();
 
         // Verify current password if changing password
-        if ($this->new_password !== '' && $this->new_password !== '0') {
-            if (! Hash::check($this->current_password, $user->password)) {
-                throw ValidationException::withMessages([
-                    'current_password' => 'Password lama tidak sesuai.',
-                ]);
-            }
+        if ($this->new_password !== '' && $this->new_password !== '0' && ! Hash::check($this->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => 'Password lama tidak sesuai.',
+            ]);
         }
 
         // Update email

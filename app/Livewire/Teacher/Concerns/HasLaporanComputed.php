@@ -197,8 +197,6 @@ trait HasLaporanComputed
     /**
      * Get per-activity detail records for the student report "Riwayat Aktivitas" table.
      * Returns a paginated result for use with Flux UI table pagination.
-     *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Pagination\LengthAwarePaginator
      */
     #[Computed]
     public function studentActivityData(): \Illuminate\Contracts\Pagination\LengthAwarePaginator

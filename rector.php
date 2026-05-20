@@ -14,6 +14,8 @@ return RectorConfig::configure()
         // These must remain protected for Livewire framework to access them
         PrivatizeFinalClassMethodRector::class => [
             __DIR__.'/app/Livewire/Teacher/AktivitasPembelajaran/EditAktivitas.php',
+            __DIR__.'/app/Livewire/Student/Profil.php',
+            __DIR__.'/app/Livewire/Teacher/TeacherProfile.php',
         ],
     ])
     ->withPaths([

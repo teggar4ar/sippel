@@ -115,50 +115,15 @@ final class Dashboard extends Component
             return collect();
         }
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, AktivitasPembelajaran> $aktivitasList */
-        $aktivitasList = AktivitasPembelajaran::with(['kelas', 'mataPelajaran'])
+        return AktivitasPembelajaran::with(['kelas', 'mataPelajaran'])
             ->where('guru_id', Auth::id())
             ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
             ->where('tanggal', '>=', now()->subDays(7))
             ->orderByDesc('tanggal')
             ->orderByDesc('id')
             ->take(11)
-            ->get();
-
-        return $aktivitasList->map(function (AktivitasPembelajaran $aktivitas): array {
-            $details = $aktivitas->detailAktivitas;
-            $totalDetail = $details->count();
-            $hadirCount = $details->where('kehadiran', KehadiranStatus::Hadir)->count();
-            $kehadiranPct = $totalDetail > 0 ? round(($hadirCount / $totalDetail) * 100, 0) : 0;
-
-            // Average participation for hadir students
-            $avgPartisipasi = $details
-                ->where('kehadiran', KehadiranStatus::Hadir)
-                ->whereNotNull('partisipasi')
-                ->avg('partisipasi');
-            $partisipasiLabel = match (true) {
-                $avgPartisipasi === null => '-',
-                $avgPartisipasi >= 3.5 => 'Sangat Aktif',
-                $avgPartisipasi >= 2.5 => 'Aktif',
-                $avgPartisipasi >= 1.5 => 'Cukup',
-                default => 'Pasif',
-            };
-
-            /** @var Kelas $kelas */
-            $kelas = $aktivitas->kelas;
-
-            return [
-                'id' => $aktivitas->id,
-                'tanggal' => $aktivitas->tanggal->translatedFormat('d M Y'),
-                'waktu' => $aktivitas->created_at->setTimezone('Asia/Jakarta')->format('H:i'),
-                'kelas' => $kelas->tingkat_kelas.'-'.$kelas->grup_kelas,
-                'mapel' => $aktivitas->mataPelajaran?->nama_mapel ?? '-',
-                'topik' => $aktivitas->topik ?? '-',
-                'kehadiran' => $kehadiranPct.'%',
-                'kehadiran_pct' => $kehadiranPct,
-                'partisipasi' => $partisipasiLabel,
-            ];
-        });
+            ->get()
+            ->map(fn (AktivitasPembelajaran $aktivitas): array => $this->mapAktivitasToRow($aktivitas));
     }
 
     /**
@@ -222,5 +187,45 @@ final class Dashboard extends Component
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
         return view('livewire.teacher.dashboard');
+    }
+
+    /**
+     * Map a single AktivitasPembelajaran model to a display row array.
+     *
+     * @return array<string, mixed>
+     */
+    private function mapAktivitasToRow(AktivitasPembelajaran $aktivitas): array
+    {
+        $details = $aktivitas->detailAktivitas;
+        $totalDetail = $details->count();
+        $hadirCount = $details->where('kehadiran', KehadiranStatus::Hadir)->count();
+        $kehadiranPct = $totalDetail > 0 ? round(($hadirCount / $totalDetail) * 100, 0) : 0;
+
+        $avgPartisipasi = $details
+            ->where('kehadiran', KehadiranStatus::Hadir)
+            ->whereNotNull('partisipasi')
+            ->avg('partisipasi');
+        $partisipasiLabel = match (true) {
+            $avgPartisipasi === null => '-',
+            $avgPartisipasi >= 3.5 => 'Sangat Aktif',
+            $avgPartisipasi >= 2.5 => 'Aktif',
+            $avgPartisipasi >= 1.5 => 'Cukup',
+            default => 'Pasif',
+        };
+
+        /** @var Kelas $kelas */
+        $kelas = $aktivitas->kelas;
+
+        return [
+            'id' => $aktivitas->id,
+            'tanggal' => $aktivitas->tanggal->translatedFormat('d M Y'),
+            'waktu' => $aktivitas->created_at->setTimezone('Asia/Jakarta')->format('H:i'),
+            'kelas' => $kelas->tingkat_kelas.'-'.$kelas->grup_kelas,
+            'mapel' => $aktivitas->mataPelajaran?->nama_mapel ?? '-',
+            'topik' => $aktivitas->topik ?? '-',
+            'kehadiran' => $kehadiranPct.'%',
+            'kehadiran_pct' => $kehadiranPct,
+            'partisipasi' => $partisipasiLabel,
+        ];
     }
 }
