@@ -89,6 +89,6 @@ final class MataPelajaran extends Model
         }
 
         $tahunAjaranId = $kelas->tahun_ajaran_id;
-        Cache::forget('teacher_dashboard_stats_'.$guruId.'_'.($tahunAjaranId ?? 'none'));
+        Cache::forget('teacher_dashboard_stats_'.$guruId.'_'.$tahunAjaranId);
     }
 }

@@ -74,7 +74,7 @@ final class SiswaKelasHistory extends Model
             ->unique();
 
         foreach ($guruIds as $guruId) {
-            Cache::forget('teacher_dashboard_stats_'.$guruId.'_'.($tahunAjaranId ?? 'none'));
+            Cache::forget('teacher_dashboard_stats_'.$guruId.'_'.$tahunAjaranId);
         }
     }
 }
