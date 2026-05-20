@@ -41,7 +41,7 @@
             </div>
 
             {{-- Tahun Ajaran Selector - Desktop --}}
-            <div class="px-3 pt-3 pb-2 border-b border-teal-700 dark:border-teal-800/80">
+            <div class="px-3 pt-3 pb-2 border-b cursor-pointer border-teal-700 dark:border-teal-800/80">
                 @livewire('components.tahun-ajaran-selector', ['variant' => 'teal'])
             </div>
 
@@ -52,20 +52,10 @@
                     <flux:icon name="squares-2x2" variant="outline" class="w-5 h-5" />
                     Dashboard
                 </a>
-                <a href="{{ route('student.kehadiran') }}" wire:navigate
-                   class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('student.kehadiran') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80 hover:text-white' }}">
+                <a href="{{ route('student.riwayat') }}" wire:navigate
+                   class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('student.riwayat') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80 hover:text-white' }}">
                     <flux:icon name="calendar-days" variant="outline" class="w-5 h-5" />
-                    Kehadiran
-                </a>
-                <a href="{{ route('student.nilai') }}" wire:navigate
-                   class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('student.nilai') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80 hover:text-white' }}">
-                    <flux:icon name="academic-cap" variant="outline" class="w-5 h-5" />
-                    Nilai
-                </a>
-                <a href="{{ route('student.laporan') }}" wire:navigate
-                   class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('student.laporan') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80 hover:text-white' }}">
-                    <flux:icon name="chart-bar" variant="outline" class="w-5 h-5" />
-                    Laporan
+                    Riwayat
                 </a>
                 <a href="{{ route('student.profil') }}" wire:navigate
                    class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('student.profil') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80 hover:text-white' }}">
@@ -132,20 +122,10 @@
                         <flux:icon name="squares-2x2" variant="outline" class="w-5 h-5" />
                         Dashboard
                     </a>
-                    <a href="{{ route('student.kehadiran') }}" wire:navigate @click="open = false"
-                       class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('student.kehadiran') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80' }}">
+                    <a href="{{ route('student.riwayat') }}" wire:navigate @click="open = false"
+                       class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('student.riwayat') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80' }}">
                         <flux:icon name="calendar-days" variant="outline" class="w-5 h-5" />
-                        Kehadiran
-                    </a>
-                    <a href="{{ route('student.nilai') }}" wire:navigate @click="open = false"
-                       class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('student.nilai') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80' }}">
-                        <flux:icon name="academic-cap" variant="outline" class="w-5 h-5" />
-                        Nilai
-                    </a>
-                    <a href="{{ route('student.laporan') }}" wire:navigate @click="open = false"
-                       class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('student.laporan') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80' }}">
-                        <flux:icon name="chart-bar" variant="outline" class="w-5 h-5" />
-                        Laporan
+                        Riwayat
                     </a>
                     <a href="{{ route('student.profil') }}" wire:navigate @click="open = false"
                        class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('student.profil') ? 'bg-teal-600 text-white' : 'text-teal-200 dark:text-teal-100 hover:bg-teal-700/80' }}">
@@ -191,7 +171,7 @@
         {{-- Main content --}}
         <main class="flex-1 lg:pl-60 overflow-x-hidden">
             <div class="pt-16 lg:pt-4 pb-4 px-3 lg:px-6">
-                <div class="max-w-5xl mx-auto w-full">
+                <div class="max-w-6xl mx-auto w-full">
                     {{-- Flash messages --}}
                     @if (session('success'))
                         <div class="mb-4 p-4 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-200 rounded-lg">

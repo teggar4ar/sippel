@@ -3,7 +3,7 @@
     {{-- Success toast (shown via Livewire dispatch event) --}}
     <div
         x-data="{ show: false }"
-        x-on:student-profile-saved.window="show = true; setTimeout(() => show = false, 3000)"
+        x-on:profile-saved.window="show = true; setTimeout(() => show = false, 3000)"
         x-show="show"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 -translate-y-2"
@@ -22,17 +22,17 @@
     </div>
     {{-- Header --}}
     <div class="min-w-0">
-        <h1 class="text-xl font-bold text-teal-900 dark:text-white">Profil Saya</h1>
-        <p class="text-sm text-teal-600 dark:text-teal-400 mt-0.5">Kelola informasi data diri dan pengaturan keamanan akun Anda</p>
+        <h1 class="text-xl font-bold text-slate-900 dark:text-white">Profil Saya</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Kelola informasi data diri dan pengaturan keamanan akun Anda</p>
     </div>
 
     {{-- Main Card --}}
-    <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-teal-200 dark:border-slate-700/90 overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
         {{-- Card header --}}
-        <div class="px-4 py-3 border-b border-teal-100 dark:border-slate-700/90">
+        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
             <div class="flex items-center gap-2">
-                <flux:icon name="user-circle" class="w-5 h-5 text-teal-500" />
-                <span class="text-sm font-semibold text-teal-900 dark:text-white">Data Siswa dan Informasi Akun</span>
+                <flux:icon name="user-circle" class="w-5 h-5 text-blue-500" />
+                <span class="text-sm font-semibold text-slate-900 dark:text-white">Data Guru dan Informasi Akun</span>
             </div>
         </div>
 
@@ -45,39 +45,24 @@
                     wire:model="nama"
                     readonly
                     disabled
-                    class="bg-teal-50 dark:bg-slate-900/50 cursor-not-allowed"
-                />
-                <flux:input
-                    label="NIS"
-                    wire:model="nis"
-                    readonly
-                    disabled
-                    class="bg-teal-50 dark:bg-slate-900/50 cursor-not-allowed"
-                />
-                <flux:input
-                    label="Kelas"
-                    wire:model="kelas"
-                    readonly
-                    disabled
-                    class="bg-teal-50 dark:bg-slate-900/50 cursor-not-allowed"
+                    class="bg-slate-50 dark:bg-slate-900/50 cursor-not-allowed"
                 />
                 <flux:input
                     label="Email"
                     type="email"
                     wire:model="email"
                     placeholder="email@contoh.com"
-                    class:input="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
                 />
             </div>
 
             {{-- Divider --}}
-            <div class="border-t border-teal-100 dark:border-slate-700/90"></div>
+            <div class="border-t border-slate-100 dark:border-slate-700"></div>
 
             {{-- Password Section --}}
             <div class="space-y-4">
                 <div>
-                    <h3 class="text-sm font-semibold text-teal-900 dark:text-white">Ubah Password</h3>
-                    <p class="text-xs text-teal-500 dark:text-teal-400 mt-0.5">(Kosongkan jika tidak ingin mengubah password)</p>
+                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Ubah Password</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">(Kosongkan jika tidak ingin mengubah password)</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -88,7 +73,6 @@
                         wire:model="current_password"
                         placeholder="Masukkan password lama"
                         autocomplete="current-password"
-                        class:input="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
                     />
                     <flux:input
                         label="Password Baru"
@@ -97,7 +81,6 @@
                         wire:model="new_password"
                         placeholder="Minimal 8 karakter"
                         autocomplete="new-password"
-                        class:input="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
                     />
                 </div>
 
@@ -109,7 +92,6 @@
                         wire:model="new_password_confirmation"
                         placeholder="Ulangi password baru"
                         autocomplete="new-password"
-                        class:input="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
                     />
                 </div>
             </div>
@@ -119,7 +101,7 @@
                 <flux:button
                     type="submit"
                     variant="primary"
-                    color="teal"
+                    color="blue"
                     class="cursor-pointer"
                     wire:loading.attr="disabled"
                 >

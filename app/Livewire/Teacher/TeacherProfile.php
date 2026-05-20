@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Student;
+namespace App\Livewire\Teacher;
 
-use App\Models\Siswa;
-use App\Models\TahunAjaran;
 use App\Models\User;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -15,15 +12,11 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Layout('layouts.student')]
-#[Title('Profil - SIPPEL Siswa')]
-final class Profil extends Component
+#[Layout('layouts.teacher')]
+#[Title('Profil - SIPPEL Guru')]
+final class TeacherProfile extends Component
 {
     public string $nama = '';
-
-    public string $nis = '';
-
-    public string $kelas = '';
 
     public string $email = '';
 
@@ -35,37 +28,11 @@ final class Profil extends Component
 
     public function mount(): void
     {
-        /** @var User|null $user */
+        /** @var User $user */
         $user = Auth::user();
-
-        // Ensure only students can access
-        if (! $user || ! $user->hasRole('student')) {
-            abort(403);
-        }
 
         $this->nama = $user->name;
         $this->email = $user->email;
-
-        /** @var Siswa|null $siswa */
-        $siswa = $user->siswa;
-        $this->nis = $siswa?->nis ?? '-';
-
-        $contextTahunAjaran = TahunAjaran::getContext();
-        $contextKelas = $contextTahunAjaran && $siswa
-            ? $siswa->getKelasForTahunAjaran($contextTahunAjaran->id)
-            : null;
-
-        if ($contextKelas && $contextTahunAjaran) {
-            $this->kelas = sprintf(
-                '%s-%s (%s - %s)',
-                $contextKelas->tingkat_kelas,
-                $contextKelas->grup_kelas,
-                $contextTahunAjaran->nama_tahun,
-                $contextTahunAjaran->semester
-            );
-        } else {
-            $this->kelas = '-';
-        }
     }
 
     /**
@@ -105,31 +72,33 @@ final class Profil extends Component
         /** @var User $user */
         $user = Auth::user();
 
+        // Verify current password if changing password
         if ($this->new_password !== '' && $this->new_password !== '0') {
             if (! Hash::check($this->current_password, $user->password)) {
-                session()->flash('error', 'Password lama tidak sesuai.');
-
                 throw ValidationException::withMessages([
                     'current_password' => 'Password lama tidak sesuai.',
                 ]);
             }
         }
 
+        // Update email
         $user->email = $this->email;
 
+        // Update password if provided
         if ($this->new_password !== '' && $this->new_password !== '0') {
             $user->password = Hash::make($this->new_password);
         }
 
         $user->save();
 
+        // Clear password fields
         $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
 
-        $this->dispatch('student-profile-saved');
+        $this->dispatch('profile-saved');
     }
 
-    public function render(): View
+    public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
-        return view('livewire.student.profil');
+        return view('livewire.teacher.teacher-profile');
     }
 }

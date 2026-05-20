@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 final class MataPelajaran extends Model
 {
@@ -20,6 +21,29 @@ final class MataPelajaran extends Model
         'guru_id',
         'kelas_id',
     ];
+
+    protected static function booted(): void
+    {
+        static::created(function (self $mapel): void {
+            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
+        });
+
+        static::updated(function (self $mapel): void {
+            $originalGuruId = $mapel->getOriginal('guru_id');
+            $originalKelasId = $mapel->getOriginal('kelas_id');
+
+            $mapel->clearDashboardCacheForContext($originalGuruId, $originalKelasId);
+            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
+        });
+
+        static::deleted(function (self $mapel): void {
+            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
+        });
+
+        static::restored(function (self $mapel): void {
+            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
+        });
+    }
 
     /**
      * Get the teacher for this subject
@@ -51,5 +75,20 @@ final class MataPelajaran extends Model
     public function laporan(): HasMany
     {
         return $this->hasMany(Laporan::class);
+    }
+
+    private function clearDashboardCacheForContext(?int $guruId, ?int $kelasId): void
+    {
+        if (! $guruId || ! $kelasId) {
+            return;
+        }
+
+        $kelas = Kelas::withTrashed()->find($kelasId);
+        if (! $kelas) {
+            return;
+        }
+
+        $tahunAjaranId = $kelas->tahun_ajaran_id;
+        Cache::forget('teacher_dashboard_stats_'.$guruId.'_'.($tahunAjaranId ?? 'none'));
     }
 }

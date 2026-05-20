@@ -32,23 +32,20 @@ beforeEach(function () {
 
 it('generates excel with correct header structure', function () {
     $export = new ClassReportExport($this->kelas);
-    $collection = $export->collection();
 
-    // Should have at least 2 header rows
-    expect($collection->count())->toBeGreaterThan(1);
-
-    // Check header row 1 - Fixed columns
-    $header1 = $collection->first();
-    expect($header1[0])->toBe('No');
-    expect($header1[1])->toBe('NIS');
-    expect($header1[2])->toBe('Nama');
-    expect($header1[3])->toBe('Kelas');
-    expect($header1[4])->toBe('Mata Pelajaran');
-    expect($header1[5])->toBe('Guru Pengampu');
-    expect($header1[6])->toBe('Wali Kelas');
+    $headers = $export->headings();
+    expect($headers)->toBe([
+        'No',
+        'NIS',
+        'Nama',
+        'Tanggal',
+        'Kehadiran',
+        'Partisipasi',
+        'Catatan Observasi',
+    ]);
 });
 
-it('generates excel with date column groups', function () {
+it('orders records by activity date', function () {
     // Create test students with activity records on different dates
     $siswa1 = Siswa::factory()->create(['kelas_id' => $this->kelas->id]);
 
@@ -87,25 +84,17 @@ it('generates excel with date column groups', function () {
         'partisipasi' => 5,
     ]);
 
-    // Export with date range
-    $export = new ClassReportExport($this->kelas, $tanggal1, $tanggal2);
+    $export = new ClassReportExport($this->kelas);
     $collection = $export->collection();
 
-    // Should have 2 header rows + student rows
-    expect($collection->count())->toBeGreaterThan(2);
-
-    // Check header row 1 contains dates
-    $header1 = $collection->first();
-    expect($header1[7])->toBe($tanggal1->format('d/m/Y'));
-
-    // Check header row 2 contains subcolumns
-    $header2 = $collection->get(1);
-    expect($header2[7])->toBe('Status kehadiran');
-    expect($header2[8])->toBe('Nilai');
-    expect($header2[9])->toBe('Partisipasi');
+    expect($collection->count())->toBe(2);
+    expect($collection->first()->aktivitasPembelajaran->tanggal->format('d/m/Y'))
+        ->toBe($tanggal1->format('d/m/Y'));
+    expect($collection->last()->aktivitasPembelajaran->tanggal->format('d/m/Y'))
+        ->toBe($tanggal2->format('d/m/Y'));
 });
 
-it('shows correct mata pelajaran and guru using injected model', function () {
+it('maps detail rows with attendance and participation labels', function () {
     $siswa = Siswa::factory()->create(['kelas_id' => $this->kelas->id]);
 
     $aktivitas = AktivitasPembelajaran::create([
@@ -124,14 +113,13 @@ it('shows correct mata pelajaran and guru using injected model', function () {
         'partisipasi' => 4,
     ]);
 
-    $this->mataPelajaran->load('guru');
-    $export = new ClassReportExport($this->kelas, null, null, $this->mataPelajaran);
+    $export = new ClassReportExport($this->kelas, $this->mataPelajaran);
     $collection = $export->collection();
 
-    // First data row (index 2)
-    $dataRow = $collection->get(2);
-    expect($dataRow[4])->toBe('Matematika');         // Mata Pelajaran
-    expect($dataRow[5])->toBe($this->teacher->name); // Guru Pengampu
+    $row = $export->map($collection->first());
+    expect($row[3])->toBe('07/02/2026');
+    expect($row[4])->toBe('Hadir');
+    expect($row[5])->toBe('Sangat Aktif');
 });
 
 it('only includes activities for the specified subject when mata pelajaran is passed', function () {
@@ -182,22 +170,12 @@ it('only includes activities for the specified subject when mata pelajaran is pa
         'partisipasi' => 3,
     ]);
 
-    $this->mataPelajaran->load('guru');
-    $export = new ClassReportExport($this->kelas, null, null, $this->mataPelajaran);
+    $export = new ClassReportExport($this->kelas, $this->mataPelajaran);
     $collection = $export->collection();
 
-    // Should only have 1 date column (one date for this subject)
-    $header1 = $collection->first();
-    // Fixed 7 columns + 3 sub-columns for 1 date = 10 total
-    expect(count(array_filter($header1, fn ($v) => $v !== '')))->toBe(8); // 7 fixed + 1 date header
-
-    // Subject column shows Matematika, not Bahasa Indonesia
-    $dataRow = $collection->get(2);
-    expect($dataRow[4])->toBe('Matematika');
-    expect($dataRow[5])->toBe($this->teacher->name);
-
-    // kehadiran for this student on this date should be Hadir (from Matematika activity)
-    expect($dataRow[7])->toBe('Hadir');
+    expect($collection)->toHaveCount(1);
+    expect($collection->first()->aktivitasPembelajaran->mata_pelajaran_id)
+        ->toBe($this->mataPelajaran->id);
 });
 
 it('scopes activities to kelas via aktivitas_pembelajaran when spanning multiple semesters', function () {
@@ -250,17 +228,8 @@ it('scopes activities to kelas via aktivitas_pembelajaran when spanning multiple
         'partisipasi' => 5,
     ]);
 
-    $this->mataPelajaran->load('guru');
-    $export = new ClassReportExport($this->kelas, null, null, $this->mataPelajaran);
+    $export = new ClassReportExport($this->kelas, $this->mataPelajaran);
     $collection = $export->collection();
-
-    // Should only have 1 date (the new semester date) — old semester is filtered out
-    $header1 = $collection->first();
-    $dates = array_values(array_filter(array_slice($header1, 7), fn ($v) => $v !== ''));
-    expect($dates)->toHaveCount(1);
-    expect($dates[0])->toBe('01/02/2026');
-
-    // Data row should show kehadiran = Hadir (from new semester), not Alpa
-    $dataRow = $collection->get(2);
-    expect($dataRow[7])->toBe('Hadir');
+    expect($collection)->toHaveCount(1);
+    expect($collection->first()->aktivitasPembelajaran->kelas_id)->toBe($this->kelas->id);
 });

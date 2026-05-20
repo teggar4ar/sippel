@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Http\Responses\LoginResponse;
+use App\Models\DetailAktivitas;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
 use App\Models\User;
+use App\Observers\DetailAktivitasObserver;
 use App\Observers\SiswaObserver;
 use App\Observers\TahunAjaranObserver;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as LoginResponseContract;
@@ -38,6 +40,7 @@ final class AppServiceProvider extends ServiceProvider
         // Register model observers
         TahunAjaran::observe(TahunAjaranObserver::class);
         Siswa::observe(SiswaObserver::class);
+        DetailAktivitas::observe(DetailAktivitasObserver::class);
 
         // Define Gate for class report export
         Gate::define('export-class-report', function (User $user, Kelas $kelas): bool {

@@ -1,122 +1,270 @@
-<div class="space-y-3 overflow-x-hidden">
-    {{-- Header --}}
-    <div class="flex items-center gap-2">
-        <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
-           class="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex-shrink-0">
-            <flux:icon name="arrow-left" class="size-5" />
-        </a>
-        <div class="flex-1 min-w-0 overflow-hidden">
-            <h1 class="text-base font-bold text-slate-900 dark:text-white leading-tight truncate">{{ $aktivitas->topik }}</h1>
-            <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $aktivitas->tanggal->format('d M Y') }} · {{ $aktivitas->mataPelajaran->nama_mapel }}</p>
+<div class="space-y-4">
+
+    {{-- ═══ Header ═══ --}}
+    <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2 min-w-0">
+            <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
+               class="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg shrink-0">
+                <flux:icon name="arrow-left" class="size-5" />
+            </a>
+            <h1 class="text-lg lg:text-xl font-bold text-slate-900 dark:text-white leading-tight truncate">Detail Aktivitas Pembelajaran</h1>
         </div>
-        <a href="{{ route('teacher.aktivitas.edit', $aktivitas->id) }}" wire:navigate
-           class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg flex-shrink-0">
-            <flux:icon name="pencil" class="size-5" />
-        </a>
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{{ route('teacher.aktivitas.edit', $aktivitas->id) }}" wire:navigate
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-colors">
+                <flux:icon name="pencil" class="w-3.5 h-3.5" />
+                <span class="hidden sm:inline">Edit</span>
+            </a>
+            <button
+                x-on:click="$wire.showDeleteModal = true"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors cursor-pointer"
+            >
+                <flux:icon name="trash" class="w-3.5 h-3.5" />
+                <span class="hidden sm:inline">Hapus</span>
+            </button>
+        </div>
     </div>
 
-    {{-- Info + Stats Combined Card --}}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-        {{-- Class & Student count --}}
-        <div class="p-3 text-xs">
-            <div class="flex justify-between gap-2">
-                <span class="text-slate-500 dark:text-slate-400 truncate">{{ $aktivitas->kelas->nama_lengkap }}</span>
-                <span class="text-slate-900 dark:text-white font-medium flex-shrink-0">{{ $this->stats['total'] }} siswa</span>
+    {{-- ═══ Metadata Card ═══ --}}
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
+            {{-- Left column --}}
+            <div class="space-y-2">
+                <div class="flex">
+                    <span class="text-slate-500 dark:text-slate-400 w-28 sm:w-32 shrink-0">Topik</span>
+                    <span class="text-slate-400 mr-2">:</span>
+                    <span class="font-medium text-slate-900 dark:text-white break-words min-w-0">{{ $aktivitas->topik }}</span>
+                </div>
+                <div class="flex">
+                    <span class="text-slate-500 dark:text-slate-400 w-28 sm:w-32 shrink-0">Mata Pelajaran</span>
+                    <span class="text-slate-400 mr-2">:</span>
+                    <span class="font-medium text-slate-900 dark:text-white">{{ $aktivitas->mataPelajaran->nama_mapel }}</span>
+                </div>
             </div>
-        </div>
-
-        {{-- Attendance row --}}
-        <div class="flex border-t border-slate-100 dark:border-slate-700">
-            <div class="flex-1 py-2 text-center border-r border-slate-100 dark:border-slate-700">
-                <div class="text-sm font-bold text-emerald-600">{{ $this->stats['hadir'] }}</div>
-                <div class="text-[10px] text-slate-500">Hadir</div>
-            </div>
-            <div class="flex-1 py-2 text-center border-r border-slate-100 dark:border-slate-700">
-                <div class="text-sm font-bold text-blue-600">{{ $this->stats['izin'] }}</div>
-                <div class="text-[10px] text-slate-500">Izin</div>
-            </div>
-            <div class="flex-1 py-2 text-center border-r border-slate-100 dark:border-slate-700">
-                <div class="text-sm font-bold text-amber-600">{{ $this->stats['sakit'] }}</div>
-                <div class="text-[10px] text-slate-500">Sakit</div>
-            </div>
-            <div class="flex-1 py-2 text-center">
-                <div class="text-sm font-bold text-red-600">{{ $this->stats['alpa'] }}</div>
-                <div class="text-[10px] text-slate-500">Alpa</div>
-            </div>
-        </div>
-
-        {{-- Average row --}}
-        <div class="flex border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/30">
-            <div class="flex-1 py-2 text-center border-r border-slate-100 dark:border-slate-700">
-                <div class="text-sm font-bold text-slate-900 dark:text-white">{{ $this->stats['percentage'] }}%</div>
-                <div class="text-[10px] text-slate-500">Kehadiran</div>
-            </div>
-            <div class="flex-1 py-2 text-center border-r border-slate-100 dark:border-slate-700">
-                <div class="text-sm font-bold text-slate-900 dark:text-white">{{ $this->stats['avg_nilai'] ? number_format($this->stats['avg_nilai'], 1) : '-' }}</div>
-                <div class="text-[10px] text-slate-500">Nilai</div>
-            </div>
-            <div class="flex-1 py-2 text-center">
-                <div class="text-sm font-bold text-slate-900 dark:text-white">{{ $this->stats['avg_partisipasi'] ? number_format($this->stats['avg_partisipasi'], 1) : '-' }}</div>
-                <div class="text-[10px] text-slate-500">Partisipasi</div>
+            {{-- Right column --}}
+            <div class="space-y-2">
+                <div class="flex">
+                    <span class="text-slate-500 dark:text-slate-400 w-28 sm:w-32 shrink-0">Tanggal</span>
+                    <span class="text-slate-400 mr-2">:</span>
+                    <span class="font-medium text-slate-900 dark:text-white">{{ $aktivitas->tanggal->translatedFormat('d F Y') }}</span>
+                </div>
+                <div class="flex">
+                    <span class="text-slate-500 dark:text-slate-400 w-28 sm:w-32 shrink-0">Kelas</span>
+                    <span class="text-slate-400 mr-2">:</span>
+                    <span class="font-medium text-slate-900 dark:text-white">{{ $aktivitas->kelas->tingkat_kelas }}-{{ $aktivitas->kelas->grup_kelas }}</span>
+                </div>
             </div>
         </div>
 
         @if($aktivitas->catatan)
-            <div class="p-3 border-t border-slate-100 dark:border-slate-700">
-                <p class="text-xs text-slate-600 dark:text-slate-300 break-words"><span class="text-slate-400">Catatan:</span> {{ $aktivitas->catatan }}</p>
+            <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                <div class="flex">
+                    <span class="text-sm text-slate-500 dark:text-slate-400 w-28 sm:w-32 shrink-0">Catatan</span>
+                    <span class="text-sm text-slate-400 mr-2">:</span>
+                    <span class="text-sm text-slate-700 dark:text-slate-300 break-words min-w-0">{{ $aktivitas->catatan }}</span>
+                </div>
             </div>
         @endif
     </div>
 
-    {{-- Student List --}}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-            <span class="text-sm font-semibold text-slate-900 dark:text-white">Detail Siswa</span>
-            <span class="text-[10px] text-slate-500">{{ $aktivitas->detailAktivitas->count() }} siswa</span>
+    {{-- ═══ Ringkasan Pertemuan ═══ --}}
+    <div class="space-y-2">
+        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Ringkasan Pertemuan</p>
+        @php
+            $avgPart = $this->stats['avg_partisipasi'];
+            $partisipasiLabel = match(true) {
+                $avgPart >= 3.5 => 'Sangat Aktif',
+                $avgPart >= 2.5 => 'Aktif',
+                $avgPart >= 1.5 => 'Cukup',
+                $avgPart >= 0.1 => 'Pasif',
+                default => '-',
+            };
+        @endphp
+        <div class="flex flex-wrap gap-2">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
+                <flux:icon name="user-group" class="w-3.5 h-3.5 text-emerald-500" />
+                Total Hadir: {{ $this->stats['hadir'] }}
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
+                <flux:icon name="envelope" class="w-3.5 h-3.5 text-blue-500" />
+                Izin: {{ $this->stats['izin'] }}
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
+                <flux:icon name="heart" class="w-3.5 h-3.5 text-amber-500" />
+                Sakit: {{ $this->stats['sakit'] }}
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
+                <flux:icon name="x-circle" class="w-3.5 h-3.5 text-red-500" />
+                Alpa: {{ $this->stats['alpa'] }}
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
+                <flux:icon name="star" class="w-3.5 h-3.5 text-violet-500" />
+                Rata-rata Partisipasi: {{ $partisipasiLabel }}
+            </span>
         </div>
-        <div class="divide-y divide-slate-50 dark:divide-slate-700">
-            @foreach($aktivitas->detailAktivitas as $detail)
-                <div class="p-3" wire:key="detail-{{ $detail->id }}">
-                    {{-- Row 1: Name + Badge --}}
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="min-w-0 flex-1 overflow-hidden">
-                            <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $detail->siswa->user->nama }}</p>
-                            <p class="text-[10px] text-slate-400">{{ $detail->siswa->nis }}</p>
-                        </div>
+    </div>
+
+    {{-- ═══ Daftar Observasi Siswa ═══ --}}
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Daftar Observasi Siswa</span>
+            <span class="text-[10px] text-slate-500 dark:text-slate-400">{{ $aktivitas->detailAktivitas->count() }} siswa</span>
+        </div>
+
+        {{-- Desktop Table (lg+) --}}
+        <div class="hidden lg:block px-4">
+            <flux:table>
+                <flux:table.columns>
+                    <flux:table.column class="w-12">No</flux:table.column>
+                    <flux:table.column>Nama Siswa & NIS</flux:table.column>
+                    <flux:table.column>Status Kehadiran</flux:table.column>
+                    <flux:table.column>Tingkat Partisipasi</flux:table.column>
+                    <flux:table.column>Catatan Observasi</flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
+                    @foreach($aktivitas->detailAktivitas as $index => $detail)
                         @php
-                            $badgeColors = [
-                                'Hadir' => 'bg-emerald-500',
-                                'Izin' => 'bg-blue-500',
-                                'Sakit' => 'bg-amber-500',
-                                'Alpa' => 'bg-red-500',
-                            ];
+                            $kehadiranBadge = match($detail->kehadiran) {
+                                \App\Enums\KehadiranStatus::Hadir => ['Hadir', 'green'],
+                                \App\Enums\KehadiranStatus::Izin  => ['Izin', 'amber'],
+                                \App\Enums\KehadiranStatus::Sakit => ['Sakit', 'amber'],
+                                \App\Enums\KehadiranStatus::Alpa  => ['Alpa', 'red'],
+                                default => ['-', 'zinc'],
+                            };
+                            $partBadge = null;
+                            if ($detail->kehadiran === \App\Enums\KehadiranStatus::Hadir && $detail->partisipasi) {
+                                $partBadge = match((int) $detail->partisipasi) {
+                                    4 => ['S. Aktif', 'green'],
+                                    3 => ['Aktif', 'blue'],
+                                    2 => ['Cukup', 'amber'],
+                                    1 => ['Pasif', 'red'],
+                                    default => ['-', 'zinc'],
+                                };
+                            }
                         @endphp
-                        <span class="px-2 py-0.5 text-[10px] font-medium text-white rounded flex-shrink-0 {{ $badgeColors[$detail->kehadiran->label()] ?? 'bg-slate-500' }}">
-                            {{ $detail->kehadiran->label() }}
-                        </span>
+                        <flux:table.row :key="$detail->id">
+                            <flux:table.cell class="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+                                {{ $index + 1 }}
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                <div>
+                                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $detail->siswa->user->nama }}</p>
+                                    <p class="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">{{ $detail->siswa->nis }}</p>
+                                </div>
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                <flux:badge color="{{ $kehadiranBadge[1] }}" size="sm" inset="top bottom">{{ $kehadiranBadge[0] }}</flux:badge>
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                @if($partBadge)
+                                    <flux:badge color="{{ $partBadge[1] }}" size="sm" inset="top bottom">{{ $partBadge[0] }}</flux:badge>
+                                @else
+                                    <span class="text-xs text-slate-400">-</span>
+                                @endif
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                @if($detail->catatan)
+                                    <span class="text-xs text-slate-600 dark:text-slate-300" title="{{ $detail->catatan }}">{{ Str::limit($detail->catatan, 50) }}</span>
+                                @else
+                                    <span class="text-xs text-slate-400">-</span>
+                                @endif
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @endforeach
+                </flux:table.rows>
+            </flux:table>
+        </div>
+
+        {{-- Mobile Cards (< lg) --}}
+        <div class="lg:hidden divide-y divide-slate-100 dark:divide-slate-700">
+            @foreach($aktivitas->detailAktivitas as $index => $detail)
+                @php
+                    $kehadiranBadge = match($detail->kehadiran) {
+                        \App\Enums\KehadiranStatus::Hadir => ['Hadir', 'green'],
+                        \App\Enums\KehadiranStatus::Izin  => ['Izin', 'amber'],
+                        \App\Enums\KehadiranStatus::Sakit => ['Sakit', 'amber'],
+                        \App\Enums\KehadiranStatus::Alpa  => ['Alpa', 'red'],
+                        default => ['-', 'zinc'],
+                    };
+                    $partBadge = null;
+                    if ($detail->kehadiran === \App\Enums\KehadiranStatus::Hadir && $detail->partisipasi) {
+                        $partBadge = match((int) $detail->partisipasi) {
+                            4 => ['S. Aktif', 'green'],
+                            3 => ['Aktif', 'blue'],
+                            2 => ['Cukup', 'amber'],
+                            1 => ['Pasif', 'red'],
+                            default => ['-', 'zinc'],
+                        };
+                    }
+                @endphp
+                <div class="p-3 flex gap-2.5" wire:key="detail-{{ $detail->id }}">
+                    {{-- Number indicator --}}
+                    <div class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+                        <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 tabular-nums">{{ $index + 1 }}</span>
                     </div>
-                    {{-- Row 2: Scores --}}
-                    <div class="flex gap-3 mt-1.5 text-xs text-slate-500">
-                        <span>Nilai: <b class="text-slate-700 dark:text-slate-200">{{ $detail->nilai ?? '-' }}</b></span>
-                        <span>Part: <b class="text-slate-700 dark:text-slate-200">{{ $detail->partisipasi ? (int) $detail->partisipasi : '-' }}</b></span>
+
+                    {{-- Content --}}
+                    <div class="flex-1 min-w-0">
+                        {{-- Row 1: Name + NIS --}}
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $detail->siswa->user->nama }}</p>
+                                <p class="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">{{ $detail->siswa->nis }}</p>
+                            </div>
+                        </div>
+
+                        {{-- Row 2: Badges --}}
+                        <div class="flex items-center gap-1.5 mt-1.5">
+                            <flux:badge color="{{ $kehadiranBadge[1] }}" size="sm">{{ $kehadiranBadge[0] }}</flux:badge>
+                            @if($partBadge)
+                                <flux:badge color="{{ $partBadge[1] }}" size="sm">{{ $partBadge[0] }}</flux:badge>
+                            @else
+                                <span class="text-[10px] text-slate-400">-</span>
+                            @endif
+                        </div>
+
+                        {{-- Row 3: Catatan --}}
+                        @if($detail->catatan)
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                                <flux:icon name="chat-bubble-left" class="w-3 h-3 inline -mt-0.5 mr-0.5 text-slate-400" />
+                                {{ $detail->catatan }}
+                            </p>
+                        @endif
                     </div>
-                    @if($detail->catatan)
-                        <p class="mt-1 text-[10px] text-slate-400 truncate">{{ $detail->catatan }}</p>
-                    @endif
                 </div>
             @endforeach
         </div>
     </div>
 
-    {{-- Action buttons --}}
-    <div class="flex gap-2 pb-4">
-        <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
-           class="flex-1 py-2.5 text-center text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg">
-            ← Kembali
-        </a>
-        <a href="{{ route('teacher.aktivitas.edit', $aktivitas->id) }}" wire:navigate
-           class="flex-1 py-2.5 text-center text-sm font-medium text-white bg-blue-600 rounded-lg">
-            Edit
-        </a>
-    </div>
+    {{-- ═══ Delete Confirmation Modal (Flux UI) ═══ --}}
+    <flux:modal wire:model.self="showDeleteModal" class="min-w-[22rem] max-w-sm">
+        <div class="space-y-5">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-50 dark:bg-red-950/50 rounded-full ring-4 ring-red-100 dark:ring-red-900/30">
+                <flux:icon name="exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div class="text-center space-y-2">
+                <flux:heading size="lg">Hapus Aktivitas ini?</flux:heading>
+                <flux:text class="font-medium line-clamp-2">"{{ $aktivitas->topik }}"</flux:text>
+                <flux:text class="!text-xs !text-slate-500 dark:!text-slate-400">
+                    Data kehadiran & nilai akan terhapus permanen
+                </flux:text>
+            </div>
+            <div class="flex gap-2">
+                <flux:spacer />
+                <flux:modal.close>
+                    <flux:button variant="ghost" class="cursor-pointer">Batal</flux:button>
+                </flux:modal.close>
+                <flux:button
+                    wire:click="deleteAktivitas"
+                    wire:loading.attr="disabled"
+                    variant="danger"
+                    class="cursor-pointer"
+                >
+                    <flux:icon wire:loading wire:target="deleteAktivitas" name="arrow-path" class="w-4 h-4 animate-spin" />
+                    Hapus
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
 </div>

@@ -188,7 +188,7 @@ final class ClassReport extends Page implements HasForms
             $sanitizedTahun
         );
 
-        return Excel::download(new ClassReportExport($kelas, null, null, $mataPelajaran), $filename);
+        return Excel::download(new ClassReportExport($kelas, $mataPelajaran), $filename);
     }
 
     /**

@@ -10,7 +10,6 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -26,9 +25,6 @@ final class ListAktivitas extends Component
 
     #[Url]
     public string $filterMapel = '';
-
-    #[Url]
-    public string $filterTanggal = '';
 
     #[Url]
     public string $filterPeriode = ''; // Quick date filter: today, week, month
@@ -56,15 +52,8 @@ final class ListAktivitas extends Component
         $this->resetPage();
     }
 
-    public function updatingFilterTanggal(): void
-    {
-        $this->filterPeriode = ''; // Clear quick filter when specific date is selected
-        $this->resetPage();
-    }
-
     public function updatingFilterPeriode(): void
     {
-        $this->filterTanggal = ''; // Clear specific date when quick filter is selected
         $this->resetPage();
     }
 
@@ -81,7 +70,6 @@ final class ListAktivitas extends Component
     public function setQuickFilter(string $periode): void
     {
         $this->filterPeriode = $this->filterPeriode === $periode ? '' : $periode;
-        $this->filterTanggal = '';
         $this->resetPage();
     }
 
@@ -93,7 +81,6 @@ final class ListAktivitas extends Component
     public function clearFilters(): void
     {
         $this->filterMapel = '';
-        $this->filterTanggal = '';
         $this->filterPeriode = '';
         $this->search = '';
         $this->perPage = 10;
@@ -113,85 +100,6 @@ final class ListAktivitas extends Component
             ->get();
     }
 
-    /**
-     * Summary stats: Total activities this month
-     */
-    #[Computed]
-    public function totalAktivitasBulanIni(): int
-    {
-        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
-
-        return AktivitasPembelajaran::query()
-            ->where('guru_id', Auth::id())
-            ->when($contextTahunAjaran, fn ($q) => $q->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
-            ->whereMonth('tanggal', Carbon::now()->month)
-            ->whereYear('tanggal', Carbon::now()->year)
-            ->count();
-    }
-
-    /**
-     * Summary stats: Average attendance percentage this month
-     */
-    #[Computed]
-    public function rataKehadiran(): float
-    {
-        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
-
-        $query = DB::table('aktivitas_pembelajaran')
-            ->join('detail_aktivitas', 'aktivitas_pembelajaran.id', '=', 'detail_aktivitas.aktivitas_pembelajaran_id')
-            ->where('aktivitas_pembelajaran.guru_id', Auth::id())
-            ->whereMonth('aktivitas_pembelajaran.tanggal', Carbon::now()->month)
-            ->whereYear('aktivitas_pembelajaran.tanggal', Carbon::now()->year);
-
-        if ($contextTahunAjaran instanceof \App\Models\TahunAjaran) {
-            $query->join('kelas', 'aktivitas_pembelajaran.kelas_id', '=', 'kelas.id')
-                ->where('kelas.tahun_ajaran_id', $contextTahunAjaran->id);
-        }
-
-        $stats = $query->selectRaw('
-                COUNT(*) as total,
-                SUM(CASE WHEN LOWER(detail_aktivitas.kehadiran) = ? THEN 1 ELSE 0 END) as hadir
-            ', ['hadir'])
-            ->first();
-
-        if (! $stats || $stats->total === 0) {
-            return 0;
-        }
-
-        return round(($stats->hadir / $stats->total) * 100, 1);
-    }
-
-    /**
-     * Summary stats: Most active subject this month
-     */
-    #[Computed]
-    public function mapelTeraktif(): ?object
-    {
-        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
-
-        $result = AktivitasPembelajaran::query()
-            ->where('guru_id', Auth::id())
-            ->when($contextTahunAjaran, fn ($q) => $q->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
-            ->whereMonth('tanggal', Carbon::now()->month)
-            ->whereYear('tanggal', Carbon::now()->year)
-            ->select('mata_pelajaran_id', DB::raw('COUNT(*) as total'))
-            ->groupBy('mata_pelajaran_id')
-            ->orderByDesc('total')
-            ->first();
-
-        if (! $result) {
-            return null;
-        }
-
-        $mapel = MataPelajaran::with('kelas')->find($result->mata_pelajaran_id);
-
-        return (object) [
-            'nama' => $mapel?->nama_mapel ?? '-',
-            'kelas' => $mapel?->kelas?->nama_lengkap ?? '',
-            'total' => $result->total,
-        ];
-    }
-
     #[Computed]
     public function aktivitas()
     {
@@ -201,7 +109,6 @@ final class ListAktivitas extends Component
             ->where('guru_id', Auth::id())
             ->when($contextTahunAjaran, fn ($q) => $q->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
             ->when($this->filterMapel, fn ($q) => $q->where('mata_pelajaran_id', $this->filterMapel))
-            ->when($this->filterTanggal, fn ($q) => $q->whereDate('tanggal', $this->filterTanggal))
             ->when($this->filterPeriode === 'today', fn ($q) => $q->whereDate('tanggal', Carbon::today()))
             ->when($this->filterPeriode === 'week', fn ($q) => $q->whereBetween('tanggal', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]))
             ->when($this->filterPeriode === 'month', fn ($q) => $q->whereMonth('tanggal', Carbon::now()->month)->whereYear('tanggal', Carbon::now()->year))

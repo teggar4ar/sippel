@@ -61,6 +61,7 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
     Route::get('/aktivitas/{id}', App\Livewire\Teacher\AktivitasPembelajaran\ViewAktivitas::class)
         ->name('aktivitas.view');
     Route::get('/laporan', App\Livewire\Teacher\Laporan::class)->name('laporan');
+    Route::get('/profil', App\Livewire\Teacher\TeacherProfile::class)->name('profil');
 });
 
 /*
@@ -74,9 +75,7 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
 */
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/', App\Livewire\Student\Dashboard::class)->name('dashboard');
-    Route::get('/kehadiran', App\Livewire\Student\RiwayatKehadiran::class)->name('kehadiran');
-    Route::get('/nilai', App\Livewire\Student\RiwayatNilai::class)->name('nilai');
-    Route::get('/laporan', App\Livewire\Student\LaporanSaya::class)->name('laporan');
+    Route::get('/riwayat', App\Livewire\Student\RiwayatAktivitas::class)->name('riwayat');
     Route::get('/profil', App\Livewire\Student\Profil::class)->name('profil');
 });
 

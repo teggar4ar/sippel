@@ -82,7 +82,7 @@ trait HasLaporanDownloads
             $sanitizedTahun
         );
 
-        return Excel::download(new ClassReportExport($data['kelas'], null, null, $data['mataPelajaran']), $filename);
+        return Excel::download(new ClassReportExport($data['kelas'], $data['mataPelajaran']), $filename);
     }
 
     // ──────────────────────────────────────────────────────
@@ -186,20 +186,36 @@ trait HasLaporanDownloads
             ->with('mataPelajaran')
             ->get();
 
-        if ($laporanData->isEmpty()) {
+        $contextKelas = $siswa->getKelasForTahunAjaran($tahunAjaran->id);
+        $contextKelas?->load('waliKelas');
+
+        // Fetch per-activity detail records for the "Riwayat Aktivitas" table
+        $activityData = \App\Models\DetailAktivitas::where('siswa_id', $siswa->id)
+            ->whereHas('aktivitasPembelajaran', function ($q) use ($contextKelas, $tahunAjaran): void {
+                if ($contextKelas) {
+                    $q->where('kelas_id', $contextKelas->id);
+                }
+                $q->whereHas('kelas', fn ($kq) => $kq->where('tahun_ajaran_id', $tahunAjaran->id));
+            })
+            ->with(['aktivitasPembelajaran.mataPelajaran', 'aktivitasPembelajaran'])
+            ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
+            ->orderByDesc('aktivitas_pembelajaran.tanggal')
+            ->orderByDesc('detail_aktivitas.id')
+            ->select('detail_aktivitas.*')
+            ->get();
+
+        if ($activityData->isEmpty() && $laporanData->isEmpty()) {
             $this->dispatch('notify', type: 'warning', message: 'Belum ada data laporan untuk siswa ini.');
 
             return null;
         }
-
-        $contextKelas = $siswa->getKelasForTahunAjaran($tahunAjaran->id);
-        $contextKelas?->load('waliKelas');
 
         return [
             'siswa' => $siswa,
             'contextKelas' => $contextKelas,
             'tahunAjaran' => $tahunAjaran,
             'laporanData' => $laporanData,
+            'activityData' => $activityData,
         ];
     }
 

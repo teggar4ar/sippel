@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\ClassReportExport;
 use App\Models\Kelas;
-use Carbon\Carbon;
+use App\Models\MataPelajaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
@@ -17,27 +17,27 @@ final class ClassReportExportController extends Controller
     {
         $validated = $request->validate([
             'kelas_id' => ['required', 'exists:kelas,id'],
-            'start_date' => ['nullable', 'date'],
-            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'mata_pelajaran_id' => ['nullable', 'exists:mata_pelajaran,id'],
         ]);
 
-        $kelas = Kelas::findOrFail($validated['kelas_id']);
+        $kelas = Kelas::with('waliKelas')->findOrFail($validated['kelas_id']);
 
         // Authorization check
         Gate::authorize('export-class-report', $kelas);
 
-        $startDate = isset($validated['start_date']) ? Carbon::parse($validated['start_date']) : null;
-        $endDate = isset($validated['end_date']) ? Carbon::parse($validated['end_date']) : null;
+        $mataPelajaran = isset($validated['mata_pelajaran_id'])
+            ? MataPelajaran::with('guru')->find($validated['mata_pelajaran_id'])
+            : null;
 
         $fileName = sprintf(
-            'Laporan_Kelas_%s-%s_%s.xlsx',
+            'Jurnal_Observasi_%s-%s_%s.xlsx',
             $kelas->tingkat_kelas,
             $kelas->grup_kelas,
             now()->format('Y-m-d_His')
         );
 
         return Excel::download(
-            new ClassReportExport($kelas, $startDate, $endDate),
+            new ClassReportExport($kelas, $mataPelajaran),
             $fileName
         );
     }

@@ -3,7 +3,7 @@
     <flux:icon name="calendar" class="w-4 h-4 {{ $variant === 'teal' ? 'text-teal-500 dark:text-teal-400' : 'text-slate-500 dark:text-slate-400' }}" />
     <flux:select
         wire:model.live="selectedTahunAjaranId"
-        class="text-sm rounded-lg focus:ring-0
+        class="text-sm rounded-lg focus:ring-0 cursor-pointer
             {{ $variant === 'teal'
                 ? 'border-teal-300 dark:border-teal-600 dark:bg-slate-800 focus:border-teal-500'
                 : 'border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:border-blue-500'

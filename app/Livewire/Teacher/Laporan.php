@@ -9,6 +9,7 @@ use App\Livewire\Teacher\Concerns\HasLaporanDownloads;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Layout('layouts.teacher')]
 #[Title('Laporan - SIPPEL Guru')]
@@ -16,6 +17,7 @@ final class Laporan extends Component
 {
     use HasLaporanComputed;
     use HasLaporanDownloads;
+    use WithPagination;
 
     // Report type: 'student' or 'class'
     public string $reportType = 'student';
@@ -27,7 +29,7 @@ final class Laporan extends Component
 
     public ?int $mataPelajaranId = null;
 
-    public string $sortBy = 'nilai';
+    public string $sortBy = 'kehadiran';
 
     // Preview data
     public bool $showPreview = false;
@@ -57,6 +59,7 @@ final class Laporan extends Component
     public function updatedKelasId(): void
     {
         $this->resetDependentFields();
+        $this->resetPage();
     }
 
     /**
@@ -65,6 +68,7 @@ final class Laporan extends Component
     public function updatedSiswaId(): void
     {
         $this->showPreview = false;
+        $this->resetPage();
     }
 
     /**
