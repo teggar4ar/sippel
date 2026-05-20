@@ -20,8 +20,6 @@ use Illuminate\Console\Command;
  */
 final class CalculateReports extends Command
 {
-    private LaporanCalculatorService $calculator;
-
     /**
      * The name and signature of the console command.
      *
@@ -38,6 +36,8 @@ final class CalculateReports extends Command
      * @var string
      */
     protected $description = 'Calculate and cache report statistics in laporan table';
+
+    private LaporanCalculatorService $calculator;
 
     /**
      * Execute the console command.
@@ -195,5 +195,4 @@ final class CalculateReports extends Command
 
         return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped];
     }
-
 }

@@ -68,36 +68,6 @@ final class Profil extends Component
         }
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    protected function rules(): array
-    {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return [
-            'email' => ['required', 'email', 'max:255', "unique:users,email,{$user->id}"],
-            'current_password' => ['nullable', 'required_with:new_password'],
-            'new_password' => ['nullable', 'min:8', 'confirmed'],
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function messages(): array
-    {
-        return [
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'email.unique' => 'Email ini sudah digunakan oleh pengguna lain.',
-            'current_password.required_with' => 'Password lama wajib diisi jika ingin mengubah password.',
-            'new_password.min' => 'Password baru minimal 8 karakter.',
-            'new_password.confirmed' => 'Konfirmasi password tidak cocok.',
-        ];
-    }
-
     public function updateProfile(): void
     {
         $this->validate();
@@ -131,5 +101,35 @@ final class Profil extends Component
     public function render(): View
     {
         return view('livewire.student.profil');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function rules(): array
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        return [
+            'email' => ['required', 'email', 'max:255', "unique:users,email,{$user->id}"],
+            'current_password' => ['nullable', 'required_with:new_password'],
+            'new_password' => ['nullable', 'min:8', 'confirmed'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        return [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email ini sudah digunakan oleh pengguna lain.',
+            'current_password.required_with' => 'Password lama wajib diisi jika ingin mengubah password.',
+            'new_password.min' => 'Password baru minimal 8 karakter.',
+            'new_password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ];
     }
 }

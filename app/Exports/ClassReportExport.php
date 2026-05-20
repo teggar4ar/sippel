@@ -199,7 +199,7 @@ final class ClassReportExport implements FromCollection, WithColumnFormatting, W
         // Row 3: empty spacer (already empty)
 
         // Resolve metadata
-        $kelasName = $this->kelas->tingkat_kelas . '-' . $this->kelas->grup_kelas;
+        $kelasName = $this->kelas->tingkat_kelas.'-'.$this->kelas->grup_kelas;
         $tahunAjaran = $this->kelas->tahunAjaran?->nama_tahun;
         if ($tahunAjaran) {
             $kelasName .= " ({$tahunAjaran})";
@@ -211,15 +211,15 @@ final class ClassReportExport implements FromCollection, WithColumnFormatting, W
 
         // Row 4: Kelas + Guru Pengampu
         $sheet->setCellValue('A4', 'Kelas');
-        $sheet->setCellValue('C4', ': ' . $kelasName);
+        $sheet->setCellValue('C4', ': '.$kelasName);
         $sheet->setCellValue('F4', 'Guru Pengampu');
-        $sheet->setCellValue('G4', ': ' . $guruName);
+        $sheet->setCellValue('G4', ': '.$guruName);
 
         // Row 5: Mata Pelajaran + Wali Kelas
         $sheet->setCellValue('A5', 'Mata Pelajaran');
-        $sheet->setCellValue('C5', ': ' . $mapelName);
+        $sheet->setCellValue('C5', ': '.$mapelName);
         $sheet->setCellValue('F5', 'Wali Kelas');
-        $sheet->setCellValue('G5', ': ' . $waliKelasName);
+        $sheet->setCellValue('G5', ': '.$waliKelasName);
 
         // Style metadata labels bold
         $sheet->getStyle('A4:A5')->getFont()->setBold(true);

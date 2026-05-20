@@ -26,25 +26,6 @@ final class SiswaKelasHistory extends Model
         'tahun_ajaran_id',
     ];
 
-    protected static function booted(): void
-    {
-        static::created(function (self $history): void {
-            $history->clearTeacherDashboardCache($history->kelas_id, $history->tahun_ajaran_id);
-        });
-
-        static::updated(function (self $history): void {
-            $originalKelasId = $history->getOriginal('kelas_id');
-            $originalTahunAjaranId = $history->getOriginal('tahun_ajaran_id');
-
-            $history->clearTeacherDashboardCache($originalKelasId, $originalTahunAjaranId);
-            $history->clearTeacherDashboardCache($history->kelas_id, $history->tahun_ajaran_id);
-        });
-
-        static::deleted(function (self $history): void {
-            $history->clearTeacherDashboardCache($history->kelas_id, $history->tahun_ajaran_id);
-        });
-    }
-
     public function siswa(): BelongsTo
     {
         return $this->belongsTo(Siswa::class);
@@ -58,6 +39,25 @@ final class SiswaKelasHistory extends Model
     public function tahunAjaran(): BelongsTo
     {
         return $this->belongsTo(TahunAjaran::class);
+    }
+
+    protected static function booted(): void
+    {
+        self::created(function (self $history): void {
+            $history->clearTeacherDashboardCache($history->kelas_id, $history->tahun_ajaran_id);
+        });
+
+        self::updated(function (self $history): void {
+            $originalKelasId = $history->getOriginal('kelas_id');
+            $originalTahunAjaranId = $history->getOriginal('tahun_ajaran_id');
+
+            $history->clearTeacherDashboardCache($originalKelasId, $originalTahunAjaranId);
+            $history->clearTeacherDashboardCache($history->kelas_id, $history->tahun_ajaran_id);
+        });
+
+        self::deleted(function (self $history): void {
+            $history->clearTeacherDashboardCache($history->kelas_id, $history->tahun_ajaran_id);
+        });
     }
 
     private function clearTeacherDashboardCache(?int $kelasId, ?int $tahunAjaranId): void

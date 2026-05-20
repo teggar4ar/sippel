@@ -9,7 +9,6 @@ use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
 use App\Models\Kelas;
 use App\Models\MataPelajaran;
-use App\Models\Siswa;
 use App\Models\SiswaKelasHistory;
 use App\Models\TahunAjaran;
 use Illuminate\Support\Collection;
@@ -147,15 +146,15 @@ final class Dashboard extends Component
                 $kelas = $aktivitas->kelas;
 
                 return [
-                    'id'           => $aktivitas->id,
-                    'tanggal'      => $aktivitas->tanggal->translatedFormat('d M Y'),
-                    'waktu'        => $aktivitas->created_at->setTimezone('Asia/Jakarta')->format('H:i'),
-                    'kelas'        => $kelas->tingkat_kelas.'-'.$kelas->grup_kelas,
-                    'mapel'        => $aktivitas->mataPelajaran?->nama_mapel ?? '-',
-                    'topik'        => $aktivitas->topik ?? '-',
-                    'kehadiran'    => $kehadiranPct.'%',
-                    'kehadiran_pct'=> $kehadiranPct,
-                    'partisipasi'  => $partisipasiLabel,
+                    'id' => $aktivitas->id,
+                    'tanggal' => $aktivitas->tanggal->translatedFormat('d M Y'),
+                    'waktu' => $aktivitas->created_at->setTimezone('Asia/Jakarta')->format('H:i'),
+                    'kelas' => $kelas->tingkat_kelas.'-'.$kelas->grup_kelas,
+                    'mapel' => $aktivitas->mataPelajaran?->nama_mapel ?? '-',
+                    'topik' => $aktivitas->topik ?? '-',
+                    'kehadiran' => $kehadiranPct.'%',
+                    'kehadiran_pct' => $kehadiranPct,
+                    'partisipasi' => $partisipasiLabel,
                 ];
             });
     }

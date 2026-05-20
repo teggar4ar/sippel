@@ -22,29 +22,6 @@ final class MataPelajaran extends Model
         'kelas_id',
     ];
 
-    protected static function booted(): void
-    {
-        static::created(function (self $mapel): void {
-            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
-        });
-
-        static::updated(function (self $mapel): void {
-            $originalGuruId = $mapel->getOriginal('guru_id');
-            $originalKelasId = $mapel->getOriginal('kelas_id');
-
-            $mapel->clearDashboardCacheForContext($originalGuruId, $originalKelasId);
-            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
-        });
-
-        static::deleted(function (self $mapel): void {
-            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
-        });
-
-        static::restored(function (self $mapel): void {
-            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
-        });
-    }
-
     /**
      * Get the teacher for this subject
      */
@@ -75,6 +52,29 @@ final class MataPelajaran extends Model
     public function laporan(): HasMany
     {
         return $this->hasMany(Laporan::class);
+    }
+
+    protected static function booted(): void
+    {
+        self::created(function (self $mapel): void {
+            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
+        });
+
+        self::updated(function (self $mapel): void {
+            $originalGuruId = $mapel->getOriginal('guru_id');
+            $originalKelasId = $mapel->getOriginal('kelas_id');
+
+            $mapel->clearDashboardCacheForContext($originalGuruId, $originalKelasId);
+            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
+        });
+
+        self::deleted(function (self $mapel): void {
+            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
+        });
+
+        self::restored(function (self $mapel): void {
+            $mapel->clearDashboardCacheForContext($mapel->guru_id, $mapel->kelas_id);
+        });
     }
 
     private function clearDashboardCacheForContext(?int $guruId, ?int $kelasId): void

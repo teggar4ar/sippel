@@ -197,9 +197,9 @@ final class RiwayatAktivitas extends Component
         }
 
         $pdf = Pdf::loadView('reports.student-report', [
-            'siswa'        => $siswa->load(['user', 'kelas']),
+            'siswa' => $siswa->load(['user', 'kelas']),
             'contextKelas' => $contextKelas,
-            'tahunAjaran'  => $tahunAjaran,
+            'tahunAjaran' => $tahunAjaran,
             'activityData' => $activityData,
         ]);
 
@@ -218,11 +218,11 @@ final class RiwayatAktivitas extends Component
     private function mapPartisipasiLabelToValue(): ?float
     {
         return match ($this->filterPartisipasi) {
-            'pasif'        => 1.0,
-            'cukup'        => 2.0,
-            'aktif'        => 3.0,
+            'pasif' => 1.0,
+            'cukup' => 2.0,
+            'aktif' => 3.0,
             'sangat_aktif' => 4.0,
-            default        => null,
+            default => null,
         };
     }
 

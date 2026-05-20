@@ -198,7 +198,7 @@ final class Siswa extends Model
             $avg < 1.5 => 'Pasif',
             $avg < 2.5 => 'Cukup',
             $avg < 3.5 => 'Aktif',
-            default    => 'Sangat Aktif',
+            default => 'Sangat Aktif',
         };
     }
 

@@ -256,7 +256,7 @@ final class CreateAktivitas extends Component
      * Accept the full detailAktivitas payload from Alpine (client-side state)
      * and immediately save — eliminates multiple $wire.set() round-trips.
      *
-     * @param  array<int|string, array{kehadiran: string|null, partisipasi: int|null, catatan: string}> $detailAktivitas
+     * @param  array<int|string, array{kehadiran: string|null, partisipasi: int|null, catatan: string}>  $detailAktivitas
      */
     public function saveWithDetail(array $detailAktivitas): void
     {
