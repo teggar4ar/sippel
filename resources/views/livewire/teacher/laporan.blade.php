@@ -260,7 +260,7 @@
                                         <div class="hidden sm:flex absolute top-3 right-3 w-9 h-9 bg-amber-50 dark:bg-amber-900/30 rounded-lg items-center justify-center">
                                             <flux:icon name="star" class="w-4.5 h-4.5 text-amber-500/70 dark:text-amber-400/60" />
                                         </div>
-                                        <p class="text-[9px] sm:text-xs font-semibold uppercase tracking-wider text-amber-500/80 dark:text-amber-400/70 leading-tight">Partisipasi</p>
+                                        <p class="text-[9px] sm:text-xs font-semibold uppercase tracking-wider text-amber-500/80 dark:text-amber-400/70 leading-tight">Keaktifan</p>
                                         <p class="text-sm sm:text-xl font-bold {{ $partisipasiAvgLabel[1] }} mt-0.5 sm:mt-1">{{ $partisipasiAvgLabel[0] }}</p>
                                     </div>
                                 </div>
@@ -273,7 +273,7 @@
                                             <flux:table.column>Tanggal</flux:table.column>
                                             <flux:table.column>Mata Pelajaran</flux:table.column>
                                             <flux:table.column>Kehadiran</flux:table.column>
-                                            <flux:table.column>Partisipasi</flux:table.column>
+                                            <flux:table.column>Keaktifan</flux:table.column>
                                             <flux:table.column>Catatan Guru</flux:table.column>
                                         </flux:table.columns>
                                         <flux:table.rows>
@@ -442,7 +442,7 @@
                                         <div class="hidden sm:flex absolute top-3 right-3 w-9 h-9 bg-amber-50 dark:bg-amber-900/30 rounded-lg items-center justify-center">
                                             <flux:icon name="star" class="w-4.5 h-4.5 text-amber-500/70 dark:text-amber-400/60" />
                                         </div>
-                                        <p class="text-[9px] sm:text-xs font-semibold uppercase tracking-wider text-amber-500/80 dark:text-amber-400/70 leading-tight">Partisipasi</p>
+                                        <p class="text-[9px] sm:text-xs font-semibold uppercase tracking-wider text-amber-500/80 dark:text-amber-400/70 leading-tight">Keaktifan</p>
                                         <p class="text-sm sm:text-xl font-bold {{ $partisipasiAvgLabel[1] }} mt-0.5 sm:mt-1">{{ $partisipasiAvgLabel[0] }}</p>
                                     </div>
                                 </div>
@@ -453,7 +453,7 @@
                                         <flux:table.column class="w-10">No</flux:table.column>
                                         <flux:table.column>Siswa (Nama & NIS)</flux:table.column>
                                         <flux:table.column>Kehadiran</flux:table.column>
-                                        <flux:table.column>Rata-Rata Partisipasi</flux:table.column>
+                                        <flux:table.column>Rata-Rata Keaktifan</flux:table.column>
                                     </flux:table.columns>
                                     <flux:table.rows>
                                         @foreach($this->classReportData as $index => $laporan)

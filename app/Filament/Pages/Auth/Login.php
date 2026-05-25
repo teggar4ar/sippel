@@ -18,8 +18,8 @@ final class Login extends BasePage
 {
     /** @var array<string,string> Role → redirect path map (admin/unknown falls through to Filament). */
     private const array ROLE_REDIRECTS = [
-        'teacher' => '/teacher',
-        'student' => '/student',
+        'teacher' => '/guru',
+        'student' => '/siswa',
     ];
 
     /**

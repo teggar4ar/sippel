@@ -131,7 +131,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-base font-bold text-slate-900 dark:text-white">Aktivitas Kelas</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Perbarui kehadiran dan tingkat partisipasi ({{ $this->siswaList->count() }} siswa)</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Perbarui kehadiran dan tingkat keaktifan ({{ $this->siswaList->count() }} siswa)</p>
             </div>
             <button type="button"
                     x-on:click="setAllHadir()"
@@ -210,7 +210,7 @@
 
                         {{-- Divider + label — desktop only --}}
                         <div class="hidden lg:block w-px h-8 bg-slate-100 dark:bg-slate-700 shrink-0"></div>
-                        <span class="hidden lg:block text-[10px] font-semibold uppercase tracking-wider text-slate-400 shrink-0 w-20">Partisipasi</span>
+                        <span class="hidden lg:block text-[10px] font-semibold uppercase tracking-wider text-slate-400 shrink-0 w-20">Keaktifan</span>
 
                         {{-- Partisipasi buttons — fill width on mobile --}}
                         <div class="flex gap-1.5 lg:gap-1 lg:flex-1"

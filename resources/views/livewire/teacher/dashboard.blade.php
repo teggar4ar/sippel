@@ -1,5 +1,6 @@
 <div class="space-y-4">
-    {{-- Welcome Header --}}
+
+    {{-- ── Welcome Header ─────────────────────────────────────────────────── --}}
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">Halo, {{ explode(' ', auth()->user()->name ?? 'Guru')[0] }}!</h1>
@@ -12,9 +13,8 @@
         </a>
     </div>
 
-    {{-- Summary Widget — 4 metric cards with icons --}}
+    {{-- ── 4 Metric Cards ──────────────────────────────────────────────────── --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-3">
-        {{-- Kelas Diampu --}}
         <div class="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 px-2.5 py-2 sm:p-4 relative overflow-hidden">
             <div class="hidden sm:flex absolute top-3 right-3 w-9 h-9 bg-blue-50 dark:bg-blue-900/30 rounded-lg items-center justify-center">
                 <flux:icon name="building-library" class="w-4.5 h-4.5 text-blue-500/70 dark:text-blue-400/60" />
@@ -25,7 +25,6 @@
             </p>
             <p class="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5 sm:mt-1">{{ $this->dashboardStats['kelas_diampu'] }} <span class="text-xs sm:text-sm font-normal text-slate-400 dark:text-slate-500">Mapel</span></p>
         </div>
-        {{-- Total Siswa --}}
         <div class="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 px-2.5 py-2 sm:p-4 relative overflow-hidden">
             <div class="hidden sm:flex absolute top-3 right-3 w-9 h-9 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg items-center justify-center">
                 <flux:icon name="user-group" class="w-4.5 h-4.5 text-emerald-500/70 dark:text-emerald-400/60" />
@@ -36,7 +35,6 @@
             </p>
             <p class="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5 sm:mt-1">{{ $this->dashboardStats['total_siswa'] }} <span class="text-xs sm:text-sm font-normal text-slate-400 dark:text-slate-500">Siswa</span></p>
         </div>
-        {{-- Aktivitas Minggu Ini --}}
         <div class="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 px-2.5 py-2 sm:p-4 relative overflow-hidden">
             <div class="hidden sm:flex absolute top-3 right-3 w-9 h-9 bg-violet-50 dark:bg-violet-900/30 rounded-lg items-center justify-center">
                 <flux:icon name="clipboard-document-check" class="w-4.5 h-4.5 text-violet-500/70 dark:text-violet-400/60" />
@@ -47,7 +45,6 @@
             </p>
             <p class="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5 sm:mt-1">{{ $this->dashboardStats['aktivitas_minggu_ini'] }} <span class="text-xs sm:text-sm font-normal text-slate-400 dark:text-slate-500">Aktivitas</span></p>
         </div>
-        {{-- Rata-rata Kehadiran --}}
         <div class="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 px-2.5 py-2 sm:p-4 relative overflow-hidden">
             <div class="hidden sm:flex absolute top-3 right-3 w-9 h-9 bg-amber-50 dark:bg-amber-900/30 rounded-lg items-center justify-center">
                 <flux:icon name="hand-raised" class="w-4.5 h-4.5 text-amber-500/70 dark:text-amber-400/60" />
@@ -60,160 +57,110 @@
         </div>
     </div>
 
-    {{-- Quick Actions - Mobile compact buttons --}}
-    <div class="flex gap-2 lg:hidden">
-        <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
-           class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-lg">
-            <flux:icon name="list-bullet" class="w-4 h-4" />
-            Aktivitas
-        </a>
-        <a href="{{ route('teacher.laporan') }}" wire:navigate
-           class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-lg">
-            <flux:icon name="chart-bar" class="w-4 h-4" />
-            Laporan
-        </a>
-    </div>
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    {{-- MAIN 2-COLUMN LAYOUT: Charts (kiri) + Sidebar (kanan)                 --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-    @php
-        $subjectCount    = $this->mySubjects->count();
-        $partisipasiMap  = $this->partisipasiPerKelas->keyBy('mapel_id');
-        $useSidebar      = true;
-    @endphp
+        {{-- ── KOLOM KIRI: Filter + 3 Chart ──────────────────────────────── --}}
+        <div class="lg:col-span-2 space-y-4">
 
-    {{-- ═══ Main content area ═══ --}}
-    <div class="{{ $useSidebar ? 'grid grid-cols-1 lg:grid-cols-3 gap-4' : '' }}">
-
-        {{-- Aktivitas Terkini --}}
-        <div class="{{ $useSidebar ? 'lg:col-span-2' : '' }}">
-            <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700/90 overflow-hidden">
-                <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700/90 flex items-center justify-between">
-                    <h2 class="font-semibold text-slate-900 dark:text-white">Aktivitas Terkini <span class="text-xs font-normal text-slate-400 dark:text-slate-500">(7 Hari Terakhir)</span></h2>
-                    <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
-                       class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer">
-                        Lihat Semua
-                        <flux:icon name="arrow-right" class="w-3 h-3" />
-                    </a>
-                </div>
-
-                @if($this->recentActivities->isNotEmpty())
-                    {{-- Desktop Table --}}
-                    <div class="hidden lg:block px-4 pb-2">
-                        <flux:table>
-                            <flux:table.columns>
-                                <flux:table.column>Tanggal</flux:table.column>
-                                <flux:table.column>Kelas</flux:table.column>
-                                <flux:table.column>Mata Pelajaran</flux:table.column>
-                                <flux:table.column>Topik</flux:table.column>
-                                <flux:table.column>Kehadiran</flux:table.column>
-                                <flux:table.column>Partisipasi</flux:table.column>
-                            </flux:table.columns>
-                            <flux:table.rows>
-                                @foreach($this->recentActivities as $activity)
-                                    @php
-                                        $pc = match($activity['partisipasi']) {
-                                            'Sangat Aktif' => 'green', 'Aktif' => 'blue',
-                                            'Cukup' => 'amber', 'Pasif' => 'red', default => 'zinc',
-                                        };
-                                        $kh = $activity['kehadiran_pct'];
-                                        $khColor      = $kh >= 80 ? 'text-emerald-600 dark:text-emerald-400'
-                                            : ($kh >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400');
-                                        $khBarColor   = $kh >= 80 ? 'bg-emerald-500'
-                                            : ($kh >= 60 ? 'bg-amber-500' : 'bg-red-500');
-                                    @endphp
-                                    <flux:table.row :key="$activity['id']">
-                                        <flux:table.cell class="whitespace-nowrap text-slate-600 dark:text-slate-300">
-                                            <div class="text-xs tabular-nums">{{ $activity['tanggal'] }}</div>
-                                            <div class="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">{{ $activity['waktu'] }} WIB</div>
-                                        </flux:table.cell>
-                                        <flux:table.cell>
-                                            <span class="text-xs font-medium px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">{{ $activity['kelas'] }}</span>
-                                        </flux:table.cell>
-                                        <flux:table.cell><span class="text-sm text-slate-700 dark:text-slate-300">{{ $activity['mapel'] }}</span></flux:table.cell>
-                                        <flux:table.cell class="max-w-[11rem] w-15">
-                                            <span class="block truncate text-sm text-slate-700 dark:text-slate-300" title="{{ $activity['topik'] }}">{{ $activity['topik'] }}</span>
-                                        </flux:table.cell>
-                                        <flux:table.cell>
-                                            <div class="flex flex-col gap-1 min-w-[3.5rem]">
-                                                <span class="text-xs tabular-nums font-semibold {{ $khColor }}">{{ $activity['kehadiran'] }}</span>
-                                                <div class="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                <div class="h-full rounded-full {{ $khBarColor }}" x-data="{ w: @js(min($kh, 100)) }" x-bind:style="`width: ${w}%`"></div>
-                                                </div>
-                                            </div>
-                                        </flux:table.cell>
-                                        <flux:table.cell>
-                                            @if($activity['partisipasi'] !== '-')
-                                                <flux:badge color="{{ $pc }}" size="sm" inset="top bottom">{{ $activity['partisipasi'] }}</flux:badge>
-                                            @else
-                                                <span class="text-xs text-slate-400">-</span>
-                                            @endif
-                                        </flux:table.cell>
-                                    </flux:table.row>
+            {{-- Filter Bar --}}
+            <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700/90 px-4 py-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                    {{-- Dropdowns kiri --}}
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <div class="flex-1 min-w-0">
+                            <flux:select wire:model.live="kelasId" size="sm" placeholder="Semua Kelas">
+                                <flux:select.option value="">Semua Kelas</flux:select.option>
+                                @foreach($this->kelasList as $kelas)
+                                    <flux:select.option value="{{ $kelas['id'] }}">Kelas {{ $kelas['label'] }}</flux:select.option>
                                 @endforeach
-                            </flux:table.rows>
-                        </flux:table>
+                            </flux:select>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <flux:select wire:model.live="mapelId" size="sm" placeholder="Semua Mapel">
+                                <flux:select.option value="">Semua Mapel</flux:select.option>
+                                @foreach($this->mapelList as $mapel)
+                                    <flux:select.option value="{{ $mapel['id'] }}">{{ $mapel['label'] }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                        </div>
                     </div>
 
-                    {{-- Mobile Cards --}}
-                    <div class="lg:hidden divide-y divide-slate-100 dark:divide-slate-700/80">
-                        @foreach($this->recentActivities as $activity)
-                            @php
-                                $khi  = $activity['kehadiran_pct'];
-                                $khc  = $khi >= 80 ? 'text-emerald-600 dark:text-emerald-400'
-                                    : ($khi >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400');
-                                $khbc = $khi >= 80 ? 'bg-emerald-500' : ($khi >= 60 ? 'bg-amber-500' : 'bg-red-500');
-                                $pcm  = match($activity['partisipasi']) {
-                                    'Sangat Aktif' => 'green', 'Aktif' => 'blue',
-                                    'Cukup' => 'amber', 'Pasif' => 'red', default => 'zinc',
-                                };
-                            @endphp
-                            <div class="p-3" wire:key="dash-mob-{{ $activity['id'] }}">
-                                {{-- Baris 1: tanggal + kelas + mapel --}}
-                                <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                    <span class="text-xs font-bold tabular-nums text-blue-600 dark:text-blue-400">{{ $activity['tanggal'] }}</span>
-                                    <span class="text-[10px] tabular-nums text-slate-400 dark:text-slate-500">{{ $activity['waktu'] }} WIB</span>
-                                    <span class="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded">{{ $activity['kelas'] }}</span>
-                                    <span class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $activity['mapel'] }}</span>
-                                </div>
-                                {{-- Baris 2: topik --}}
-                                <p class="text-sm font-medium text-slate-800 dark:text-slate-100 leading-snug mb-2 truncate" title="{{ $activity['topik'] }}">{{ $activity['topik'] }}</p>
-                                {{-- Baris 3: kehadiran + partisipasi --}}
-                                <div class="flex items-center gap-3">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-xs tabular-nums font-semibold {{ $khc }}">
-                                            <flux:icon name="users" class="w-3 h-3 inline -mt-0.5" /> {{ $activity['kehadiran'] }}
-                                        </span>
-                                        <div class="w-10 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                            <div class="h-full rounded-full {{ $khbc }}" x-data="{ w: @js(min($khi, 100)) }" x-bind:style="`width: ${w}%`"></div>
-                                        </div>
-                                    </div>
-                                    @if($activity['partisipasi'] !== '-')
-                                        <flux:badge color="{{ $pcm }}" size="sm">{{ $activity['partisipasi'] }}</flux:badge>
-                                    @else
-                                        <span class="text-xs text-slate-400">-</span>
-                                    @endif
-                                </div>
-                            </div>
+                    {{-- Button group kanan --}}
+                    <div class="flex rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 self-start sm:self-auto">
+                        @foreach(['semester' => 'Semester ini', 'bulan' => 'Bulan ini', 'minggu' => 'Minggu ini'] as $value => $label)
+                            <button wire:click="$set('rentangWaktu', '{{ $value }}')"
+                                    type="button"
+                                    class="px-3 py-1.5 text-xs font-medium transition-colors border-r border-slate-200 dark:border-slate-700 last:border-r-0
+                                        {{ $rentangWaktu === $value
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700' }}">
+                                {{ $label }}
+                            </button>
                         @endforeach
                     </div>
-                @else
-                    <div class="text-center py-10">
-                        <div class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <flux:icon name="clipboard-document-list" class="w-6 h-6 text-slate-400" />
-                        </div>
-                        <h3 class="font-medium text-slate-900 dark:text-white mb-1">Belum Ada Aktivitas</h3>
-                        <p class="text-sm text-slate-500 dark:text-slate-300 mb-4">Belum ada aktivitas dalam 7 hari terakhir</p>
-                        <a href="{{ route('teacher.aktivitas.create') }}" wire:navigate
-                           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer">
-                            <flux:icon name="plus" class="w-4 h-4" />
-                            Buat Aktivitas
-                        </a>
+                </div>
+            </div>
+
+            {{-- Chart 1: Tren Kehadiran Siswa --}}
+            <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700/90 overflow-hidden">
+                <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700/90 flex items-center justify-between">
+                    <div>
+                        <h2 class="font-semibold text-slate-900 dark:text-white">Tren Kehadiran Siswa</h2>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Jumlah siswa hadir, sakit, izin, dan alpa per periode</p>
                     </div>
-                @endif
+                    <flux:icon name="chart-bar" class="w-4 h-4 text-slate-400" />
+                </div>
+                <div class="p-2 sm:p-4" wire:ignore>
+                    <div id="chart-tren-kehadiran"
+                         x-data="chartTrenKehadiran(@js($this->chartTrenKehadiran()))"
+                         x-init="init()"
+                         @update-charts.window="handleUpdate($event.detail[0])">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Baris 2: Chart 2 + Chart 3 berdampingan --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                {{-- Chart 2: Evaluasi Keaktifan per Topik --}}
+                <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700/90 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700/90">
+                        <h2 class="font-semibold text-slate-900 dark:text-white text-sm">Evaluasi Keaktifan per Topik</h2>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">10 topik terbaru</p>
+                    </div>
+                    <div class="p-2 sm:p-3" wire:ignore>
+                        <div id="chart-keaktifan-topik"
+                             x-data="chartKeaktifanTopik(@js($this->chartKeaktifanPerTopik()))"
+                             x-init="init()"
+                             @update-charts.window="handleUpdate($event.detail[0])">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Chart 3: Distribusi Tingkat Keaktifan Kelas --}}
+                <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700/90 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700/90">
+                        <h2 class="font-semibold text-slate-900 dark:text-white text-sm">Distribusi Tingkat Keaktifan Kelas</h2>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Proporsi keaktifan siswa</p>
+                    </div>
+                    <div class="p-2 sm:p-3" wire:ignore>
+                        <div id="chart-distribusi-keaktifan"
+                             x-data="chartDistribusiKeaktifan(@js($this->chartDistribusiKeaktifan()))"
+                             x-init="init()"
+                             @update-charts.window="handleUpdate($event.detail[0])">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        {{-- Mata Pelajaran Teraktif — sidebar (desktop + mobile) --}}
-        <div class="{{ $useSidebar ? 'lg:col-span-1' : '' }}">
+        {{-- ── KOLOM KANAN: Sidebar 2 Card ───────────────────────────────── --}}
+        <div class="lg:col-span-1 space-y-4">
+
+            {{-- Sidebar Card 1: Mata Pelajaran Teraktif --}}
             <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700/90 overflow-hidden">
                 <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700/90">
                     <h2 class="font-semibold text-slate-900 dark:text-white">Mata Pelajaran Teraktif</h2>
@@ -221,9 +168,20 @@
                 <div class="grid gap-3 p-3">
                     @forelse($this->partisipasiPerKelas as $mapel)
                         @php
-                            $pl = match(true) { $mapel['avg'] >= 3.5 => 'Sangat Aktif', $mapel['avg'] >= 2.5 => 'Aktif', $mapel['avg'] >= 1.5 => 'Cukup', default => 'Pasif' };
-                            $bc = match($pl) { 'Sangat Aktif' => 'green', 'Aktif' => 'blue', 'Cukup' => 'amber', 'Pasif' => 'red' };
+                            $pl = match(true) {
+                                $mapel['avg'] >= 3.5 => 'Sangat Aktif',
+                                $mapel['avg'] >= 2.5 => 'Aktif',
+                                $mapel['avg'] >= 1.5 => 'Cukup',
+                                default              => 'Pasif',
+                            };
+                            $bc = match($pl) {
+                                'Sangat Aktif' => 'green',
+                                'Aktif'        => 'blue',
+                                'Cukup'        => 'amber',
+                                'Pasif'        => 'red',
+                            };
                             $kh = $mapel['kehadiran_pct'] ?? 0;
+                            $ta = $mapel['total_aktivitas'] ?? 0;
                         @endphp
                         <div class="border border-slate-200 dark:border-slate-700/90 rounded-lg p-3">
                             <div class="flex items-center gap-2">
@@ -232,34 +190,33 @@
                                 </div>
                                 <div class="min-w-0">
                                     <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                                        {{ $mapel['kelas'] }} ({{ $mapel['mapel'] }})
+                                        {{ $mapel['kelas'] }} — {{ $mapel['mapel'] }}
                                     </p>
                                     <div class="flex items-center gap-1 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                                         <flux:icon name="user-group" class="w-3.5 h-3.5" />
                                         <span>{{ $mapel['siswa_count'] ?? 0 }} Siswa</span>
                                     </div>
                                 </div>
+                                <flux:badge size="sm" class="ml-auto shrink-0">{{ $ta }} Aktivitas</flux:badge>
                             </div>
-                            <div class="flex items-start justify-between gap-3 mt-3">
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-                                        <flux:icon name="users" class="w-3.5 h-3.5" />
-                                        <span class="font-medium">Kehadiran</span>
-                                        <span class="font-semibold text-slate-900 dark:text-white">{{ $kh }}%</span>
-                                    </div>
-                                    <div class="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-1.5">
-                                        <div class="h-full bg-emerald-500 rounded-full" x-data="{ w: @js(min($kh, 100)) }" x-bind:style="`width: ${w}%`"></div>
-                                    </div>
+                            <div class="mt-3 space-y-1.5">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-slate-500 dark:text-slate-400">Kehadiran</span>
+                                    <span class="font-semibold text-slate-800 dark:text-white">{{ $kh }}%</span>
                                 </div>
-                                <div class="flex items-center gap-1.5">
-                                    <flux:icon name="star" class="w-3.5 h-3.5 text-amber-500" />
-                                    <span class="text-xs text-slate-600 dark:text-slate-300">Partisipasi</span>
+                                <div class="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                    <div class="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                                         x-data="{ w: @js(min($kh, 100)) }"
+                                         x-bind:style="`width: ${w}%`"></div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-slate-500 dark:text-slate-400">Keaktifan</span>
                                     <flux:badge color="{{ $bc }}" size="sm">{{ $pl }}</flux:badge>
                                 </div>
                             </div>
                         </div>
                     @empty
-                        <div class="border border-dashed border-slate-200 dark:border-slate-700/90 rounded-lg p-3 text-center">
+                        <div class="border border-dashed border-slate-200 dark:border-slate-700/90 rounded-lg p-4 text-center">
                             <flux:icon name="book-open" class="w-5 h-5 mx-auto text-slate-300 dark:text-slate-600 mb-1" />
                             <p class="text-xs text-slate-500 dark:text-slate-400">Belum ada mata pelajaran diampu.</p>
                         </div>
@@ -267,49 +224,351 @@
                 </div>
             </div>
 
-                @if($this->mySubjects->count() > 5)
-                    <div class="text-center mt-2">
-                        <span class="text-xs text-slate-500 dark:text-slate-400">+{{ $this->mySubjects->count() - 5 }} kelas lainnya</span>
-                    </div>
-                @endif
-
-            <div class="mt-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <div class="px-4 pt-4 pb-2">
-                        <p class="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">Panduan Indikator</p>
-                        <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5">Tingkat Partisipasi</h2>
-                    </div>
-
-                    <div class="px-4 pb-4 mt-2 space-y-0 divide-y divide-slate-100 dark:divide-slate-800">
-                        <div class="flex items-center gap-3 py-2.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-0.5"></span>
-                            <div>
-                                <span class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Sangat Aktif</span>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Proaktif, memimpin diskusi, sering bertanya.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 py-2.5">
-                            <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-0.5"></span>
-                            <div>
-                                <span class="text-[11px] font-semibold text-blue-600 dark:text-blue-400">Aktif</span>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Fokus, merespons pertanyaan dengan baik.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 py-2.5">
-                            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0 mt-0.5"></span>
-                            <div>
-                                <span class="text-[11px] font-semibold text-amber-600 dark:text-amber-400">Cukup</span>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Mendengarkan, namun jarang mengambil inisiatif.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 py-2.5">
-                            <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0 mt-0.5"></span>
-                            <div>
-                                <span class="text-[11px] font-semibold text-rose-600 dark:text-rose-400">Pasif</span>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kurang fokus, pasif, atau tidak merespons.</p>
-                            </div>
-                        </div>
-                    </div>
+            {{-- Sidebar Card 2: Panduan Indikator Keaktifan --}}
+            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+                    <p class="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Panduan</p>
+                    <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5">Indikator Keaktifan</h2>
                 </div>
+                <div class="px-4 py-3 divide-y divide-slate-100 dark:divide-slate-800">
+                    @foreach([
+                        ['color' => 'bg-emerald-500', 'label' => 'Sangat Aktif', 'textColor' => 'text-emerald-600 dark:text-emerald-400', 'desc' => 'Proaktif, memimpin diskusi, sering bertanya.'],
+                        ['color' => 'bg-blue-500',    'label' => 'Aktif',        'textColor' => 'text-blue-600 dark:text-blue-400',    'desc' => 'Fokus, merespons pertanyaan dengan baik.'],
+                        ['color' => 'bg-amber-400',   'label' => 'Cukup',        'textColor' => 'text-amber-600 dark:text-amber-400',   'desc' => 'Mendengarkan, jarang mengambil inisiatif.'],
+                        ['color' => 'bg-rose-500',    'label' => 'Pasif',        'textColor' => 'text-rose-600 dark:text-rose-400',     'desc' => 'Kurang fokus, pasif, atau tidak merespons.'],
+                    ] as $item)
+                        <div class="flex items-start gap-3 py-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full {{ $item['color'] }} shrink-0 mt-0.5"></span>
+                            <div>
+                                <span class="text-xs font-semibold {{ $item['textColor'] }}">{{ $item['label'] }}</span>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">{{ $item['desc'] }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+
+{{-- Load ApexCharts hanya di halaman dashboard ini --}}
+@pushOnce('vendor-scripts')
+    @vite(['resources/js/apexcharts-loader.js'])
+@endPushOnce
+
+{{-- ═══════════════════════════════════════════════════════════════════════════ --}}
+{{-- APEXCHARTS ALPINE SCRIPTS — @pushOnce prevents duplicate injection        --}}
+{{-- ═══════════════════════════════════════════════════════════════════════════ --}}
+@pushOnce('scripts')
+<script>
+// ── Shared helpers ──────────────────────────────────────────────────────────
+
+function apexIsDark() {
+    return document.documentElement.classList.contains('dark');
+}
+
+function apexBaseOptions() {
+    const dark = apexIsDark();
+    return {
+        chart: {
+            background: 'transparent',
+            fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
+            toolbar: { show: false },
+            animations: { enabled: true, easing: 'easeinout', speed: 450 },
+        },
+        theme: { mode: dark ? 'dark' : 'light' },
+        grid: {
+            borderColor: dark ? '#334155' : '#e2e8f0',
+            strokeDashArray: 4,
+        },
+        tooltip: { theme: dark ? 'dark' : 'light' },
+    };
+}
+
+const SIPPEL_COLORS = {
+    sangatAktif : '#10b981',
+    aktif       : '#3b82f6',
+    cukup       : '#f59e0b',
+    pasif       : '#f43f5e',
+    hadir       : '#3b82f6',
+    sakit       : '#f59e0b',
+    izin        : '#a78bfa',
+    alpa        : '#f43f5e',
+};
+
+// ── Chart 1: Tren Kehadiran (Area) ──────────────────────────────────────────
+
+function chartTrenKehadiran(initialData) {
+    return {
+        chartInstance: null,
+
+        init() {
+            // Destroy any existing instance on this element to prevent double render
+            const existing = ApexCharts.getChartByID('chart-tren');
+            if (existing) existing.destroy();
+
+            const dark = apexIsDark();
+            const opts = {
+                ...apexBaseOptions(),
+                chart: {
+                    ...apexBaseOptions().chart,
+                    type: 'area',
+                    height: 280,
+                    id: 'chart-tren',
+                },
+                series: initialData.series,
+                xaxis: {
+                    categories: initialData.categories,
+                    labels: { style: { fontSize: '11px' }, rotate: -20 },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                },
+                yaxis: {
+                    labels: {
+                        formatter: (val) => Math.round(val),
+                        style: { fontSize: '11px' },
+                    },
+                    min: 0,
+                },
+                colors: [SIPPEL_COLORS.hadir, SIPPEL_COLORS.sakit, SIPPEL_COLORS.izin, SIPPEL_COLORS.alpa],
+                fill: {
+                    type: 'gradient',
+                    gradient: { opacityFrom: 0.35, opacityTo: 0.03, stops: [0, 90, 100] },
+                },
+                stroke: { curve: 'smooth', width: 2.5 },
+                dataLabels: { enabled: false },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'right',
+                    fontSize: '12px',
+                    markers: { size: 6 },
+                },
+                tooltip: {
+                    shared: true,
+                    intersect: false,
+                    y: { formatter: (val) => val + ' siswa' },
+                },
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: { height: 220 },
+                        legend: { position: 'bottom', horizontalAlign: 'left' },
+                    },
+                }],
+            };
+
+            this.chartInstance = new ApexCharts(
+                document.querySelector('#chart-tren-kehadiran'),
+                opts
+            );
+            this.chartInstance.render();
+        },
+
+        handleUpdate(payload) {
+            if (!this.chartInstance || !payload.tren) return;
+            const dark = apexIsDark();
+            // Use a single updateOptions call that includes both xaxis AND series.
+            // Calling updateOptions + updateSeries separately can cause the area chart
+            // to render blank when the number of x-axis categories changes (ApexCharts pitfall).
+            // redraw=true ensures a full SVG redraw when categories change.
+            this.chartInstance.updateOptions({
+                series: payload.tren.series,
+                xaxis: {
+                    categories: payload.tren.categories,
+                    labels: { style: { fontSize: '11px' }, rotate: -20 },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                },
+                theme: { mode: dark ? 'dark' : 'light' },
+                grid: { borderColor: dark ? '#334155' : '#e2e8f0' },
+            }, true, true);
+        },
+    };
+}
+
+// ── Chart 2: Keaktifan per Topik (Stacked Bar Horizontal) ──────────────────
+
+function chartKeaktifanTopik(initialData) {
+    return {
+        chartInstance: null,
+
+        init() {
+            // Destroy any existing instance on this element to prevent double render
+            const existing = ApexCharts.getChartByID('chart-topik');
+            if (existing) existing.destroy();
+
+            const dark = apexIsDark();
+            const opts = {
+                ...apexBaseOptions(),
+                chart: {
+                    ...apexBaseOptions().chart,
+                    type: 'bar',
+                    height: 300,
+                    id: 'chart-topik',
+                    stacked: true,
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        barHeight: '65%',
+                        borderRadius: 3,
+                        borderRadiusWhenStacked: 'last',
+                    },
+                },
+                series: initialData.series,
+                xaxis: {
+                    categories: initialData.categories,
+                    labels: {
+                        formatter: (val) => Math.round(val),
+                        style: { fontSize: '10px' },
+                    },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                },
+                yaxis: {
+                    labels: {
+                        style: { fontSize: '10px' },
+                        maxWidth: 130,
+                    },
+                },
+                colors: [SIPPEL_COLORS.sangatAktif, SIPPEL_COLORS.aktif, SIPPEL_COLORS.cukup, SIPPEL_COLORS.pasif],
+                dataLabels: {
+                    enabled: true,
+                    formatter: (val) => val > 0 ? val : '',
+                    style: { fontSize: '10px', fontWeight: '600', colors: ['#fff'] },
+                    dropShadow: { enabled: false },
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'left',
+                    fontSize: '11px',
+                    markers: { size: 6 },
+                    itemMargin: { horizontal: 6 },
+                },
+                tooltip: {
+                    shared: false,
+                    intersect: true,
+                    y: { formatter: (val) => val + ' siswa' },
+                },
+            };
+
+            this.chartInstance = new ApexCharts(
+                document.querySelector('#chart-keaktifan-topik'),
+                opts
+            );
+            this.chartInstance.render();
+        },
+
+        handleUpdate(payload) {
+            if (!this.chartInstance || !payload.topik) return;
+            const dark = apexIsDark();
+            this.chartInstance.updateOptions({
+                xaxis: { categories: payload.topik.categories },
+                theme: { mode: dark ? 'dark' : 'light' },
+                grid: { borderColor: dark ? '#334155' : '#e2e8f0' },
+            }, false, false);
+            this.chartInstance.updateSeries(payload.topik.series);
+        },
+    };
+}
+
+// ── Chart 3: Distribusi Keaktifan (Donut) ──────────────────────────────────
+
+function chartDistribusiKeaktifan(initialData) {
+    return {
+        chartInstance: null,
+
+        init() {
+            // Destroy any existing instance on this element to prevent double render
+            const existing = ApexCharts.getChartByID('chart-distribusi');
+            if (existing) existing.destroy();
+
+            const dark = apexIsDark();
+            const opts = {
+                ...apexBaseOptions(),
+                chart: {
+                    ...apexBaseOptions().chart,
+                    type: 'donut',
+                    height: 300,
+                    id: 'chart-distribusi',
+                },
+                series: initialData.series,
+                labels: initialData.labels,
+                colors: [SIPPEL_COLORS.sangatAktif, SIPPEL_COLORS.aktif, SIPPEL_COLORS.cukup, SIPPEL_COLORS.pasif],
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '68%',
+                            labels: {
+                                show: true,
+                                name: {
+                                    show: true,
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    color: dark ? '#cbd5e1' : '#475569',
+                                },
+                                value: {
+                                    show: true,
+                                    fontSize: '20px',
+                                    fontWeight: 700,
+                                    color: dark ? '#f1f5f9' : '#1e293b',
+                                    formatter: (val) => val + ' siswa',
+                                },
+                                total: {
+                                    show: true,
+                                    label: 'Total',
+                                    fontSize: '11px',
+                                    color: dark ? '#94a3b8' : '#64748b',
+                                    formatter: (w) => {
+                                        const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                                        return total + ' siswa';
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: (val) => val.toFixed(1) + '%',
+                    style: { fontSize: '10px', fontWeight: '600' },
+                    dropShadow: { enabled: false },
+                },
+                legend: {
+                    position: 'bottom',
+                    horizontalAlign: 'center',
+                    fontSize: '11px',
+                    markers: { size: 7 },
+                    itemMargin: { horizontal: 8, vertical: 3 },
+                },
+                stroke: {
+                    width: 2,
+                    colors: [dark ? '#1e293b' : '#ffffff'],
+                },
+                tooltip: {
+                    y: { formatter: (val) => val + ' siswa' },
+                },
+            };
+
+            this.chartInstance = new ApexCharts(
+                document.querySelector('#chart-distribusi-keaktifan'),
+                opts
+            );
+            this.chartInstance.render();
+        },
+
+        handleUpdate(payload) {
+            if (!this.chartInstance || !payload.distribusi) return;
+            const dark = apexIsDark();
+            this.chartInstance.updateOptions({
+                labels: payload.distribusi.labels,
+                theme: { mode: dark ? 'dark' : 'light' },
+                stroke: { colors: [dark ? '#1e293b' : '#ffffff'] },
+            }, false, false);
+            this.chartInstance.updateSeries(payload.distribusi.series);
+        },
+    };
+}
+</script>
+@endPushOnce

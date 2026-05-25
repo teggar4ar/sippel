@@ -285,7 +285,7 @@
                 <tr>
                     <td>Rata-rata Kehadiran: <strong>{{ number_format($avgKehadiran, 1) }}%</strong></td>
                     <td>Total Pertemuan: <strong>{{ $totalPertemuan }}</strong></td>
-                    <td>Partisipasi: <strong>{{ $partisipasiLabel }}</strong></td>
+                    <td>Keaktifan: <strong>{{ $partisipasiLabel }}</strong></td>
                 </tr>
             </table>
         @endif
@@ -303,7 +303,7 @@
                     <th style="width: 25px;">I</th>
                     <th style="width: 25px;">S</th>
                     <th style="width: 25px;">A</th>
-                    <th style="width: 60px;">Partisipasi</th>
+                    <th style="width: 60px;">Keaktifan</th>
                 </tr>
             </thead>
             <tbody>
@@ -342,7 +342,7 @@
             <strong>Keterangan:</strong>
             <ul>
                 <li><strong>% Kehadiran</strong>: Persentase kehadiran siswa selama aktivitas pembelajaran berlangsung.</li>
-                <li><strong>Partisipasi</strong>: Tingkat rata-rata keaktifan siswa (Sangat Aktif / Aktif / Cukup / Pasif).</li>
+                <li><strong>Keaktifan</strong>: Tingkat rata-rata keaktifan siswa (Sangat Aktif / Aktif / Cukup / Pasif).</li>
             </ul>
         </div>
 

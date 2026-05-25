@@ -96,7 +96,7 @@
                         <flux:table.column>Mata Pelajaran</flux:table.column>
                         <flux:table.column>Topik Pembelajaran</flux:table.column>
                         <flux:table.column>Kehadiran</flux:table.column>
-                        <flux:table.column>Partisipasi</flux:table.column>
+                        <flux:table.column>Keaktifan</flux:table.column>
                         <flux:table.column>Aksi</flux:table.column>
                     </flux:table.columns>
                     <flux:table.rows>

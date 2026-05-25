@@ -267,7 +267,7 @@
                 <tr>
                     <td>Rata-rata Kehadiran: <strong>{{ number_format($avgKehadiranPct, 1) }}%</strong></td>
                     <td>Total Pertemuan: <strong>{{ $totalActivities }}</strong></td>
-                    <td>Partisipasi: <strong>{{ $partisipasiLabel }}</strong></td>
+                    <td>Keaktifan: <strong>{{ $partisipasiLabel }}</strong></td>
                 </tr>
             </table>
         @endif
@@ -280,7 +280,7 @@
                     <th style="width: 65px;">Tanggal</th>
                     <th>Mata Pelajaran</th>
                     <th style="width: 60px;">Kehadiran</th>
-                    <th style="width: 70px;">Partisipasi</th>
+                    <th style="width: 70px;">Keaktifan</th>
                     <th>Catatan Guru</th>
                 </tr>
             </thead>
@@ -328,7 +328,7 @@
             <strong>Keterangan:</strong>
             <ul>
                 <li><strong>Kehadiran</strong>: Status kehadiran siswa pada hari tersebut (Hadir/Izin/Sakit/Alpa).</li>
-                <li><strong>Partisipasi</strong>: Tingkat keaktifan siswa pada sesi pembelajaran terkait.</li>
+                <li><strong>Keaktifan</strong>: Tingkat keaktifan siswa pada sesi pembelajaran terkait.</li>
                 <li><strong>Catatan Guru</strong>: Observasi khusus dari guru pengampu (jika ada).</li>
             </ul>
         </div>

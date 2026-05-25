@@ -213,6 +213,9 @@
     @livewireScripts
     @fluxScripts
 
+    @stack('vendor-scripts')
+    @stack('scripts')
+
     {{-- PWA Service Worker Registration --}}
     <script>
         if ('serviceWorker' in navigator) {

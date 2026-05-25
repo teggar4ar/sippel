@@ -3,7 +3,7 @@
     {{-- ═══ Page Header ═══ --}}
     <div>
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Riwayat Aktivitas</h1>
-        <p class="text-sm text-teal-600 dark:text-teal-400 mt-0.5">Lihat rekap kehadiran dan partisipasi belajarmu</p>
+        <p class="text-sm text-teal-600 dark:text-teal-400 mt-0.5">Lihat rekap kehadiran dan keaktifan belajarmu</p>
     </div>
 
     {{-- ═══ Summary Cards ═══ --}}
@@ -45,10 +45,10 @@
             <p class="text-2xl font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['alpa'] }}</p>
         </div>
 
-        {{-- Partisipasi — spans 2 cols on xs to avoid orphan --}}
+        {{-- Keaktifan/Partisipasi — spans 2 cols on xs to avoid orphan --}}
         <div class="col-span-2 sm:col-span-1 bg-fuchsia-100/80 dark:bg-purple-900/30 rounded-xl p-3 flex flex-col">
             <div class="flex items-start justify-between">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-purple-700 dark:text-purple-400">Partisipasi</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-purple-700 dark:text-purple-400">Keaktifan</p>
                 <flux:icon name="heart" class="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
             </div>
             <p class="text-lg font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['partisipasi_label'] }}</p>
@@ -119,7 +119,7 @@
                             <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Mata Pelajaran</th>
                             <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Topik</th>
                             <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Kehadiran</th>
-                            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Partisipasi</th>
+                            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Keaktifan</th>
                             <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Catatan</th>
                         </tr>
                     </thead>

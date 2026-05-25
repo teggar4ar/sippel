@@ -18,7 +18,7 @@
         </div>
 
         {{-- Widget Cards --}}
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
             {{-- Kehadiran --}}
             <div class="bg-emerald-100/80 dark:bg-emerald-900/30 rounded-xl p-3 flex flex-col">
                 <div class="flex items-start justify-between">
@@ -27,10 +27,10 @@
                 </div>
                 <p class="text-2xl font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ number_format($attendancePercentage, 0) }}%</p>
             </div>
-            {{-- Partisipasi --}}
+            {{-- Partisipasi/Keaktifan --}}
             <div class="bg-amber-100/80 dark:bg-amber-900/30 rounded-xl p-3 flex flex-col">
                 <div class="flex items-start justify-between">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">Partisipasi</p>
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">Keaktifan</p>
                     <flux:icon name="star" class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 </div>
                 <p class="text-lg font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $averageParticipationLabel }}</p>
@@ -79,7 +79,7 @@
                                 <flux:table.column>Mapel</flux:table.column>
                                 <flux:table.column>Topik</flux:table.column>
                                 <flux:table.column>Kehadiran</flux:table.column>
-                                <flux:table.column>Partisipasi</flux:table.column>
+                                <flux:table.column>Keaktifan</flux:table.column>
                             </flux:table.columns>
                             <flux:table.rows>
                                 @foreach($recentAktivitas as $detail)
@@ -213,7 +213,7 @@
                                         </div>
                                         <div class="flex items-center gap-1.5">
                                             <flux:icon name="star" class="w-3.5 h-3.5 text-amber-500" />
-                                            <span class="text-xs text-teal-700 dark:text-teal-200">Partisipasi</span>
+                                            <span class="text-xs text-teal-700 dark:text-teal-200">Keaktifan</span>
                                             <flux:badge size="sm" color="{{ $partisipasiColor }}">{{ $data['partisipasi_label'] }}</flux:badge>
                                         </div>
                                     </div>
@@ -228,11 +228,11 @@
                     @endif
                 </div>
 
-                {{-- Panduan Indikator Partisipasi --}}
+                {{-- Panduan Indikator Keaktifan --}}
                 <div class="bg-white dark:bg-slate-900 rounded-lg border border-teal-200 dark:border-slate-700/90 overflow-hidden">
                     <div class="px-4 pt-4 pb-2">
                         <p class="text-[11px] font-medium text-teal-400 dark:text-teal-300 uppercase tracking-widest">Panduan Indikator</p>
-                        <h2 class="text-sm font-semibold text-teal-900 dark:text-white mt-0.5">Tingkat Partisipasi</h2>
+                        <h2 class="text-sm font-semibold text-teal-900 dark:text-white mt-0.5">Tingkat Keaktifan</h2>
                     </div>
 
                     <div class="px-4 pb-4 mt-2 space-y-0 divide-y divide-teal-100 dark:divide-slate-700/90">

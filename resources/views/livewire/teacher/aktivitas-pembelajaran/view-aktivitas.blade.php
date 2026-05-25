@@ -99,7 +99,7 @@
             </span>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
                 <flux:icon name="star" class="w-3.5 h-3.5 text-violet-500" />
-                Rata-rata Partisipasi: {{ $partisipasiLabel }}
+                Rata-rata Keaktifan: {{ $partisipasiLabel }}
             </span>
         </div>
     </div>
@@ -118,7 +118,7 @@
                     <flux:table.column class="w-12">No</flux:table.column>
                     <flux:table.column>Nama Siswa & NIS</flux:table.column>
                     <flux:table.column>Status Kehadiran</flux:table.column>
-                    <flux:table.column>Tingkat Partisipasi</flux:table.column>
+                    <flux:table.column>Tingkat Keaktifan</flux:table.column>
                     <flux:table.column>Catatan Observasi</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>

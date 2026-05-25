@@ -50,7 +50,7 @@ Route::get('/app/api/check-role', function () {
 | All routes require authentication and the 'teacher' role.
 |
 */
-Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
+Route::middleware(['auth', 'role:teacher'])->prefix('guru')->name('teacher.')->group(function () {
     Route::get('/', App\Livewire\Teacher\Dashboard::class)->name('dashboard');
     Route::get('/aktivitas', App\Livewire\Teacher\AktivitasPembelajaran\ListAktivitas::class)
         ->name('aktivitas.list');
@@ -73,7 +73,7 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
 | All routes require authentication and the 'student' role.
 |
 */
-Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
+Route::middleware(['auth', 'role:student'])->prefix('siswa')->name('student.')->group(function () {
     Route::get('/', App\Livewire\Student\Dashboard::class)->name('dashboard');
     Route::get('/riwayat', App\Livewire\Student\RiwayatAktivitas::class)->name('riwayat');
     Route::get('/profil', App\Livewire\Student\Profil::class)->name('profil');
@@ -140,3 +140,17 @@ if (app()->environment('local')) {
         })->name('class');
     });
 }
+
+/*
+|--------------------------------------------------------------------------
+| Legacy URL Redirects (301)
+|--------------------------------------------------------------------------
+|
+| Redirect old /teacher and /student URLs to the new /guru and /siswa
+| prefixes for backward compatibility (bookmarks, PWA cache, etc.).
+|
+*/
+Route::redirect('/teacher', '/guru', 301);
+Route::redirect('/teacher/{any}', '/guru/{any}', 301)->where('any', '.*');
+Route::redirect('/student', '/siswa', 301);
+Route::redirect('/student/{any}', '/siswa/{any}', 301)->where('any', '.*');
