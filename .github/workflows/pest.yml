@@ -68,7 +68,7 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       # Disabled: all browser tests are currently skipped
-      # Uncomment when tests/Database/Browser/* tests are re-enabled
+      # Uncomment when tests/Browser/* tests are re-enabled
       # - name: Install Playwright Browser
       #   run: npx playwright install chromium
 

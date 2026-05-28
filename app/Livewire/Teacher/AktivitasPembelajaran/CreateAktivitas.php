@@ -18,6 +18,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use RuntimeException;
 
 #[Layout('layouts.teacher')]
 #[Title('Buat Aktivitas - SIPPEL Guru')]
@@ -260,6 +261,16 @@ final class CreateAktivitas extends Component
      */
     public function saveWithDetail(array $detailAktivitas): void
     {
+        $validSiswaIds = array_keys($this->initializeDetailAktivitasData());
+
+        $invalidIds = array_diff(array_keys($detailAktivitas), $validSiswaIds);
+        if ($invalidIds !== []) {
+            report(new RuntimeException('Invalid siswa_id(s) in saveWithDetail: '.implode(', ', $invalidIds)));
+            session()->flash('error', 'Data tidak valid. Silakan muat ulang halaman.');
+
+            return;
+        }
+
         $this->detailAktivitas = $detailAktivitas;
         $this->save();
     }
@@ -462,20 +473,34 @@ final class CreateAktivitas extends Component
         };
     }
 
+    /**
+     * Build the default detailAktivitas array for all students in the selected class
+     * without mutating $this->detailAktivitas.
+     *
+     * @return array<int, array{siswa_id: int, kehadiran: null, nilai: null, partisipasi: null, catatan: string}>
+     */
+    private function initializeDetailAktivitasData(): array
+    {
+        $data = [];
+        foreach ($this->siswaList as $siswa) {
+            $data[$siswa->id] = [
+                'siswa_id' => $siswa->id,
+                'kehadiran' => null,
+                'nilai' => null,
+                'partisipasi' => null,
+                'catatan' => '',
+            ];
+        }
+
+        return $data;
+    }
+
     private function initializeDetailAktivitas(): void
     {
         if ($this->detailAktivitas !== []) {
             return; // Already initialized
         }
 
-        foreach ($this->siswaList as $siswa) {
-            $this->detailAktivitas[$siswa->id] = [
-                'siswa_id' => $siswa->id,
-                'kehadiran' => null, // No default - teacher must select
-                'nilai' => null,
-                'partisipasi' => null,
-                'catatan' => '',
-            ];
-        }
+        $this->detailAktivitas = $this->initializeDetailAktivitasData();
     }
 }

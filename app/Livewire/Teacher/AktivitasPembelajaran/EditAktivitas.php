@@ -17,6 +17,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use RuntimeException;
 
 #[Layout('layouts.teacher')]
 #[Title('Edit Aktivitas - SIPPEL Guru')]
@@ -143,6 +144,17 @@ final class EditAktivitas extends Component
      */
     public function saveWithDetail(array $detailAktivitas): void
     {
+        $this->loadDetailAktivitas();
+        $validSiswaIds = array_keys($this->detailAktivitas);
+
+        $invalidIds = array_diff(array_keys($detailAktivitas), $validSiswaIds);
+        if ($invalidIds !== []) {
+            report(new RuntimeException('Invalid siswa_id(s) in saveWithDetail: '.implode(', ', $invalidIds)));
+            session()->flash('error', 'Data tidak valid. Silakan muat ulang halaman.');
+
+            return;
+        }
+
         $this->detailAktivitas = $detailAktivitas;
         $this->save();
     }

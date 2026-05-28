@@ -123,10 +123,10 @@ final class ClassReportExport implements FromCollection, WithColumnFormatting, W
         ];
     }
 
-    public function styles(Worksheet $sheet): void
+    public function styles(Worksheet $sheet): array
     {
-        $dataStartRow = self::HEADER_OFFSET + 1; // Row 7 (header)
-        $lastDataRow = $dataStartRow + $this->totalRows; // last data row
+        $dataStartRow = self::HEADER_OFFSET + 1;
+        $lastDataRow = $dataStartRow + $this->totalRows;
         $lastCol = 'G';
 
         // Auto-size columns
@@ -164,6 +164,8 @@ final class ClassReportExport implements FromCollection, WithColumnFormatting, W
         // Catatan column wider
         $sheet->getColumnDimension('G')->setAutoSize(false);
         $sheet->getColumnDimension('G')->setWidth(35);
+
+        return [];
     }
 
     public function registerEvents(): array
