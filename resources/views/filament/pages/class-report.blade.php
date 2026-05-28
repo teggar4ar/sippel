@@ -73,32 +73,6 @@
                         </div>
                     </div>
 
-                    {{-- Summary --}}
-                    @php
-                        $avgKehadiran = $previewData['laporanData']->avg('rata_kehadiran');
-                        $avgNilai = $previewData['laporanData']->avg('rata_nilai');
-                        $avgPartisipasi = $previewData['laporanData']->avg('rata_partisipasi');
-                        $tuntas = $previewData['laporanData']->where('rata_nilai', '>=', 70)->count();
-                    @endphp
-                    <div class="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-                        <div class="rounded-lg bg-success-50 p-4 text-center dark:bg-success-500/10">
-                            <p class="text-2xl font-bold text-success-600 dark:text-success-400">{{ number_format($avgKehadiran, 1) }}%</p>
-                            <p class="text-sm text-success-700 dark:text-success-300">Rata-rata Kehadiran</p>
-                        </div>
-                        <div class="rounded-lg bg-primary-50 p-4 text-center dark:bg-primary-500/10">
-                            <p class="text-2xl font-bold text-primary-600 dark:text-primary-400">{{ number_format($avgNilai, 1) }}</p>
-                            <p class="text-sm text-primary-700 dark:text-primary-300">Rata-rata Nilai</p>
-                        </div>
-                        <div class="rounded-lg bg-warning-50 p-4 text-center dark:bg-warning-500/10">
-                            <p class="text-2xl font-bold text-warning-600 dark:text-warning-400">{{ number_format($avgPartisipasi, 1) }}/5</p>
-                            <p class="text-sm text-warning-700 dark:text-warning-300">Rata-rata Partisipasi</p>
-                        </div>
-                        <div class="rounded-lg bg-info-50 p-4 text-center dark:bg-info-500/10">
-                            <p class="text-2xl font-bold text-info-600 dark:text-info-400">{{ $tuntas }}/{{ $previewData['laporanData']->count() }}</p>
-                            <p class="text-sm text-info-700 dark:text-info-300">Siswa Tuntas (≥70)</p>
-                        </div>
-                    </div>
-
                     {{-- Student Table --}}
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
@@ -150,8 +124,25 @@
                                                 {{ number_format($laporan->rata_nilai, 1) }}
                                             </span>
                                         </td>
-                                        <td class="py-3 text-center text-gray-900 dark:text-white">
-                                            {{ $laporan->rata_partisipasi }}/5
+                                        <td class="py-3 text-center">
+                                            @php
+                                                $partisipasi = $laporan->rata_partisipasi;
+                                                $partLabel = match(true) {
+                                                    $partisipasi >= 4 => 'Sangat Aktif',
+                                                    $partisipasi >= 3 => 'Aktif',
+                                                    $partisipasi >= 2 => 'Cukup',
+                                                    default => 'Pasif',
+                                                };
+                                                $partColor = match(true) {
+                                                    $partisipasi >= 4 => 'bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400',
+                                                    $partisipasi >= 3 => 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-400',
+                                                    $partisipasi >= 2 => 'bg-warning-100 text-warning-700 dark:bg-warning-500/20 dark:text-warning-400',
+                                                    default => 'bg-danger-100 text-danger-700 dark:bg-danger-500/20 dark:text-danger-400',
+                                                };
+                                            @endphp
+                                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $partColor }}">
+                                                {{ $partLabel }}
+                                            </span>
                                         </td>
                                     </tr>
                                 @endforeach

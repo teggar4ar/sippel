@@ -2,90 +2,56 @@
 
     {{-- ═══ Page Header ═══ --}}
     <div>
-        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Riwayat Aktivitas</h1>
+        <div class="flex justify-between items-center gap-4 flex-wrap">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Riwayat Aktivitas</h1>
+            </div>
+            <div>
+                <button
+                    wire:click="exportPdf"
+                    wire:loading.attr="disabled"
+                    wire:loading.class="opacity-50 cursor-not-allowed"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800 rounded-lg transition-colors cursor-pointer shrink-0"
+                >
+                    <flux:icon wire:loading.remove wire:target="exportPdf" name="arrow-down-tray" class="w-3.5 h-3.5" />
+                    <flux:icon wire:loading wire:target="exportPdf" name="arrow-path" class="w-3.5 h-3.5 animate-spin" />
+                    <span>Ekspor PDF</span>
+                </button>
+            </div>
+        </div>
         <p class="text-sm text-teal-600 dark:text-teal-400 mt-0.5">Lihat rekap kehadiran dan keaktifan belajarmu</p>
-    </div>
-
-    {{-- ═══ Summary Cards ═══ --}}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-
-        {{-- Hadir --}}
-        <div class="bg-emerald-100/80 dark:bg-emerald-900/30 rounded-xl p-3 flex flex-col">
-            <div class="flex items-start justify-between">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">Hadir</p>
-                <flux:icon name="check-circle" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            </div>
-            <p class="text-2xl font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['hadir'] }}</p>
-        </div>
-
-        {{-- Izin --}}
-        <div class="bg-blue-100/80 dark:bg-blue-900/30 rounded-xl p-3 flex flex-col">
-            <div class="flex items-start justify-between">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">Izin</p>
-                <flux:icon name="clock" class="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-            </div>
-            <p class="text-2xl font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['izin'] }}</p>
-        </div>
-
-        {{-- Sakit --}}
-        <div class="bg-amber-100/80 dark:bg-amber-900/30 rounded-xl p-3 flex flex-col">
-            <div class="flex items-start justify-between">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">Sakit</p>
-                <flux:icon name="exclamation-circle" class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-            </div>
-            <p class="text-2xl font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['sakit'] }}</p>
-        </div>
-
-        {{-- Alpa --}}
-        <div class="bg-rose-100/80 dark:bg-rose-900/30 rounded-xl p-3 flex flex-col">
-            <div class="flex items-start justify-between">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-rose-700 dark:text-rose-400">Alpa</p>
-                <flux:icon name="x-circle" class="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
-            </div>
-            <p class="text-2xl font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['alpa'] }}</p>
-        </div>
-
-        {{-- Keaktifan/Partisipasi — spans 2 cols on xs to avoid orphan --}}
-        <div class="col-span-2 sm:col-span-1 bg-fuchsia-100/80 dark:bg-purple-900/30 rounded-xl p-3 flex flex-col">
-            <div class="flex items-start justify-between">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-purple-700 dark:text-purple-400">Keaktifan</p>
-                <flux:icon name="heart" class="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
-            </div>
-            <p class="text-lg font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['partisipasi_label'] }}</p>
-        </div>
-
     </div>
 
     {{-- ═══ Main Card (Search + Filters + Table) ═══ --}}
     <div class="bg-white dark:bg-slate-900/95 rounded-2xl border border-gray-200 dark:border-slate-700/80 shadow-sm overflow-hidden"
          wire:loading.class="opacity-50 pointer-events-none"
-         wire:target="search, filterKehadiran, filterPartisipasi, resetFilters, nextPage, previousPage, gotoPage">
+         wire:target="search, filterKehadiran, resetFilters, nextPage, previousPage, gotoPage">
 
-        {{-- Card Header: Title + Export --}}
-        <div class="flex items-center justify-between px-5 pt-5 pb-4">
-            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Riwayat Aktivitas Pembelajaran</h2>
-            <button
-                wire:click="exportPdf"
-                wire:loading.attr="disabled"
-                wire:loading.class="opacity-50 cursor-not-allowed"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800 rounded-lg transition-colors cursor-pointer shrink-0"
-            >
-                <flux:icon wire:loading.remove wire:target="exportPdf" name="arrow-down-tray" class="w-3.5 h-3.5" />
-                <flux:icon wire:loading wire:target="exportPdf" name="arrow-path" class="w-3.5 h-3.5 animate-spin" />
-                <span>Ekspor PDF</span>
-            </button>
-        </div>
-
-        {{-- Search Input --}}
-        <div class="px-5 pb-3">
-            <div class="relative">
-                <flux:icon name="magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                <input
-                    wire:model.live.debounce.300ms="search"
-                    type="text"
-                    placeholder="Cari mata pelajaran, topik, atau catatan..."
-                    class="w-full pl-9 pr-4 py-2.5 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
-                />
+        {{-- Search + Mapel Filter --}}
+        <div class="px-5 pb-3 mt-4">
+            <div class="flex gap-3">
+                <div class="relative flex-1">
+                    <flux:icon name="magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <input
+                        wire:model.live.debounce.300ms="search"
+                        type="text"
+                        placeholder="Cari mata pelajaran, topik, atau catatan..."
+                        class="w-full pl-9 pr-4 py-2.5 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
+                    />
+                </div>
+                <div class="relative w-48 shrink-0">
+                    <flux:icon name="book-open" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10" />
+                    <select
+                        wire:model.live="filterMapel"
+                        class="w-full pl-9 pr-8 py-2.5 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 appearance-none focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition cursor-pointer"
+                    >
+                        <option value="">Semua Mapel</option>
+                        @foreach($this->mataPelajaranOptions as $id => $nama)
+                            <option value="{{ $id }}">{{ $nama }}</option>
+                        @endforeach
+                    </select>
+                    <flux:icon name="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
             </div>
         </div>
 

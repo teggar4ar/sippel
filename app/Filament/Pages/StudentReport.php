@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Models\DetailAktivitas;
 use App\Models\Laporan;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
@@ -137,11 +138,26 @@ final class StudentReport extends Page implements HasForms
         $contextKelas = $siswa->getKelasForTahunAjaran($tahunAjaran->id);
         $contextKelas?->load('waliKelas');
 
+        $activityData = DetailAktivitas::where('siswa_id', $siswa->id)
+            ->whereHas('aktivitasPembelajaran', function ($q) use ($contextKelas, $tahunAjaran): void {
+                if ($contextKelas) {
+                    $q->where('kelas_id', $contextKelas->id);
+                }
+                $q->whereHas('kelas', fn ($kq) => $kq->where('tahun_ajaran_id', $tahunAjaran->id));
+            })
+            ->with(['aktivitasPembelajaran.mataPelajaran', 'aktivitasPembelajaran'])
+            ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
+            ->orderByDesc('aktivitas_pembelajaran.tanggal')
+            ->orderByDesc('detail_aktivitas.id')
+            ->select('detail_aktivitas.*')
+            ->get();
+
         $pdf = Pdf::loadView('reports.student-report', [
             'siswa' => $siswa,
             'contextKelas' => $contextKelas,
             'tahunAjaran' => $tahunAjaran,
             'laporanData' => $laporanData,
+            'activityData' => $activityData,
         ]);
 
         $pdf->setPaper('A4', 'portrait');

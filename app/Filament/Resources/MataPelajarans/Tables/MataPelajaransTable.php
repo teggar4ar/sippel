@@ -49,9 +49,9 @@ final class MataPelajaransTable
                             : null
                     ),
 
-                TextColumn::make('guru.nama')
+                TextColumn::make('guru.name')
                     ->label('Guru Pengampu')
-                    ->searchable(['users.name', 'users.email'])
+                    ->searchable()
                     ->sortable()
                     ->description(fn ($record) => $record->guru?->email),
 

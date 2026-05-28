@@ -246,6 +246,9 @@
         </div>
 
         {{-- ═══ Ringkasan Keseluruhan ═══ --}}
+        @php
+            $activityData = $activityData ?? collect();
+        @endphp
         @if($activityData->isNotEmpty())
             @php
                 $totalActivities = $activityData->count();

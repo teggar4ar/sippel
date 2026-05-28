@@ -109,9 +109,17 @@
                 <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700/90 flex items-center justify-between">
                     <div>
                         <h2 class="font-semibold text-slate-900 dark:text-white">Tren Kehadiran Siswa</h2>
-                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Jumlah siswa hadir, sakit, izin, dan alpa per periode</p>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Perbandingan hadir, sakit, izin, alpa & total per periode</p>
                     </div>
                     <flux:icon name="chart-bar" class="w-4 h-4 text-slate-400" />
+                </div>
+                {{-- Custom horizontal legend (ApexCharts forces vertical on combo charts) --}}
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 pt-2 text-xs text-slate-600 dark:text-slate-400">
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#3b82f6"></span> Hadir</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#f59e0b"></span> Sakit</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#a855f7"></span> Izin</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#f43f5e"></span> Alpa</span>
+                    <span class="flex items-center gap-1.5"><span class="w-5 h-0.5 rounded" style="background:#334155"></span> Total</span>
                 </div>
                 <div class="p-2 sm:p-4" wire:ignore>
                     <div id="chart-tren-kehadiran"
@@ -163,7 +171,7 @@
             {{-- Sidebar Card 1: Mata Pelajaran Teraktif --}}
             <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700/90 overflow-hidden">
                 <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700/90">
-                    <h2 class="font-semibold text-slate-900 dark:text-white">Mata Pelajaran Teraktif</h2>
+                    <h2 class="font-semibold text-slate-900 dark:text-white">Mata Pelajaran Diampu</h2>
                 </div>
                 <div class="grid gap-3 p-3">
                     @forelse($this->partisipasiPerKelas as $mapel)
@@ -297,53 +305,104 @@ const SIPPEL_COLORS = {
     alpa        : '#f43f5e',
 };
 
-// ── Chart 1: Tren Kehadiran (Area) ──────────────────────────────────────────
+// ── Chart 1: Tren Kehadiran (Combo: Grouped Bar + Line) ─────────────────────
+
+// Compute 'Total' line series client-side from column series to avoid
+// sending redundant data from the backend (reduces Livewire payload + PHP memory).
+function prepareSeries(rawSeries) {
+    // rawSeries has 4 column series: Hadir, Sakit, Izin, Alpa
+    const columns = rawSeries.filter(s => s.type === 'column');
+    if (columns.length === 0) return rawSeries;
+    const len = columns[0].data.length;
+    const totalData = [];
+    for (let i = 0; i < len; i++) {
+        let sum = 0;
+        for (const col of columns) { sum += (col.data[i] || 0); }
+        totalData.push(sum);
+    }
+    // Return columns + computed total line (no 'Total' from backend needed)
+    return [
+        ...columns,
+        { name: 'Total', type: 'line', data: totalData },
+    ];
+}
 
 function chartTrenKehadiran(initialData) {
+    // Shared formatter closure - created once, reused across all renders
+    const axisFormatter = (val) => Math.round(val);
+
+    function buildYAxis(dark) {
+        const titleStyle = { fontSize: '12px', fontWeight: 500, color: dark ? '#94a3b8' : '#64748b' };
+        return [
+            {
+                seriesName: 'Hadir',
+                title: { text: 'Jumlah per Status', style: titleStyle },
+                labels: { formatter: axisFormatter, style: { fontSize: '11px' } },
+                min: 0,
+            },
+                { seriesName: 'Hadir', show: false },  // Sakit — same axis as Hadir
+                { seriesName: 'Hadir', show: false },  // Izin  — same axis as Hadir
+                { seriesName: 'Hadir', show: false },  // Alpa  — same axis as Hadir
+            {
+                seriesName: 'Total',
+                opposite: true,
+                title: { text: 'Total Kehadiran', style: titleStyle },
+                labels: { formatter: axisFormatter, style: { fontSize: '11px' } },
+                min: 0,
+            },
+        ];
+    }
+
     return {
         chartInstance: null,
 
         init() {
-            // Destroy any existing instance on this element to prevent double render
             const existing = ApexCharts.getChartByID('chart-tren');
             if (existing) existing.destroy();
 
             const dark = apexIsDark();
+            const base = apexBaseOptions();
+            const series = prepareSeries(initialData.series);
             const opts = {
-                ...apexBaseOptions(),
+                ...base,
                 chart: {
-                    ...apexBaseOptions().chart,
-                    type: 'area',
-                    height: 280,
+                    ...base.chart,
+                    type: 'bar',
+                    height: 330,
                     id: 'chart-tren',
+                    stacked: false,
+                    animations: { enabled: false },
                 },
-                series: initialData.series,
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '60%',
+                        borderRadius: 3,
+                        borderRadiusApplication: 'end',
+                    },
+                },
+                series: series,
                 xaxis: {
                     categories: initialData.categories,
                     labels: { style: { fontSize: '11px' }, rotate: -20 },
                     axisBorder: { show: false },
                     axisTicks: { show: false },
                 },
-                yaxis: {
-                    labels: {
-                        formatter: (val) => Math.round(val),
-                        style: { fontSize: '11px' },
-                    },
-                    min: 0,
+                yaxis: buildYAxis(dark),
+                colors: [
+                    SIPPEL_COLORS.hadir,
+                    SIPPEL_COLORS.sakit,
+                    SIPPEL_COLORS.izin,
+                    SIPPEL_COLORS.alpa,
+                    '#334155',  // Total line — dark slate
+                ],
+                stroke: {
+                    width: [0, 0, 0, 0, 3],
+                    curve: 'smooth',
                 },
-                colors: [SIPPEL_COLORS.hadir, SIPPEL_COLORS.sakit, SIPPEL_COLORS.izin, SIPPEL_COLORS.alpa],
-                fill: {
-                    type: 'gradient',
-                    gradient: { opacityFrom: 0.35, opacityTo: 0.03, stops: [0, 90, 100] },
-                },
-                stroke: { curve: 'smooth', width: 2.5 },
+                fill: { opacity: [1, 1, 1, 1, 1] },
                 dataLabels: { enabled: false },
-                legend: {
-                    position: 'top',
-                    horizontalAlign: 'right',
-                    fontSize: '12px',
-                    markers: { size: 6 },
-                },
+                legend: { show: false },
                 tooltip: {
                     shared: true,
                     intersect: false,
@@ -352,8 +411,9 @@ function chartTrenKehadiran(initialData) {
                 responsive: [{
                     breakpoint: 480,
                     options: {
-                        chart: { height: 220 },
-                        legend: { position: 'bottom', horizontalAlign: 'left' },
+                        chart: { height: 240 },
+                        plotOptions: { bar: { columnWidth: '75%' } },
+                        legend: { fontSize: '10px' },
                     },
                 }],
             };
@@ -368,12 +428,9 @@ function chartTrenKehadiran(initialData) {
         handleUpdate(payload) {
             if (!this.chartInstance || !payload.tren) return;
             const dark = apexIsDark();
-            // Use a single updateOptions call that includes both xaxis AND series.
-            // Calling updateOptions + updateSeries separately can cause the area chart
-            // to render blank when the number of x-axis categories changes (ApexCharts pitfall).
-            // redraw=true ensures a full SVG redraw when categories change.
+            const series = prepareSeries(payload.tren.series);
             this.chartInstance.updateOptions({
-                series: payload.tren.series,
+                series: series,
                 xaxis: {
                     categories: payload.tren.categories,
                     labels: { style: { fontSize: '11px' }, rotate: -20 },
@@ -382,7 +439,7 @@ function chartTrenKehadiran(initialData) {
                 },
                 theme: { mode: dark ? 'dark' : 'light' },
                 grid: { borderColor: dark ? '#334155' : '#e2e8f0' },
-            }, true, true);
+            }, true, false);
         },
     };
 }

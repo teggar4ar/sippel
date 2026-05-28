@@ -270,6 +270,39 @@ final class Siswa extends Model
     }
 
     /**
+     * Count consecutive "Hadir" attendance records starting from the most recent activity.
+     * The streak breaks as soon as a non-"Hadir" record is found.
+     *
+     * @param  int|null  $tahunAjaranId  Filter by academic year (optional)
+     */
+    public function getAttendanceStreak(?int $tahunAjaranId = null): int
+    {
+        $query = $this->detailAktivitas()
+            ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
+            ->whereNull('aktivitas_pembelajaran.deleted_at')
+            ->orderByDesc('aktivitas_pembelajaran.tanggal')
+            ->orderByDesc('detail_aktivitas.id');
+
+        if ($tahunAjaranId !== null && $tahunAjaranId !== 0) {
+            $query->join('kelas', 'aktivitas_pembelajaran.kelas_id', '=', 'kelas.id')
+                ->where('kelas.tahun_ajaran_id', $tahunAjaranId);
+        }
+
+        $records = $query->select('detail_aktivitas.kehadiran')->get();
+
+        $streak = 0;
+        foreach ($records as $record) {
+            if ($record->kehadiran === KehadiranStatus::Hadir) {
+                $streak++;
+            } else {
+                break;
+            }
+        }
+
+        return $streak;
+    }
+
+    /**
      * Get the attendance percentage attribute (all activities).
      */
     protected function attendancePercentage(): Attribute

@@ -10,6 +10,7 @@ use App\Models\MataPelajaran;
 use App\Models\SiswaKelasHistory;
 use App\Models\TahunAjaran;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -141,9 +142,8 @@ final class Dashboard extends Component
     }
 
     /**
-     * Mata pelajaran teraktif — optimized: single JOIN query instead of N×3 subqueries.
-     *
-     * @return Collection<int, array<string, mixed>>
+     * Mata pelajaran diampu — all subjects taught by the teacher with participation stats.
+     * Optimized: single JOIN query instead of N×3 subqueries.
      */
     #[Computed]
     public function partisipasiPerKelas(): Collection
@@ -208,8 +208,8 @@ final class Dashboard extends Component
                 'score' => $score,
             ];
         })
-            ->sortByDesc('score')
-            ->take(3);
+            ->sortBy(['kelas', 'mapel'])
+            ->values();
     }
 
     // ── Chart data ────────────────────────────────────────────────────────────
@@ -372,10 +372,10 @@ final class Dashboard extends Component
 
             return [
                 'series' => [
-                    ['name' => 'Hadir', 'data' => $hadirData],
-                    ['name' => 'Sakit', 'data' => $sakitData],
-                    ['name' => 'Izin',  'data' => $izinData],
-                    ['name' => 'Alpa',  'data' => $alpaData],
+                    ['name' => 'Hadir', 'type' => 'column', 'data' => $hadirData],
+                    ['name' => 'Sakit', 'type' => 'column', 'data' => $sakitData],
+                    ['name' => 'Izin',  'type' => 'column', 'data' => $izinData],
+                    ['name' => 'Alpa',  'type' => 'column', 'data' => $alpaData],
                 ],
                 'categories' => $categories,
             ];
@@ -522,7 +522,7 @@ final class Dashboard extends Component
     // ── Private helpers ───────────────────────────────────────────────────────
 
     /**
-     * @return array{start: Carbon, end: Carbon}
+     * @return array{start: CarbonImmutable, end: CarbonImmutable}
      */
     private function getDateRange(): array
     {
@@ -543,10 +543,10 @@ final class Dashboard extends Component
     {
         return [
             'series' => [
-                ['name' => 'Hadir', 'data' => [28, 30, 25, 32, 27, 35, 29, 31]],
-                ['name' => 'Sakit', 'data' => [2,  1,  3,  1,  2,  0,  2,  1]],
-                ['name' => 'Izin',  'data' => [1,  2,  1,  0,  2,  1,  1,  0]],
-                ['name' => 'Alpa',  'data' => [1,  0,  2,  1,  0,  1,  0,  2]],
+                ['name' => 'Hadir', 'type' => 'column', 'data' => [28, 30, 25, 32, 27, 35, 29, 31]],
+                ['name' => 'Sakit', 'type' => 'column', 'data' => [2,  1,  3,  1,  2,  0,  2,  1]],
+                ['name' => 'Izin',  'type' => 'column', 'data' => [1,  2,  1,  0,  2,  1,  1,  0]],
+                ['name' => 'Alpa',  'type' => 'column', 'data' => [1,  0,  2,  1,  0,  1,  0,  2]],
             ],
             'categories' => ['Mg 1', 'Mg 2', 'Mg 3', 'Mg 4', 'Mg 5', 'Mg 6', 'Mg 7', 'Mg 8'],
         ];

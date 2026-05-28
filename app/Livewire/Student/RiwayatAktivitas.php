@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Student;
 
-use App\Enums\KehadiranStatus;
 use App\Models\DetailAktivitas;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
@@ -32,11 +31,11 @@ final class RiwayatAktivitas extends Component
     #[Url(as: 'q')]
     public string $search = '';
 
+    #[Url(as: 'mapel')]
+    public string $filterMapel = '';
+
     #[Url(as: 'kehadiran')]
     public string $filterKehadiran = '';
-
-    #[Url(as: 'partisipasi')]
-    public string $filterPartisipasi = '';
 
     public function mount(): void
     {
@@ -54,12 +53,12 @@ final class RiwayatAktivitas extends Component
         $this->resetPage();
     }
 
-    public function updatedFilterKehadiran(): void
+    public function updatedFilterMapel(): void
     {
         $this->resetPage();
     }
 
-    public function updatedFilterPartisipasi(): void
+    public function updatedFilterKehadiran(): void
     {
         $this->resetPage();
     }
@@ -67,8 +66,8 @@ final class RiwayatAktivitas extends Component
     public function resetFilters(): void
     {
         $this->search = '';
+        $this->filterMapel = '';
         $this->filterKehadiran = '';
-        $this->filterPartisipasi = '';
         $this->resetPage();
     }
 
@@ -81,42 +80,26 @@ final class RiwayatAktivitas extends Component
         return $user->siswa;
     }
 
+    /**
+     * @return array<int|string, string>
+     */
     #[Computed]
-    public function stats(): array
+    public function mataPelajaranOptions(): array
     {
         $siswa = $this->siswa;
-
         if (! $siswa) {
-            return $this->emptyStats();
+            return [];
         }
 
         $contextTahunAjaran = TahunAjaran::getContext();
 
-        $query = DetailAktivitas::query()
-            ->where('siswa_id', $siswa->id)
-            ->whereHas('aktivitasPembelajaran', function ($q) use ($contextTahunAjaran): void {
-                $q->whereNull('deleted_at')
-                    ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
-            });
-
-        $total = (clone $query)->count();
-        $hadir = (clone $query)->where('kehadiran', KehadiranStatus::Hadir)->count();
-        $izin = (clone $query)->where('kehadiran', KehadiranStatus::Izin)->count();
-        $sakit = (clone $query)->where('kehadiran', KehadiranStatus::Sakit)->count();
-        $alpa = (clone $query)->where('kehadiran', KehadiranStatus::Alpa)->count();
-        $avgPartisipasi = $siswa->getAverageParticipationLabel(null, null, null, $contextTahunAjaran?->id);
-
-        return [
-            'hadir' => $hadir,
-            'izin' => $izin,
-            'sakit' => $sakit,
-            'alpa' => $alpa,
-            'hadir_pct' => $total > 0 ? round(($hadir / $total) * 100) : 0,
-            'izin_pct' => $total > 0 ? round(($izin / $total) * 100) : 0,
-            'sakit_pct' => $total > 0 ? round(($sakit / $total) * 100) : 0,
-            'alpa_pct' => $total > 0 ? round(($alpa / $total) * 100) : 0,
-            'partisipasi_label' => $avgPartisipasi,
-        ];
+        return \App\Models\MataPelajaran::whereHas('aktivitasPembelajaran', fn ($q) => $q
+            ->whereHas('detailAktivitas', fn ($dq) => $dq->where('siswa_id', $siswa->id))
+            ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
+        )
+            ->get()
+            ->mapWithKeys(fn ($mapel): array => [(string) $mapel->id => $mapel->nama_mapel])
+            ->toArray();
     }
 
     public function render(): View
@@ -139,7 +122,7 @@ final class RiwayatAktivitas extends Component
                         ->orWhereHas('aktivitasPembelajaran.mataPelajaran', fn ($mq) => $mq->where('nama_mapel', 'like', "%{$this->search}%"));
                 }))
                 ->when($this->filterKehadiran, fn ($q) => $q->where('kehadiran', $this->filterKehadiran))
-                ->when($this->filterPartisipasi, fn ($q) => $q->where('partisipasi', $this->mapPartisipasiLabelToValue()))
+                ->when($this->filterMapel, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($aq) => $aq->where('mata_pelajaran_id', $this->filterMapel)))
                 ->orderByDesc(
                     DetailAktivitas::query()
                         ->select('tanggal')
@@ -159,7 +142,6 @@ final class RiwayatAktivitas extends Component
 
         return view('livewire.student.riwayat-aktivitas', [
             'riwayat' => $riwayat,
-            'stats' => $this->stats,
         ]);
     }
 
@@ -209,35 +191,5 @@ final class RiwayatAktivitas extends Component
         return response()->streamDownload(function () use ($pdf): void {
             echo $pdf->output();
         }, $filename);
-    }
-
-    /**
-     * Map a participation label string to its numeric DB value.
-     * Returns a float to safely compare against the decimal:2 column cast.
-     */
-    private function mapPartisipasiLabelToValue(): ?float
-    {
-        return match ($this->filterPartisipasi) {
-            'pasif' => 1.0,
-            'cukup' => 2.0,
-            'aktif' => 3.0,
-            'sangat_aktif' => 4.0,
-            default => null,
-        };
-    }
-
-    private function emptyStats(): array
-    {
-        return [
-            'hadir' => 0,
-            'izin' => 0,
-            'sakit' => 0,
-            'alpa' => 0,
-            'hadir_pct' => 0,
-            'izin_pct' => 0,
-            'sakit_pct' => 0,
-            'alpa_pct' => 0,
-            'partisipasi_label' => '-',
-        ];
     }
 }
