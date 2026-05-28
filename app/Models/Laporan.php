@@ -36,7 +36,7 @@ final class Laporan extends Model
         'alpa_count' => 'integer',
         'total_kehadiran' => 'integer',
         'rata_nilai' => 'float',
-        'rata_partisipasi' => 'float',
+        'rata_partisipasi' => 'integer',
     ];
 
     /**
