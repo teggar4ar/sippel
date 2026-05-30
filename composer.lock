@@ -3675,29 +3675,29 @@
         },
         {
             "name": "livewire/flux",
-            "version": "v2.10.1",
+            "version": "v2.14.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/livewire/flux.git",
-                "reference": "11f04bca8cd57e05d594a96188c26f0c118c4c4f"
+                "reference": "44f240efd186b5629d5e4c4a4cc7bbba0111fb48"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/livewire/flux/zipball/11f04bca8cd57e05d594a96188c26f0c118c4c4f",
-                "reference": "11f04bca8cd57e05d594a96188c26f0c118c4c4f",
+                "url": "https://api.github.com/repos/livewire/flux/zipball/44f240efd186b5629d5e4c4a4cc7bbba0111fb48",
+                "reference": "44f240efd186b5629d5e4c4a4cc7bbba0111fb48",
                 "shasum": ""
             },
             "require": {
-                "illuminate/console": "^10.0|^11.0|^12.0",
-                "illuminate/support": "^10.0|^11.0|^12.0",
-                "illuminate/view": "^10.0|^11.0|^12.0",
+                "illuminate/console": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/view": "^10.0|^11.0|^12.0|^13.0",
                 "laravel/prompts": "^0.1|^0.2|^0.3",
-                "livewire/livewire": "^3.5.19|^4.0",
+                "livewire/livewire": "^3.7.4|^4.0",
                 "php": "^8.1",
-                "symfony/console": "^6.0|^7.0"
+                "symfony/console": "^6.0|^7.0|^8.0"
             },
             "conflict": {
-                "livewire/blaze": "<1.0.0"
+                "livewire/blaze": "<1.0.0-beta.2"
             },
             "type": "library",
             "extra": {
@@ -3735,9 +3735,9 @@
             ],
             "support": {
                 "issues": "https://github.com/livewire/flux/issues",
-                "source": "https://github.com/livewire/flux/tree/v2.10.1"
+                "source": "https://github.com/livewire/flux/tree/v2.14.1"
             },
-            "time": "2025-12-17T23:17:22+00:00"
+            "time": "2026-04-23T23:00:08+00:00"
         },
         {
             "name": "livewire/livewire",
