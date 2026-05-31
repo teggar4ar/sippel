@@ -28,7 +28,7 @@ Heroku will automatically:
 
 ## What Happens on Deploy
 
-The `heroku.yml` file controls the deployment:
+The "heroku.yml" file controls the deployment:
 
 | Phase | Commands |
 |-------|----------|
