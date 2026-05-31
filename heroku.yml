@@ -57,7 +57,7 @@ release:
     - php artisan config:cache
     # Note: route:cache disabled - routes/web.php contains closures
     # - php artisan route:cache
-    - php artisan view:cache
+    # - php artisan view:cache
     - php artisan storage:link --force
 
 # ----------------------------------------------------------------------------
