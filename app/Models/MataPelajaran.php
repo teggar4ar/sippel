@@ -79,7 +79,7 @@ final class MataPelajaran extends Model
 
     private function clearDashboardCacheForContext(?int $guruId, ?int $kelasId): void
     {
-        if (! $guruId || ! $kelasId) {
+        if ($guruId === null || $guruId === 0 || ($kelasId === null || $kelasId === 0)) {
             return;
         }
 

@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -151,6 +152,24 @@ final class EditAktivitas extends Component
         if ($invalidIds !== []) {
             report(new RuntimeException('Invalid siswa_id(s) in saveWithDetail: '.implode(', ', $invalidIds)));
             session()->flash('error', 'Data tidak valid. Silakan muat ulang halaman.');
+
+            return;
+        }
+
+        $detailAktivitasRules = array_filter(
+            $this->rules(),
+            fn (string $key): bool => str_starts_with($key, 'detailAktivitas'),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        $validator = Validator::make(
+            ['detailAktivitas' => $detailAktivitas],
+            $detailAktivitasRules,
+            $this->messages()
+        );
+
+        if ($validator->fails()) {
+            session()->flash('error', $validator->errors()->first());
 
             return;
         }

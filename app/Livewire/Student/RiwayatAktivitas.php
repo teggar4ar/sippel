@@ -149,7 +149,7 @@ final class RiwayatAktivitas extends Component
     {
         $siswa = $this->siswa;
         $tahunAjaran = TahunAjaran::getContext();
-        if (! $siswa || ! $tahunAjaran) {
+        if (! $siswa || ! $tahunAjaran instanceof TahunAjaran) {
             session()->flash('error', 'Data tidak lengkap.');
 
             return null;

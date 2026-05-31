@@ -73,6 +73,13 @@ final class ViewAktivitas extends Component
             return;
         }
 
+        if ($this->aktivitas->guru_id !== Auth::id()) {
+            session()->flash('error', 'Anda tidak memiliki izin untuk menghapus aktivitas ini.');
+            $this->closeDeleteModal();
+
+            return;
+        }
+
         try {
             $this->aktivitas->delete();
 

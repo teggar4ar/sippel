@@ -62,7 +62,7 @@ final class SiswaKelasHistory extends Model
 
     private function clearTeacherDashboardCache(?int $kelasId, ?int $tahunAjaranId): void
     {
-        if (! $kelasId || ! $tahunAjaranId) {
+        if ($kelasId === null || $kelasId === 0 || ($tahunAjaranId === null || $tahunAjaranId === 0)) {
             return;
         }
 

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -27,10 +28,13 @@ final class Profil extends Component
 
     public string $email = '';
 
+    #[Locked]
     public string $current_password = '';
 
+    #[Locked]
     public string $new_password = '';
 
+    #[Locked]
     public string $new_password_confirmation = '';
 
     public function mount(): void

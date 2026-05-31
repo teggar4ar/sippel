@@ -164,7 +164,7 @@ final class KelasForm
      */
     private static function nextAvailableLetter(int|string|null $tingkat, int|string|null $tahunAjaranId, ?int $ignoreId = null): ?string
     {
-        if (! $tingkat || ! $tahunAjaranId) {
+        if ($tingkat === 0 || ($tingkat === '' || $tingkat === '0') || $tingkat === null || ($tahunAjaranId === 0 || ($tahunAjaranId === '' || $tahunAjaranId === '0') || $tahunAjaranId === null)) {
             return null;
         }
 

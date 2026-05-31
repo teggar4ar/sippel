@@ -92,7 +92,7 @@ final class CalculateReports extends Command
     {
         $query = TahunAjaran::query();
 
-        if ($tahunAjaranId) {
+        if ($tahunAjaranId !== null && $tahunAjaranId !== '' && $tahunAjaranId !== '0') {
             $query->where('id', $tahunAjaranId);
         } else {
             // By default, only process active academic year
@@ -146,7 +146,7 @@ final class CalculateReports extends Command
                     ->orWhereIn('kelas_id', $kelasIds);
             });
 
-        if ($siswaId) {
+        if ($siswaId !== null && $siswaId !== '' && $siswaId !== '0') {
             $siswaQuery->where('id', $siswaId);
         }
 
