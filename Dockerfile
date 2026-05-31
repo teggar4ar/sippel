@@ -75,6 +75,7 @@ COPY docker/supervisord.conf                /etc/supervisord.conf
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     && mkdir -p /run/nginx /var/log/nginx /var/lib/nginx/tmp/client_body /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi \
+    && mkdir -p /var/www/html/storage/logs \
     && chown -R www-data:www-data /var/log/nginx /var/lib/nginx /run/nginx \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public \
     && chown www-data:www-data /etc/nginx/conf.d \
