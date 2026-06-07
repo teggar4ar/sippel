@@ -17,29 +17,32 @@ final class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Generate a secure random password
         $password = Str::random(12);
 
-        // Create Admin user
-        $admin = User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@sippel.sch.id',
-            'password' => Hash::make($password),
-            'jenis_kelamin' => 'L',
-            'email_verified_at' => now(),
-        ]);
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@sippel.sch.id'],
+            [
+                'name' => 'Administrator',
+                'password' => Hash::make($password),
+                'jenis_kelamin' => 'L',
+                'email_verified_at' => now(),
+            ],
+        );
         $admin->assignRole('admin');
 
-        // Display credentials to console
-        $this->command->newLine();
-        $this->command->info('╔══════════════════════════════════════════════════════════╗');
-        $this->command->info('║           ADMIN CREDENTIALS (SAVE THIS!)                 ║');
-        $this->command->info('╠══════════════════════════════════════════════════════════╣');
-        $this->command->info('║  Email    : admin@sippel.sch.id                          ║');
-        $this->command->info('║  Password : '.mb_str_pad($password, 44).'║');
-        $this->command->info('╚══════════════════════════════════════════════════════════╝');
-        $this->command->newLine();
-        $this->command->warn('⚠️  Please save this password securely. It cannot be recovered!');
-        $this->command->newLine();
+        if ($admin->wasRecentlyCreated) {
+            $this->command->newLine();
+            $this->command->info('╔══════════════════════════════════════════════════════════╗');
+            $this->command->info('║           ADMIN CREDENTIALS (SAVE THIS!)                 ║');
+            $this->command->info('╠══════════════════════════════════════════════════════════╣');
+            $this->command->info('║  Email    : admin@sippel.sch.id                          ║');
+            $this->command->info('║  Password : '.mb_str_pad($password, 44).'║');
+            $this->command->info('╚══════════════════════════════════════════════════════════╝');
+            $this->command->newLine();
+            $this->command->warn('⚠️  Please save this password securely. It cannot be recovered!');
+            $this->command->newLine();
+        } else {
+            $this->command->info('Admin user already exists. Skipping creation.');
+        }
     }
 }

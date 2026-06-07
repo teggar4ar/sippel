@@ -20,6 +20,12 @@ final class ScenarioSeeder extends Seeder
 {
     public function run(): void
     {
+        if (User::where('email', 'teacher1@sippel.test')->exists()) {
+            $this->command->info('Scenario data already seeded. Skipping ScenarioSeeder.');
+
+            return;
+        }
+
         DB::transaction(function (): void {
             $tahunAjaran = $this->seedTahunAjaran();
             $teachers = $this->seedTeachers();
@@ -47,22 +53,26 @@ final class ScenarioSeeder extends Seeder
      */
     private function seedTeachers(): array
     {
-        $teacher1 = User::create([
-            'name' => fake('id_ID')->name(),
-            'email' => 'teacher1@sippel.test',
-            'password' => Hash::make('password'),
-            'jenis_kelamin' => fake()->randomElement(['L', 'P']),
-            'email_verified_at' => now(),
-        ]);
+        $teacher1 = User::firstOrCreate(
+            ['email' => 'teacher1@sippel.test'],
+            [
+                'name' => fake('id_ID')->name(),
+                'password' => Hash::make('password'),
+                'jenis_kelamin' => fake()->randomElement(['L', 'P']),
+                'email_verified_at' => now(),
+            ],
+        );
         $teacher1->assignRole('teacher');
 
-        $teacher2 = User::create([
-            'name' => fake('id_ID')->name(),
-            'email' => 'teacher2@sippel.test',
-            'password' => Hash::make('password'),
-            'jenis_kelamin' => fake()->randomElement(['L', 'P']),
-            'email_verified_at' => now(),
-        ]);
+        $teacher2 = User::firstOrCreate(
+            ['email' => 'teacher2@sippel.test'],
+            [
+                'name' => fake('id_ID')->name(),
+                'password' => Hash::make('password'),
+                'jenis_kelamin' => fake()->randomElement(['L', 'P']),
+                'email_verified_at' => now(),
+            ],
+        );
         $teacher2->assignRole('teacher');
 
         return [$teacher1, $teacher2];
