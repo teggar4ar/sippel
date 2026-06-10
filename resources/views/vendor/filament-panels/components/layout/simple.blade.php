@@ -95,7 +95,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                     </svg>
                                 </div>
-                                <span style="font-size: 0.875rem;">Laporan nilai dan kehadiran siswa</span>
+                                <span style="font-size: 0.875rem;">Laporan partisipasi dan kehadiran siswa</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.75rem; color: #cbd5e1;">
                                 <div style="width: 2rem; height: 2rem; border-radius: 0.5rem; background: rgba(245,158,11,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">

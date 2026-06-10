@@ -61,10 +61,16 @@ final class CreateMataPelajaran extends CreateRecord
 
             $kelasId = isset($group['kelas_id']) ? (int) $group['kelas_id'] : null;
             $guruId = isset($group['guru_id']) ? (int) $group['guru_id'] : null;
-            if (! $kelasId) {
+            if ($kelasId === null) {
                 continue;
             }
-            if (! $guruId) {
+            if ($kelasId === 0) {
+                continue;
+            }
+            if ($guruId === null) {
+                continue;
+            }
+            if ($guruId === 0) {
                 continue;
             }
 

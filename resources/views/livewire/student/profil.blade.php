@@ -1,105 +1,133 @@
 <div class="space-y-3 overflow-x-hidden">
+
+    {{-- Success toast (shown via Livewire dispatch event) --}}
+    <div
+        x-data="{ show: false }"
+        x-on:student-profile-saved.window="show = true; setTimeout(() => show = false, 3000)"
+        x-show="show"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 -translate-y-2"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 -translate-y-2"
+        class="flex items-center gap-3 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-200 rounded-xl text-sm"
+        style="display: none;"
+    >
+        <flux:icon name="check-circle" class="w-5 h-5 text-emerald-500 shrink-0" />
+        <span class="font-medium">Profil berhasil diperbarui.</span>
+        <button x-on:click="show = false" class="ml-auto text-emerald-500 hover:text-emerald-700 cursor-pointer">
+            <flux:icon name="x-mark" class="w-4 h-4" />
+        </button>
+    </div>
     {{-- Header --}}
-    <div>
+    <div class="min-w-0">
         <h1 class="text-xl font-bold text-teal-900 dark:text-white">Profil Saya</h1>
-        <p class="text-sm text-teal-600 dark:text-teal-400 mt-0.5">Informasi akun dan data siswa</p>
+        <p class="text-sm text-teal-600 dark:text-teal-400 mt-0.5">Kelola informasi data diri dan pengaturan keamanan akun Anda</p>
     </div>
 
-    {{-- User Information Card --}}
-    <div class="bg-white dark:bg-teal-900/30 rounded-xl shadow-sm border border-teal-200 dark:border-teal-800 overflow-hidden">
-        <div class="p-3">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0">
-                    <span class="text-lg font-bold text-white">{{ substr($user->nama, 0, 1) }}</span>
-                </div>
-                <div class="min-w-0">
-                    <h2 class="text-base font-semibold text-teal-900 dark:text-white truncate">{{ $user->nama }}</h2>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-teal-100 text-teal-700 dark:bg-teal-800 dark:text-teal-300">
-                        Siswa
-                    </span>
-                </div>
-            </div>
-        </div>
-        <div class="border-t border-teal-100 dark:border-teal-800">
-            <div class="flex divide-x divide-teal-100 dark:divide-teal-800">
-                <div class="flex-1 p-3">
-                    <p class="text-[10px] font-medium text-teal-500 dark:text-teal-400">Email</p>
-                    <p class="text-xs text-teal-900 dark:text-white truncate">{{ $user->email }}</p>
-                </div>
-                <div class="flex-1 p-3">
-                    <p class="text-[10px] font-medium text-teal-500 dark:text-teal-400">Jenis Kelamin</p>
-                    <p class="text-xs text-teal-900 dark:text-white">{{ $user->jenis_kelamin ?? '-' }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Student Information Card --}}
-    @if($siswa)
-        <div class="bg-white dark:bg-teal-900/30 rounded-xl shadow-sm border border-teal-200 dark:border-teal-800 overflow-hidden">
-            <div class="px-3 py-2 border-b border-teal-100 dark:border-teal-800">
-                <span class="text-sm font-semibold text-teal-900 dark:text-white">Informasi Siswa</span>
-            </div>
-            <div class="p-3 space-y-2">
-                <div class="flex gap-4">
-                    <div class="flex-1">
-                        <p class="text-[10px] font-medium text-teal-500 dark:text-teal-400">NIS</p>
-                        <p class="text-sm font-mono font-bold text-teal-900 dark:text-white">{{ $siswa->nis }}</p>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-[10px] font-medium text-teal-500 dark:text-teal-400">Kelas</p>
-                        <p class="text-sm font-semibold text-teal-900 dark:text-white">
-                            @if($contextKelas)
-                                {{ $contextKelas->tingkat_kelas }}-{{ $contextKelas->grup_kelas }}
-                            @else
-                                <span class="text-teal-400 italic text-xs">Belum ditentukan</span>
-                            @endif
-                        </p>
-                    </div>
-                </div>
-                @if($contextKelas && $contextKelas->waliKelas)
-                    <div class="pt-2 border-t border-teal-50 dark:border-teal-800">
-                        <p class="text-[10px] font-medium text-teal-500 dark:text-teal-400">Wali Kelas</p>
-                        <p class="text-sm text-teal-900 dark:text-white">{{ $contextKelas->waliKelas->name }}</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        {{-- Quick Stats - Inline compact --}}
-        <div class="bg-white dark:bg-teal-900/30 rounded-xl shadow-sm border border-teal-200 dark:border-teal-800 overflow-hidden">
-            <div class="px-3 py-2 border-b border-teal-100 dark:border-teal-800">
-                <span class="text-sm font-semibold text-teal-900 dark:text-white">Statistik</span>
-            </div>
-            <div class="flex">
-                <div class="flex-1 py-3 text-center border-r border-teal-100 dark:border-teal-800">
-                    <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($attendancePercentage, 0) }}%</div>
-                    <div class="text-[10px] text-teal-600 dark:text-teal-400">Kehadiran</div>
-                </div>
-                <div class="flex-1 py-3 text-center border-r border-teal-100 dark:border-teal-800">
-                    <div class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ number_format($averageGrade, 1) }}</div>
-                    <div class="text-[10px] text-teal-600 dark:text-teal-400">Nilai</div>
-                </div>
-                <div class="flex-1 py-3 text-center border-r border-teal-100 dark:border-teal-800">
-                    <div class="text-lg font-bold text-amber-600 dark:text-amber-400">{{ number_format($averageParticipation, 1) }}</div>
-                    <div class="text-[10px] text-teal-600 dark:text-teal-400">Partisipasi</div>
-                </div>
-                <div class="flex-1 py-3 text-center">
-                    <div class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ $totalAktivitas }}</div>
-                    <div class="text-[10px] text-teal-600 dark:text-teal-400">Aktivitas</div>
-                </div>
-            </div>
-        </div>
-    @else
-        {{-- No student data --}}
-        <div class="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+    {{-- Main Card --}}
+    <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-teal-200 dark:border-slate-700/90 overflow-hidden">
+        {{-- Card header --}}
+        <div class="px-4 py-3 border-b border-teal-100 dark:border-slate-700/90">
             <div class="flex items-center gap-2">
-                <flux:icon name="exclamation-triangle" class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                <div>
-                    <p class="text-sm font-medium text-amber-800 dark:text-amber-200">Data Tidak Ditemukan</p>
-                    <p class="text-xs text-amber-600 dark:text-amber-400">Hubungi administrator untuk menghubungkan akun.</p>
-                </div>
+                <flux:icon name="user-circle" class="w-5 h-5 text-teal-500" />
+                <span class="text-sm font-semibold text-teal-900 dark:text-white">Data Siswa dan Informasi Akun</span>
             </div>
         </div>
-    @endif
+
+        {{-- Form --}}
+        <form wire:submit="updateProfile" class="p-4 sm:p-6 space-y-6">
+            {{-- Profile Info Section --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <flux:input
+                    label="Nama"
+                    wire:model="nama"
+                    readonly
+                    disabled
+                    class="bg-teal-50 dark:bg-slate-900/50 cursor-not-allowed"
+                />
+                <flux:input
+                    label="NIS"
+                    wire:model="nis"
+                    readonly
+                    disabled
+                    class="bg-teal-50 dark:bg-slate-900/50 cursor-not-allowed"
+                />
+                <flux:input
+                    label="Kelas"
+                    wire:model="kelas"
+                    readonly
+                    disabled
+                    class="bg-teal-50 dark:bg-slate-900/50 cursor-not-allowed"
+                />
+                <flux:input
+                    label="Email"
+                    type="email"
+                    wire:model="email"
+                    placeholder="email@contoh.com"
+                    class:input="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
+                />
+            </div>
+
+            {{-- Divider --}}
+            <div class="border-t border-teal-100 dark:border-slate-700/90"></div>
+
+            {{-- Password Section --}}
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-teal-900 dark:text-white">Ubah Password</h3>
+                    <p class="text-xs text-teal-500 dark:text-teal-400 mt-0.5">(Kosongkan jika tidak ingin mengubah password)</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <flux:input
+                        label="Password Lama"
+                        type="password"
+                        viewable
+                        wire:model="current_password"
+                        placeholder="Masukkan password lama"
+                        autocomplete="current-password"
+                        class:input="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
+                    />
+                    <flux:input
+                        label="Password Baru"
+                        type="password"
+                        viewable
+                        wire:model="new_password"
+                        placeholder="Minimal 8 karakter"
+                        autocomplete="new-password"
+                        class:input="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
+                    />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <flux:input
+                        label="Konfirmasi Password Baru"
+                        type="password"
+                        viewable
+                        wire:model="new_password_confirmation"
+                        placeholder="Ulangi password baru"
+                        autocomplete="new-password"
+                        class:input="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
+                    />
+                </div>
+            </div>
+
+            {{-- Submit --}}
+            <div class="flex justify-end pt-2">
+                <flux:button
+                    type="submit"
+                    variant="primary"
+                    color="teal"
+                    class="cursor-pointer"
+                    wire:loading.attr="disabled"
+                >
+                    <flux:icon wire:loading wire:target="updateProfile" name="arrow-path" class="w-4 h-4 animate-spin" />
+                    <span wire:loading.remove wire:target="updateProfile">Simpan Perubahan</span>
+                    <span wire:loading wire:target="updateProfile">Menyimpan...</span>
+                </flux:button>
+            </div>
+        </form>
+    </div>
 </div>

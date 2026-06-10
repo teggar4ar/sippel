@@ -50,17 +50,15 @@ final class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
         // Create roles and assign permissions
 
-        // Admin role - full access
-        $adminRole = Role::create(['name' => 'admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $adminRole->givePermissionTo(Permission::all());
 
-        // Teacher role - can manage activities and view students
-        $teacherRole = Role::create(['name' => 'teacher']);
+        $teacherRole = Role::firstOrCreate(['name' => 'teacher', 'guard_name' => 'web']);
         $teacherRole->givePermissionTo([
             'view activities',
             'create activities',
@@ -71,8 +69,7 @@ final class RolePermissionSeeder extends Seeder
             'view reports',
         ]);
 
-        // Student role - can only view own data
-        $studentRole = Role::create(['name' => 'student']);
+        $studentRole = Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
         $studentRole->givePermissionTo([
             'view own data',
             self::PERM_VIEW_REPORTS,

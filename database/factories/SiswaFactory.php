@@ -21,7 +21,7 @@ final class SiswaFactory extends Factory
     public function definition(): array
     {
         return [
-            'nis' => $this->faker->unique()->numerify('#####'),
+            'nis' => fake('id_ID')->unique()->numerify('#####'),
             'user_id' => User::factory(),
             'kelas_id' => Kelas::factory(),
         ];

@@ -82,7 +82,7 @@ trait HasLaporanDownloads
             $sanitizedTahun
         );
 
-        return Excel::download(new ClassReportExport($data['kelas'], null, null, $data['mataPelajaran']), $filename);
+        return Excel::download(new ClassReportExport($data['kelas'], $data['mataPelajaran']), $filename);
     }
 
     // ──────────────────────────────────────────────────────
@@ -186,20 +186,26 @@ trait HasLaporanDownloads
             ->with('mataPelajaran')
             ->get();
 
-        if ($laporanData->isEmpty()) {
+        $contextKelas = $siswa->getKelasForTahunAjaran($tahunAjaran->id);
+        $contextKelas?->load('waliKelas');
+
+        // Fetch per-activity detail records for the "Riwayat Aktivitas" table
+        $activityData = \App\Models\DetailAktivitas::where('siswa_id', $siswa->id)
+            ->withTimelineJoin($contextKelas?->id, $tahunAjaran->id)
+            ->get();
+
+        if ($activityData->isEmpty() && $laporanData->isEmpty()) {
             $this->dispatch('notify', type: 'warning', message: 'Belum ada data laporan untuk siswa ini.');
 
             return null;
         }
-
-        $contextKelas = $siswa->getKelasForTahunAjaran($tahunAjaran->id);
-        $contextKelas?->load('waliKelas');
 
         return [
             'siswa' => $siswa,
             'contextKelas' => $contextKelas,
             'tahunAjaran' => $tahunAjaran,
             'laporanData' => $laporanData,
+            'activityData' => $activityData,
         ];
     }
 

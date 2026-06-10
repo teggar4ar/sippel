@@ -62,6 +62,11 @@
                     <flux:icon name="chart-bar" variant="outline" class="w-5 h-5" />
                     Laporan
                 </a>
+                <a href="{{ route('teacher.profil') }}" wire:navigate
+                   class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('teacher.profil') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700/80 hover:text-white' }}">
+                    <flux:icon name="user-circle" variant="outline" class="w-5 h-5" />
+                    Profil
+                </a>
             </nav>
 
             {{-- User info --}}
@@ -132,6 +137,11 @@
                         <flux:icon name="chart-bar" variant="outline" class="w-5 h-5" />
                         Laporan
                     </a>
+                    <a href="{{ route('teacher.profil') }}" wire:navigate @click="open = false"
+                       class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('teacher.profil') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700/80' }}">
+                        <flux:icon name="user-circle" variant="outline" class="w-5 h-5" />
+                        Profil
+                    </a>
                 </nav>
                 <div class="absolute bottom-0 left-0 right-0 px-3 py-3 border-t border-slate-700/80">
                     <div class="flex items-center gap-3 px-2 py-2">
@@ -174,7 +184,7 @@
         {{-- Main content --}}
         <main class="flex-1 lg:pl-60 overflow-x-hidden">
             <div class="pt-16 lg:pt-4 pb-4 px-3 lg:px-6">
-                <div class="max-w-5xl mx-auto w-full">
+                <div class="max-w-6xl mx-auto w-full">
                     {{-- Flash messages --}}
                     @if (session('success'))
                         <div class="mb-3 p-3 bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200 rounded-lg text-sm">
@@ -202,6 +212,9 @@
 
     @livewireScripts
     @fluxScripts
+
+    @stack('vendor-scripts')
+    @stack('scripts')
 
     {{-- PWA Service Worker Registration --}}
     <script>

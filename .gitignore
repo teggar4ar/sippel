@@ -26,3 +26,8 @@ Thumbs.db
 tests/Browser/Screenshots
 /.agents
 skills-lock.json
+/.opencode
+/graphify-out
+.graphifyignore
+AGENTS.md
+.kilo

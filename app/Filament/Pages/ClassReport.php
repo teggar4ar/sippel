@@ -36,7 +36,7 @@ final class ClassReport extends Page implements HasForms
 
     public ?int $tahunAjaranId = null;
 
-    public string $sortBy = 'nilai';
+    public string $sortBy = 'kehadiran';
 
     /**
      * @var array<string, mixed>|null
@@ -188,7 +188,7 @@ final class ClassReport extends Page implements HasForms
             $sanitizedTahun
         );
 
-        return Excel::download(new ClassReportExport($kelas, null, null, $mataPelajaran), $filename);
+        return Excel::download(new ClassReportExport($kelas, $mataPelajaran), $filename);
     }
 
     /**
@@ -267,12 +267,10 @@ final class ClassReport extends Page implements HasForms
                 ->label('Urutkan Berdasarkan')
                 ->native(false)
                 ->options([
-                    'nilai' => 'Nilai (Tertinggi)',
-                    'nilai_asc' => 'Nilai (Terendah)',
                     'kehadiran' => 'Kehadiran (Tertinggi)',
                     'nama' => 'Nama (A-Z)',
                 ])
-                ->default('nilai')
+                ->default('kehadiran')
                 ->live()
                 ->afterStateUpdated(fn (): null => $this->previewData = null),
         ];
@@ -351,8 +349,6 @@ final class ClassReport extends Page implements HasForms
 
         // Apply sorting
         return match ($this->sortBy) {
-            'nilai' => $laporanData->sortByDesc('rata_nilai')->values(),
-            'nilai_asc' => $laporanData->sortBy('rata_nilai')->values(),
             'kehadiran' => $laporanData->sortByDesc('rata_kehadiran')->values(),
             'nama' => $laporanData->sortBy(function (Laporan $l): string {
                 /** @var \App\Models\Siswa|null $siswa */
@@ -362,7 +358,7 @@ final class ClassReport extends Page implements HasForms
 
                 return $user !== null ? $user->name : '';
             })->values(),
-            default => $laporanData->sortByDesc('rata_nilai')->values(),
+            default => $laporanData->sortByDesc('rata_kehadiran')->values(),
         };
     }
 }

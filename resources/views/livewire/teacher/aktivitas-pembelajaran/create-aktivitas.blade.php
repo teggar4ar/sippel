@@ -1,418 +1,439 @@
-<div class="space-y-3 overflow-x-hidden">
-    {{-- Flash Messages --}}
-    @if (session()->has('success'))
-        <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-            <div class="flex items-center gap-2">
-                <flux:icon name="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <p class="text-sm font-medium text-emerald-900 dark:text-emerald-100">{{ session('success') }}</p>
-            </div>
-        </div>
-    @endif
+<div class="space-y-4 overflow-x-hidden">
 
+    {{-- Flash / Validation --}}
     @if (session()->has('error'))
-        <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-            <div class="flex items-center gap-2">
-                <flux:icon name="exclamation-circle" class="w-5 h-5 text-red-600 dark:text-red-400" />
-                <p class="text-sm font-medium text-red-900 dark:text-red-100">{{ session('error') }}</p>
-            </div>
+        <div class="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-300">
+            <flux:icon name="exclamation-circle" class="w-4 h-4 shrink-0" />
+            {{ session('error') }}
         </div>
     @endif
-
-    {{-- Validation Errors --}}
     @if ($errors->any())
         <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-            <div class="flex items-start gap-2">
-                <flux:icon name="exclamation-circle" class="w-5 h-5 text-red-600 dark:text-red-400 shrink-0" />
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-red-900 dark:text-red-100 mb-1">Terdapat kesalahan:</p>
-                    <ul class="list-disc list-inside text-xs text-red-800 dark:text-red-200 space-y-0.5">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
+            <p class="text-xs font-semibold text-red-700 dark:text-red-300 mb-1">Terdapat kesalahan:</p>
+            <ul class="list-disc list-inside text-xs text-red-600 dark:text-red-400 space-y-0.5">
+                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+            </ul>
         </div>
     @endif
 
-    {{-- Header with back button - Compact --}}
+    {{-- Header --}}
     <div class="flex items-center gap-3">
         <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
-           class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex-shrink-0">
+           class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shrink-0 cursor-pointer">
             <flux:icon name="arrow-left" class="w-4 h-4" />
         </a>
-        <div class="min-w-0">
-            <h1 class="text-xl font-bold text-slate-900 dark:text-white">Buat Aktivitas</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                @if($step === 1)
-                    Langkah 1: Informasi Aktivitas
-                @else
-                    Langkah 2: Absensi & Penilaian
-                @endif
+        <div>
+            <h1 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Buat Aktivitas</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                {{ $step === 1 ? 'Langkah 1: Informasi Aktivitas' : 'Langkah 2: Aktivitas Kelas' }}
             </p>
         </div>
     </div>
 
-    {{-- Progress indicator - Compact --}}
-    <div class="flex items-center gap-1.5">
-        <div class="flex-1 h-1.5 rounded-full {{ $step >= 1 ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-700' }}"></div>
-        <div class="flex-1 h-1.5 rounded-full {{ $step >= 2 ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-700' }}"></div>
+    {{-- Progress --}}
+    <div class="flex gap-1.5">
+        <div class="flex-1 h-1 rounded-full {{ $step >= 1 ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-700' }}"></div>
+        <div class="flex-1 h-1 rounded-full {{ $step >= 2 ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-700' }}"></div>
     </div>
 
     @if($step === 1)
-        {{-- Step 1: Activity Information --}}
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700">
-                <span class="text-sm font-semibold text-slate-900 dark:text-white">Informasi Aktivitas</span>
-            </div>
-            <div class="p-3 space-y-3">
-                {{-- Date --}}
-                <div>
-                    <flux:input
-                        wire:model="tanggal"
-                        type="date"
-                        label="Tanggal *"
-                        label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                        class:input="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                    />
-                    @error('tanggal')
-                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
-                </div>
+    {{-- ============================================================ --}}
+    {{-- STEP 1: Informasi Aktivitas                                  --}}
+    {{-- ============================================================ --}}
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800">
+            <span class="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Informasi Aktivitas</span>
+        </div>
+        <div class="px-4 py-6 space-y-6">
 
-                {{-- Tingkat Kelas --}}
+            {{-- Row 1: Tanggal + Tingkat Kelas --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6" style="column-gap: 1.5rem;">
                 <div>
-                    <flux:select
-                        wire:model.live="tingkatKelas"
-                        label="Tingkat Kelas *"
+                    <flux:input wire:model="tanggal" type="date" label="Tanggal *"
                         label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                        class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                    >
+                        class:input="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none cursor-pointer" />
+                    @error('tanggal')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <flux:select wire:model.live="tingkatKelas" label="Tingkat Kelas *"
+                        label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
+                        class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none cursor-pointer">
                         <option value="">Pilih tingkat kelas...</option>
                         @foreach($this->tingkatKelasList as $tingkat)
                             <option value="{{ $tingkat }}">Kelas {{ $tingkat }}</option>
                         @endforeach
                     </flux:select>
-                    @error('tingkatKelas')
-                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
+                    @error('tingkatKelas')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
                 </div>
+            </div>
 
-                {{-- Grup Kelas --}}
-                @if($tingkatKelas !== null)
-                    <div>
-                        <flux:select
-                            wire:model.live="grupKelas"
-                            label="Grup Kelas *"
+            {{-- Row 2: Mata Pelajaran + Grup Kelas --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6" style="column-gap: 1.5rem;">
+                <div>
+                    @if($tingkatKelas !== null)
+                        <flux:select wire:model.live="grupKelas" label="Grup Kelas *"
                             label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                            class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                        >
+                            class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none cursor-pointer">
                             <option value="">Pilih grup kelas...</option>
                             @foreach($this->grupKelasList as $grup)
                                 <option value="{{ $grup }}">{{ $grup }}</option>
                             @endforeach
                         </flux:select>
-                        @error('grupKelas')
-                            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @enderror
-                    </div>
-                @endif
-
-                {{-- Subject selection --}}
-                @if($grupKelas !== null && $grupKelas !== '')
-                    <div>
-                        <flux:select
-                            wire:model.live="mataPelajaranId"
-                            label="Mata Pelajaran *"
-                            label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                            class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                        >
-                            <option value="">Pilih mata pelajaran...</option>
-                            @foreach($this->mataPelajaran as $mapel)
-                                <option value="{{ $mapel->id }}">
-                                    {{ $mapel->nama_mapel }}
-                                </option>
-                            @endforeach
-                        </flux:select>
-                        @error('mataPelajaranId')
-                            <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @enderror
-                    </div>
-                @endif
-
-                {{-- Show selected class info --}}
-                @if($this->selectedMapel)
-                    <div class="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <flux:icon name="user-group" class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                        <span class="text-xs text-blue-700 dark:text-blue-300">
-                            <strong>{{ $this->selectedMapel->kelas->nama_lengkap }}</strong> • {{ $this->siswaList->count() }} siswa
-                        </span>
-                    </div>
-                @endif
-
-                {{-- Topic --}}
+                        @error('grupKelas')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                    @else
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 dark:text-slate-500 mb-1">Grup Kelas *</label>
+                            <div class="h-10 flex items-center px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs text-slate-400">Pilih tingkat kelas dulu</div>
+                        </div>
+                    @endif
+                </div>
                 <div>
-                    <flux:input
-                        wire:model="topik"
-                        type="text"
-                        label="Topik Pembelajaran *"
+                    <flux:select wire:model.live="mataPelajaranId" label="Mata Pelajaran *"
+                        label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
+                        class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none cursor-pointer">
+                        <option value="">Pilih mata pelajaran...</option>
+                        @foreach($this->mataPelajaran as $mapel)
+                            <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
+                        @endforeach
+                    </flux:select>
+                    @error('mataPelajaranId')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+            </div>
+
+            {{-- Row 3: Topik + Catatan --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6" style="column-gap: 1.5rem;">
+                <div>
+                    <flux:input wire:model="topik" type="text" label="Topik Pembelajaran *"
                         placeholder="Contoh: Persamaan Linear Satu Variabel"
                         label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                        class:input="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                    />
-                    @error('topik')
-                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
+                        class:input="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none" />
+                    @error('topik')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
                 </div>
-
-                {{-- Notes --}}
                 <div>
-                    <flux:textarea
-                        wire:model="catatan"
-                        label="Catatan (Opsional)"
-                        rows="3"
-                        placeholder="Catatan tambahan..."
+                    <flux:input wire:model="catatan" type="text" label="Catatan Tambahan (Opsional)"
+                        placeholder="Catatan tambahan aktivitas..."
                         label:class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                        class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 text-sm"
-                    />
-                    @error('catatan')
-                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
+                        class:input="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none" />
+                    @error('catatan')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
                 </div>
+            </div>
+
+            @if($this->selectedMapel)
+                <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <flux:icon name="user-group" class="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                    <span class="text-xs text-blue-700 dark:text-blue-300">
+                        <strong>{{ $this->selectedMapel->kelas->nama_lengkap }}</strong> &bull; {{ $this->siswaList->count() }} siswa terdaftar
+                    </span>
+                </div>
+            @endif
+
+        </div>
+    </div>
+
+    <button wire:click="nextStep"
+            wire:loading.attr="disabled"
+            wire:loading.class="opacity-60 cursor-not-allowed"
+            class="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            {{ !$mataPelajaranId ? 'disabled' : '' }}>
+        <span wire:loading.remove wire:target="nextStep">&gt; Lanjut ke Aktivitas Kelas</span>
+        <span wire:loading wire:target="nextStep">Memproses...</span>
+        <flux:icon wire:loading wire:target="nextStep" name="arrow-path" class="w-4 h-4 animate-spin" />
+    </button>
+
+    @else
+    {{-- ============================================================ --}}
+    {{-- STEP 2: Aktivitas Kelas — Semua state di Alpine, 0 wire.set  --}}
+    {{-- ============================================================ --}}
+    @php $partisipasiOptions = [1 => 'Pasif', 2 => 'Cukup', 3 => 'Aktif', 4 => 'Sangat Aktif']; @endphp
+
+    <div
+        x-data="{
+            students: @js($detailAktivitas),
+            saving: false,
+            get unsetCount() {
+                return Object.values(this.students).filter(d => !d.kehadiran).length;
+            },
+            setAllHadir() {
+                Object.keys(this.students).forEach(id => {
+                    this.students[id].kehadiran = 'Hadir';
+                });
+            },
+            setKehadiran(id, val) {
+                this.students[id].kehadiran = val;
+                if (val !== 'Hadir') {
+                    this.students[id].partisipasi = null;
+                }
+            },
+            setPartisipasi(id, val) {
+                const cur = this.students[id].partisipasi;
+                this.students[id].partisipasi = (cur == val) ? null : parseInt(val);
+            },
+            async doSave() {
+                this.saving = true;
+                try {
+                    await $wire.saveWithDetail(this.students);
+                } finally {
+                    this.saving = false;
+                }
+            },
+            activeNote: { siswaId: null, nama: '', catatan: '' },
+            openNote(siswaId, nama) {
+                this.activeNote = {
+                    siswaId: siswaId,
+                    nama: nama,
+                    catatan: this.students[siswaId]?.catatan || ''
+                };
+                Flux.modal('note-modal').show();
+            },
+            saveNote() {
+                if (this.activeNote.siswaId !== null) {
+                    this.students[this.activeNote.siswaId].catatan = this.activeNote.catatan;
+                }
+                Flux.modal('note-modal').close();
+            }
+        }"
+    >
+        {{-- Summary bar --}}
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 shadow-sm min-w-0">
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Mata Pelajaran</p>
+                <p class="text-sm font-bold text-slate-900 dark:text-white mt-0.5 truncate">{{ $this->selectedMapel?->nama_mapel ?? '-' }}</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 shadow-sm min-w-0">
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Tanggal</p>
+                <p class="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d M Y') }}</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 shadow-sm min-w-0">
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Kelas</p>
+                <p class="text-sm font-bold text-slate-900 dark:text-white mt-0.5 truncate">{{ $this->selectedMapel?->kelas?->nama_lengkap ?? '-' }}</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 shadow-sm min-w-0">
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Jml Siswa</p>
+                <p class="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{{ $this->siswaList->count() }} siswa</p>
             </div>
         </div>
 
-        {{-- Step 1 action button --}}
-        <div class="sticky bottom-0 -mx-4 px-4 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 lg:relative lg:mx-0 lg:px-0 lg:border-0 lg:bg-transparent">
-            <button wire:click="nextStep"
-                    wire:loading.attr="disabled"
-                    wire:loading.class="opacity-50 cursor-not-allowed"
-                    class="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    {{ !$mataPelajaranId ? 'disabled' : '' }}>
-                <span wire:loading.remove wire:target="nextStep">Lanjut ke Absensi</span>
-                <span wire:loading wire:target="nextStep">Memproses...</span>
-                <flux:icon wire:loading.remove wire:target="nextStep" name="arrow-right" class="w-4 h-4" />
-                <flux:icon wire:loading wire:target="nextStep" name="arrow-path" class="w-4 h-4 animate-spin" />
+        {{-- Section header + mass action --}}
+        <div class="flex items-center justify-between mt-4">
+            <div>
+                <h2 class="text-base font-bold text-slate-900 dark:text-white">Aktivitas Kelas</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Catat kehadiran dan tingkat keaktifan siswa</p>
+            </div>
+            <button type="button"
+                    x-on:click="setAllHadir()"
+                    class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm cursor-pointer">
+                <flux:icon name="check-circle" class="w-4 h-4" />
+                Tandai Semua Hadir
             </button>
         </div>
 
-    @else
-        {{-- Step 2: Attendance Recording --}}
-        <div class="space-y-3">
-            {{-- Activity summary - Compact --}}
-            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div class="flex divide-x divide-slate-100 dark:divide-slate-700">
-                    <div class="flex-1 p-2 text-center">
-                        <p class="text-[10px] text-slate-500 dark:text-slate-400">Tanggal</p>
-                        <p class="text-xs font-semibold text-slate-900 dark:text-white">{{ \Carbon\Carbon::parse($tanggal)->format('d M Y') }}</p>
-                    </div>
-                    <div class="flex-1 p-2 text-center">
-                        <p class="text-[10px] text-slate-500 dark:text-slate-400">Kelas</p>
-                        <p class="text-xs font-semibold text-slate-900 dark:text-white">{{ $this->selectedMapel?->kelas->nama_lengkap }}</p>
-                    </div>
-                    <div class="flex-1 p-2 text-center">
-                        <p class="text-[10px] text-slate-500 dark:text-slate-400">Siswa</p>
-                        <p class="text-xs font-semibold text-slate-900 dark:text-white">{{ $this->siswaList->count() }}</p>
-                    </div>
+        {{-- Status indicator --}}
+        <div class="flex items-center gap-1.5 px-1 mt-2">
+            <template x-if="unsetCount > 0">
+                <div class="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                    <flux:icon name="exclamation-triangle" class="w-3.5 h-3.5 shrink-0" />
+                    <span x-text="unsetCount + ' siswa belum dicatat kehadirannya'"></span>
                 </div>
-                <div class="px-3 py-2 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-                    <p class="text-xs text-slate-600 dark:text-slate-400 truncate">
-                        <span class="font-medium text-slate-900 dark:text-white">{{ $this->selectedMapel?->nama_mapel }}</span>
-                        • {{ $topik }}
-                    </p>
+            </template>
+            <template x-if="unsetCount === 0">
+                <div class="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                    <flux:icon name="check-circle" class="w-3.5 h-3.5 shrink-0" />
+                    <span>Semua siswa sudah tercatat</span>
                 </div>
-            </div>
+            </template>
+        </div>
 
-            {{-- Section header --}}
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Absensi & Penilaian</h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Catat kehadiran dan nilai siswa</p>
-                </div>
-            </div>
+        {{-- Student cards --}}
+        <div class="space-y-2 mt-2">
+            @forelse($this->siswaList as $siswa)
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm relative"
+                     x-bind:class="students['{{ $siswa->id }}']?.kehadiran ? 'border-slate-200 dark:border-slate-700' : 'border-amber-300 dark:border-amber-700'"
+                     wire:key="cs-{{ $siswa->id }}">
 
-            {{-- Quick attendance button --}}
-            @php
-                $unsetCount = collect($detailAktivitas)->filter(fn($d) => empty($d['kehadiran']))->count();
-            @endphp
-            <div class="flex items-center justify-between gap-2 p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-slate-600 dark:text-slate-400">Tandai:</span>
-                    <button
-                        type="button"
-                        wire:click="setAllAttendance('Hadir')"
-                        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-colors"
-                    >
-                        <flux:icon name="check" class="w-3 h-3" />
-                        <span>Semua Hadir</span>
+                    {{-- Mobile catatan button (icon-only, top-right) --}}
+                    <button type="button"
+                            data-siswa-id="{{ $siswa->id }}"
+                            data-siswa-nama="{{ $siswa->user->nama ?? $siswa->user->name }}"
+                            x-on:click="students['{{ $siswa->id }}']?.kehadiran === 'Hadir' && openNote($el.dataset.siswaId, $el.dataset.siswaNama)"
+                            x-bind:disabled="students['{{ $siswa->id }}']?.kehadiran !== 'Hadir'"
+                            x-bind:class="students['{{ $siswa->id }}']?.kehadiran !== 'Hadir'
+                                ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'
+                                : (students['{{ $siswa->id }}']?.catatan ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 hover:text-blue-500')"
+                            class="lg:hidden absolute top-2.5 right-2.5 p-1.5 rounded-lg transition-colors cursor-pointer">
+                        <flux:icon name="pencil-square" class="w-4 h-4" />
+                        <span x-show="students['{{ $siswa->id }}']?.catatan" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-500"></span>
                     </button>
-                </div>
-                @if($unsetCount > 0)
-                    <span class="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                        <flux:icon name="exclamation-circle" class="w-3 h-3" /> {{ $unsetCount }} belum
-                    </span>
-                @else
-                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                        <flux:icon name="check-circle" class="w-3 h-3" /> Lengkap
-                    </span>
-                @endif
-            </div>
 
-            {{-- Compact student list with scrollable container --}}
-            <div class="max-h-[55vh] overflow-y-auto space-y-2 pr-1 -mr-1" x-data="{ expanded: null }">
-                @foreach($this->siswaList as $siswa)
-                    @php
-                        $kehadiran = $detailAktivitas[$siswa->id]['kehadiran'] ?? null;
-                        $isHadir = $kehadiran === 'Hadir';
-                        $isUnset = empty($kehadiran);
-                        $nilai = $detailAktivitas[$siswa->id]['nilai'] ?? null;
-                        $partisipasi = $detailAktivitas[$siswa->id]['partisipasi'] ?? null;
-                    @endphp
-                    <div
-                        class="bg-zinc-50 dark:bg-zinc-900 rounded-lg border {{ $isUnset ? 'border-amber-300 dark:border-amber-700' : 'border-zinc-200 dark:border-zinc-700' }} overflow-hidden"
-                        wire:key="siswa-{{ $siswa->id }}"
-                    >
-                        {{-- Compact header (always visible) --}}
-                        <div class="flex items-center gap-2 p-3">
-                            {{-- Student info --}}
-                            <div
-                                class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 -m-2 p-2 rounded-lg transition-colors"
-                                x-on:click="expanded = expanded === {{ $siswa->id }} ? null : {{ $siswa->id }}"
-                            >
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-sm text-zinc-900 dark:text-white truncate">{{ $siswa->user->nama }}</div>
-                                    <div class="text-xs text-zinc-500">{{ $siswa->nis }}</div>
-                                </div>
+                    <div class="flex flex-col gap-2.5 px-3 py-3 lg:flex-row lg:items-center lg:gap-3 lg:px-4">
 
-                                {{-- Quick status display --}}
-                                <div class="flex items-center gap-1.5 text-xs shrink-0">
-                                    @if($isHadir && $nilai !== null)
-                                        <span class="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium">{{ $nilai }}</span>
-                                    @endif
-                                    @if($isHadir && $partisipasi)
-                                        <span class="text-yellow-500">{{ str_repeat('⭐', (int)$partisipasi) }}</span>
-                                    @endif
-                                </div>
-
-                                {{-- Expand indicator --}}
-                                <flux:icon
-                                    name="chevron-down"
-                                    class="size-4 text-zinc-400 transition-transform shrink-0"
-                                    x-bind:class="{ 'rotate-180': expanded === {{ $siswa->id }} }"
-                                />
-                            </div>
-
-                            {{-- Attendance buttons (always visible) --}}
-                            <div class="flex gap-1 shrink-0">
-                                @foreach(['Hadir', 'Izin', 'Sakit', 'Alpa'] as $status)
-                                    @php
-                                        $btnColor = match($status) {
-                                            'Hadir' => 'bg-green-500 text-white',
-                                            'Izin' => 'bg-blue-500 text-white',
-                                            'Sakit' => 'bg-yellow-500 text-white',
-                                            'Alpa' => 'bg-red-500 text-white',
-                                            default => 'bg-zinc-200 text-zinc-600',
-                                        };
-                                        $isActive = $kehadiran === $status;
-                                    @endphp
-                                    <button
-                                        type="button"
-                                        wire:click="$set('detailAktivitas.{{ $siswa->id }}.kehadiran', '{{ $status }}')"
-                                        class="w-8 h-8 rounded-md text-xs font-bold transition-all {{ $isActive ? $btnColor : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600' }}"
-                                        title="{{ $status }}"
-                                    >
-                                        {{ substr($status, 0, 1) }}
-                                    </button>
-                                @endforeach
-                            </div>
+                        {{-- Avatar — desktop only --}}
+                        <div class="hidden lg:flex w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 items-center justify-center shrink-0">
+                            <span class="text-xs font-bold text-blue-600 dark:text-blue-300">{{ mb_substr($siswa->user->nama ?? $siswa->user->name ?? '?', 0, 1) }}</span>
                         </div>
 
-                        {{-- Expandable content --}}
-                        <div
-                            x-show="expanded === {{ $siswa->id }}"
-                            x-collapse
-                            class="border-t border-zinc-200 dark:border-zinc-700"
-                        >
-                            <div class="p-3 space-y-3">
-                                {{-- Grade and participation (inline) --}}
-                                <div class="flex gap-2 {{ !$isHadir ? 'opacity-40 pointer-events-none' : '' }}">
-                                    <div class="flex-1">
-                                        <label for="nilai-{{ $siswa->id }}" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Nilai</label>
-                                    <flux:input
-                                        id="nilai-{{ $siswa->id }}"
-                                        type="number"
-                                        wire:model="detailAktivitas.{{ $siswa->id }}.nilai"
-                                        min="0"
-                                        max="100"
-                                        placeholder="0-100"
-                                        :disabled="!$isHadir"
-                                        class:input="h-9 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                                    />
-                                    </div>
-                                    <div class="flex-1">
-                                        <label for="partisipasi-{{ $siswa->id }}" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Partisipasi</label>
-                                    <flux:select
-                                        id="partisipasi-{{ $siswa->id }}"
-                                        wire:model="detailAktivitas.{{ $siswa->id }}.partisipasi"
-                                        :disabled="!$isHadir"
-                                        class="h-9 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                                    >
-                                            <option value="">-</option>
-                                            @for($i = 1; $i <= 5; $i++)
-                                                <option value="{{ $i }}">{{ $i }} ⭐</option>
-                                            @endfor
-                                        </flux:select>
-                                    </div>
-                                </div>
-
-                                {{-- Notes (collapsible) --}}
-                                <div>
-                                    <label for="catatan-{{ $siswa->id }}" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Catatan</label>
-                                    <flux:input
-                                        id="catatan-{{ $siswa->id }}"
-                                        type="text"
-                                        wire:model="detailAktivitas.{{ $siswa->id }}.catatan"
-                                        placeholder="Catatan siswa (opsional)"
-                                        class:input="h-9 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                                    />
-                                </div>
-                            </div>
+                        {{-- Nama + NIS --}}
+                        <div class="lg:w-36 lg:shrink-0">
+                            <p class="text-sm font-semibold text-slate-900 dark:text-white leading-tight truncate">{{ $siswa->user->nama ?? $siswa->user->name }}</p>
+                            <p class="text-[11px] text-slate-400 font-mono">{{ $siswa->nis }}</p>
                         </div>
+
+                        {{-- Divider + label — desktop only --}}
+                        <div class="hidden lg:block w-px h-8 bg-slate-100 dark:bg-slate-700 shrink-0"></div>
+                        <span class="hidden lg:block text-[10px] font-semibold uppercase tracking-wider text-slate-400 shrink-0 w-16">Kehadiran</span>
+
+                        {{-- H / I / S / A — fill width on mobile --}}
+                        <div class="flex gap-1.5 lg:gap-1 shrink-0">
+                            @foreach(['Hadir' => ['H','bg-emerald-500'], 'Izin' => ['I','bg-blue-500'], 'Sakit' => ['S','bg-amber-500'], 'Alpa' => ['A','bg-rose-500']] as $status => [$char, $activeClass])
+                                <button type="button"
+                                        x-on:click="setKehadiran('{{ $siswa->id }}', '{{ $status }}')"
+                                        x-bind:class="students['{{ $siswa->id }}']?.kehadiran === '{{ $status }}' ? '{{ $activeClass }} text-white shadow-sm lg:scale-110' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'"
+                                        class="flex-1 lg:flex-none lg:w-9 h-9 rounded-lg text-xs font-bold transition-all duration-100 cursor-pointer"
+                                        title="{{ $status }}">
+                                    {{ $char }}
+                                </button>
+                            @endforeach
+                        </div>
+
+                        {{-- Divider + label — desktop only --}}
+                        <div class="hidden lg:block w-px h-8 bg-slate-100 dark:bg-slate-700 shrink-0"></div>
+                        <span class="hidden lg:block text-[10px] font-semibold uppercase tracking-wider text-slate-400 shrink-0 w-20">Keaktifan</span>
+
+                        {{-- Partisipasi buttons — fill width on mobile --}}
+                        <div class="flex gap-1.5 lg:gap-1 lg:flex-1"
+                             x-show="students['{{ $siswa->id }}']?.kehadiran === 'Hadir'"
+                             x-transition:enter="transition-opacity duration-100"
+                             x-transition:enter-start="opacity-0"
+                             x-transition:enter-end="opacity-100">
+                            @foreach($partisipasiOptions as $val => $label)
+                                <button type="button"
+                                        x-on:click="setPartisipasi('{{ $siswa->id }}', {{ $val }})"
+                                        x-bind:class="students['{{ $siswa->id }}']?.partisipasi == {{ $val }} ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'"
+                                        class="flex-1 lg:flex-none lg:px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-100 whitespace-nowrap cursor-pointer">
+                                    {{ $label }}
+                                </button>
+                            @endforeach
+                        </div>
+
+                        {{-- Placeholder tidak hadir --}}
+                        <div class="lg:flex-1 flex items-center"
+                             x-show="students['{{ $siswa->id }}']?.kehadiran !== 'Hadir'"
+                             x-cloak>
+                            <span class="text-xs text-slate-300 dark:text-slate-600 italic">— tidak hadir —</span>
+                        </div>
+
+                        {{-- Catatan button — desktop only --}}
+                        <div class="hidden lg:block w-px h-8 bg-slate-100 dark:bg-slate-700 shrink-0 ml-auto"></div>
+                        <button type="button"
+                                data-siswa-id="{{ $siswa->id }}"
+                                data-siswa-nama="{{ $siswa->user->nama ?? $siswa->user->name }}"
+                                x-on:click="students['{{ $siswa->id }}']?.kehadiran === 'Hadir' && openNote($el.dataset.siswaId, $el.dataset.siswaNama)"
+                                x-bind:disabled="students['{{ $siswa->id }}']?.kehadiran !== 'Hadir'"
+                                x-bind:class="students['{{ $siswa->id }}']?.kehadiran !== 'Hadir'
+                                    ? 'text-slate-300 dark:text-slate-600 border-slate-100 dark:border-slate-700 cursor-not-allowed opacity-50'
+                                    : (students['{{ $siswa->id }}']?.catatan ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 cursor-pointer' : 'text-slate-400 border-slate-200 dark:border-slate-600 hover:text-blue-500 hover:border-blue-200 cursor-pointer')"
+                                class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all duration-150 shrink-0">
+                            <flux:icon name="pencil-square" class="w-3.5 h-3.5" />
+                            <span>Catatan</span>
+                            <span x-show="students['{{ $siswa->id }}']?.catatan" class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>
+                        </button>
+
                     </div>
-                @endforeach
-            </div>
-
-            {{-- No students warning --}}
-            @if($this->siswaList->isEmpty())
-                <div class="p-4 text-center bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                    <flux:icon name="exclamation-triangle" class="mx-auto w-8 h-8 text-amber-500" />
-                    <p class="mt-2 text-sm font-medium text-amber-800 dark:text-amber-200">Tidak Ada Siswa</p>
-                    <p class="mt-1 text-xs text-amber-600 dark:text-amber-400">Kelas ini belum memiliki siswa.</p>
                 </div>
-            @endif
+            @empty
+                <div class="p-8 text-center bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                    <flux:icon name="exclamation-triangle" class="mx-auto w-8 h-8 text-amber-400 mb-2" />
+                    <p class="text-sm font-semibold text-amber-800 dark:text-amber-200">Tidak Ada Siswa</p>
+                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">Kelas ini belum memiliki siswa terdaftar.</p>
+                </div>
+            @endforelse
         </div>
 
-        {{-- Step 2 action buttons --}}
-        <div class="sticky bottom-0 -mx-4 px-4 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 lg:relative lg:mx-0 lg:px-0 lg:border-0 lg:bg-transparent">
-            <div class="flex gap-2">
-                <button wire:click="previousStep"
-                        wire:loading.attr="disabled"
-                        wire:loading.class="opacity-50 cursor-not-allowed"
-                        class="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-xl transition-colors">
-                    <flux:icon name="arrow-left" class="w-4 h-4" />
-                    <span>Kembali</span>
-                </button>
-                <button wire:click="save"
-                        wire:loading.attr="disabled"
-                        wire:loading.class="opacity-50 cursor-not-allowed"
-                        class="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        {{ $this->siswaList->isEmpty() ? 'disabled' : '' }}>
-                    <flux:icon wire:loading.remove wire:target="save" name="check" class="w-4 h-4" />
-                    <flux:icon wire:loading wire:target="save" name="arrow-path" class="w-4 h-4 animate-spin" />
-                    <span wire:loading.remove wire:target="save">Simpan</span>
-                    <span wire:loading wire:target="save">Menyimpan...</span>
-                </button>
-            </div>
+        {{-- Action buttons --}}
+        <div class="flex gap-3 pt-1 mt-4">
+            <button wire:click="previousStep"
+                    wire:loading.attr="disabled"
+                    class="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm rounded-xl transition-colors cursor-pointer">
+                <flux:icon name="arrow-left" class="w-4 h-4" />
+                <span>Kembali</span>
+            </button>
+            <button type="button"
+                    x-on:click="doSave()"
+                    x-bind:disabled="saving"
+                    x-bind:class="saving ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-700 cursor-pointer'"
+                    class="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl transition-colors shadow-sm"
+                    {{ $this->siswaList->isEmpty() ? 'disabled' : '' }}>
+                <flux:icon name="check" class="w-4 h-4" x-show="!saving" />
+                <svg class="w-4 h-4 animate-spin" x-show="saving" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <span x-text="saving ? 'Menyimpan...' : 'Simpan'"></span>
+            </button>
         </div>
+
+        {{-- ======================================================== --}}
+        {{-- Note Modal — Flux UI, state di Alpine                      --}}
+        {{-- ======================================================== --}}
+        <flux:modal name="note-modal" class="md:w-[460px]">
+            <div class="space-y-5">
+
+                {{-- Header: student identity --}}
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shrink-0 shadow-sm">
+                        <span class="text-base font-bold text-white" x-text="activeNote.nama ? activeNote.nama.charAt(0).toUpperCase() : '?'"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Catatan Observasi</p>
+                        <p class="text-base font-bold text-slate-900 dark:text-white leading-tight truncate" x-text="activeNote.nama"></p>
+                    </div>
+                </div>
+
+                <div class="h-px bg-slate-100 dark:bg-slate-700"></div>
+
+                {{-- Textarea --}}
+                <div class="relative">
+                    <textarea
+                        x-model="activeNote.catatan"
+                        x-on:keydown.ctrl.enter.prevent="saveNote()"
+                        rows="5"
+                        maxlength="500"
+                        placeholder="Tuliskan catatan observasi untuk siswa ini..."
+                        class="w-full px-4 py-3 text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl resize-none focus:outline-none focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all leading-relaxed placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                    ></textarea>
+                    <span class="absolute bottom-2.5 right-3 text-[10px] font-medium text-slate-300 dark:text-slate-600"
+                          x-text="(activeNote.catatan || '').length + '/500'"></span>
+                </div>
+
+                {{-- Clear link --}}
+                <div class="flex justify-between items-center -mt-2">
+                    <button type="button"
+                            x-show="activeNote.catatan"
+                            x-on:click="activeNote.catatan = ''"
+                            class="text-xs text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
+                        Hapus catatan
+                    </button>
+                    <p class="text-[10px] text-slate-300 dark:text-slate-600 ml-auto">Ctrl+Enter untuk simpan</p>
+                </div>
+
+                {{-- Actions --}}
+                <div class="flex gap-2 justify-end pt-1">
+                    <flux:modal.close>
+                        <flux:button variant="ghost" size="sm" class="cursor-pointer">Batal</flux:button>
+                    </flux:modal.close>
+                    <flux:button
+                        variant="primary"
+                        size="sm"
+                        x-on:click="saveNote()"
+                        class="cursor-pointer">
+                        <flux:icon name="check" class="w-3.5 h-3.5" />
+                        Simpan Catatan
+                    </flux:button>
+                </div>
+
+            </div>
+        </flux:modal>
+
+    </div>{{-- end x-data --}}
+
     @endif
 </div>

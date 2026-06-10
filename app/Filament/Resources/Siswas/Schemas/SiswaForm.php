@@ -84,6 +84,7 @@ final class SiswaForm
                                 ->label('Password')
                                 ->password()
                                 ->required(fn (string $operation): bool => $operation === 'create')
+                                ->revealable(filament()->arePasswordsRevealable())
                                 ->minLength(8)
                                 ->dehydrated(fn ($state): bool => filled($state))
                                 ->placeholder('Minimal 8 karakter')

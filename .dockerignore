@@ -17,3 +17,5 @@
 /*.log
 /.agents
 /skills-lock.json
+/graphify-out
+/.graphifyignore

@@ -195,6 +195,31 @@ trait HasLaporanComputed
     }
 
     /**
+     * Get per-activity detail records for the student report "Riwayat Aktivitas" table.
+     * Returns a paginated result for use with Flux UI table pagination.
+     */
+    #[Computed]
+    public function studentActivityData(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $contextId = $this->contextTahunAjaran?->id;
+        if ($this->siswaId === null || $this->siswaId === 0 || ! $contextId || $this->kelasId === null) {
+            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
+        }
+
+        return \App\Models\DetailAktivitas::where('siswa_id', $this->siswaId)
+            ->whereHas('aktivitasPembelajaran', function ($q) use ($contextId): void {
+                $q->where('kelas_id', $this->kelasId)
+                    ->whereHas('kelas', fn ($kq) => $kq->where('tahun_ajaran_id', $contextId));
+            })
+            ->with(['aktivitasPembelajaran.mataPelajaran', 'aktivitasPembelajaran'])
+            ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
+            ->orderByDesc('aktivitas_pembelajaran.tanggal')
+            ->orderByDesc('detail_aktivitas.id')
+            ->select('detail_aktivitas.*')
+            ->paginate(10);
+    }
+
+    /**
      * Get preview data for class report
      *
      * @return Collection<int, LaporanModel>

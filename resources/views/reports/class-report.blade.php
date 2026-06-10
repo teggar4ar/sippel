@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Kelas {{ $kelas->tingkat_kelas }}-{{ $kelas->grup_kelas }} - {{ $mataPelajaran->nama_mapel }}</title>
     <style>
-        /* Base styles */
+        /* Base styles — monochrome formal */
         * {
             margin: 0;
             padding: 0;
@@ -14,57 +14,54 @@
 
         body {
             font-family: 'Times New Roman', Times, serif;
-            font-size: 10px;
-            line-height: 1.3;
-            color: #333;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #000;
             background: #fff;
         }
 
         /* Page layout for A4 - DomPDF compatible */
-        /* A4: 210mm x 297mm = 595pt x 842pt */
-        /* Margins: 2.54cm = 72pt (1 inch) */
         .page {
             width: 100%;
             max-width: 595px;
-            padding: 20px 72px; /* Top/bottom: 20px, Left/right: 72px (2.54cm) */
+            padding: 20px 50px;
             margin: 0 auto;
             background: #fff;
         }
 
-        /* Header */
+        /* ── Header / Kop Surat ── */
         .header {
             text-align: center;
-            border-bottom: 3px double #333;
-            padding-bottom: 12px;
-            margin-bottom: 15px;
+            border-bottom: 3px double #000;
+            padding-bottom: 10px;
+            margin-bottom: 18px;
         }
 
         .school-name {
-            font-size: 14px;
+            font-size: 16pt;
             font-weight: bold;
             text-transform: uppercase;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
         .school-address {
-            font-size: 9px;
-            color: #555;
+            font-size: 11pt;
+            color: #000;
         }
 
+        /* ── Judul Dokumen ── */
         .report-title {
-            font-size: 12px;
+            font-size: 12pt;
             font-weight: bold;
             text-transform: uppercase;
-            margin-top: 12px;
-            letter-spacing: 1px;
+            text-align: center;
+            margin-bottom: 14px;
+            letter-spacing: 0.5px;
         }
 
-        /* Class info */
+        /* ── Metadata Info ── */
         .class-info {
-            margin-bottom: 12px;
-            padding: 8px;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
+            margin-bottom: 14px;
         }
 
         .class-info table {
@@ -72,146 +69,105 @@
         }
 
         .class-info td {
-            padding: 2px 5px;
+            padding: 1px 0;
             vertical-align: top;
-            font-size: 9px;
+            font-size: 12px;
         }
 
         .class-info .label {
-            width: 90px;
+            width: 100px;
+            font-weight: normal;
+        }
+
+        .class-info .colon {
+            width: 10px;
+            text-align: center;
+        }
+
+        .class-info .value {
             font-weight: bold;
         }
 
-        /* Report table */
+        /* ── Section title ── */
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        /* ── Summary table ── */
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 6px 10px;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        /* ── Report table ── */
         .report-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
-            font-size: 9px;
+            margin-bottom: 14px;
+            font-size: 10px;
         }
 
         .report-table th,
         .report-table td {
-            border: 1px solid #333;
-            padding: 4px 6px;
+            border: 1px solid #000;
+            padding: 3px 5px;
             text-align: left;
         }
 
         .report-table th {
-            background: #e8e8e8;
             font-weight: bold;
             text-align: center;
-            font-size: 9px;
+            font-size: 10px;
         }
 
         .report-table td.center {
             text-align: center;
         }
 
-        .report-table td.number {
-            text-align: right;
-        }
-
-        .report-table tr:nth-child(even) {
-            background: #fafafa;
-        }
-
-        /* Ranking colors */
-        .rank-1 {
-            background: #fef3c7 !important;
-        }
-
-        .rank-2 {
-            background: #e5e7eb !important;
-        }
-
-        .rank-3 {
-            background: #fed7aa !important;
-        }
-
-        /* Grade colors */
-        .grade-excellent {
-            color: #16a34a;
-            font-weight: bold;
-        }
-
-        .grade-good {
-            color: #2563eb;
-        }
-
-        .grade-fair {
-            color: #ca8a04;
-        }
-
-        .grade-poor {
-            color: #dc2626;
-            font-weight: bold;
-        }
-
-        /* Attendance colors */
-        .attendance-excellent {
-            color: #16a34a;
-        }
-
-        .attendance-good {
-            color: #2563eb;
-        }
-
-        .attendance-fair {
-            color: #ca8a04;
-        }
-
-        .attendance-poor {
-            color: #dc2626;
-        }
-
-        /* Summary section */
-        .summary {
-            margin-bottom: 12px;
-            padding: 10px;
-            background: #f0f7ff;
-            border: 1px solid #bdd7ff;
-        }
-
-        .summary-title {
+        /* ── Keterangan ── */
+        .keterangan {
+            margin-bottom: 20px;
             font-size: 10px;
-            font-weight: bold;
-            margin-bottom: 8px;
         }
 
-        .summary-grid {
-            display: table;
-            width: 100%;
+        .keterangan strong {
+            font-size: 10px;
         }
 
-        .summary-item {
-            display: table-cell;
-            width: 25%;
+        .keterangan ul {
+            margin-left: 15px;
+            margin-top: 4px;
+        }
+
+        .keterangan li {
+            margin-bottom: 2px;
+        }
+
+        /* ── Signature section ── */
+        .signature-wrapper {
             text-align: center;
-            padding: 6px;
+            margin-top: 10px;
+            font-size: 11px;
         }
 
-        .summary-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #1e40af;
-        }
-
-        .summary-label {
-            font-size: 8px;
-            color: #555;
-            margin-top: 2px;
-        }
-
-        /* Footer */
-        .footer {
-            margin-top: 15px;
+        .signature-wrapper .mengetahui {
+            margin-bottom: 6px;
         }
 
         .signature-section {
             display: table;
             width: 100%;
-            margin-top: 20px;
+            margin-top: 0;
         }
 
         .signature-box {
@@ -219,32 +175,23 @@
             width: 50%;
             text-align: center;
             vertical-align: top;
-            font-size: 9px;
+            font-size: 11px;
         }
 
-        .signature-line {
-            margin-top: 40px;
-            border-top: 1px solid #333;
-            width: 140px;
-            display: inline-block;
+        .signature-space {
+            height: 60px;
         }
 
         .signature-name {
-            margin-top: 4px;
-            font-weight: bold;
-            font-size: 9px;
+            font-size: 11px;
         }
 
-        .signature-nip {
-            font-size: 8px;
-            color: #555;
-        }
-
+        /* ── Footer watermarks ── */
         .generated-date {
             font-size: 8px;
             color: #666;
-            text-align: right;
-            margin-top: 12px;
+            text-align: center;
+            margin-top: 20px;
             padding-top: 6px;
             border-top: 1px solid #ddd;
         }
@@ -253,7 +200,7 @@
             font-size: 7px;
             color: #999;
             text-align: center;
-            margin-top: 8px;
+            margin-top: 4px;
             font-style: italic;
         }
 
@@ -271,160 +218,118 @@
             }
         }
 
-        /* Page break for multi-page */
         .page-break {
             page-break-after: always;
-        }
-
-        /* Statistics box */
-        .stats-box {
-            display: inline-block;
-            padding: 5px 10px;
-            margin: 2px;
-            border-radius: 3px;
-            font-size: 10px;
-        }
-
-        .stats-highest {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .stats-lowest {
-            background: #fee2e2;
-            color: #991b1b;
         }
     </style>
 </head>
 <body>
     <div class="page">
-        {{-- Header --}}
+
+        {{-- ═══ Kop Surat ═══ --}}
         <div class="header">
             <div class="school-name">{{ config('app.school_name', 'SMP Islam Terpadu Al-Itqon') }}</div>
-            <div class="school-address">{{ config('app.school_address', 'Kp. Kandang Panjang RT. 01/06 Desa Tajurhalang Kec. Tajurhalang Kab. Bogor.') }}</div>
-            <div class="report-title">Laporan Rekap Kelas per Mata Pelajaran</div>
+            <div class="school-address">{{ config('app.school_address', 'Kp. Kandang Panjang, Jl. M. Otong, RT 001/006, Desa Tajurhalang, Kec. Tajurhalang, Kab. Bogor') }}</div>
         </div>
 
-        {{-- Class Information --}}
+        {{-- ═══ Judul Dokumen ═══ --}}
+        <div class="report-title">Jurnal Rekap Kelas Per Mata Pelajaran</div>
+
+        {{-- ═══ Metadata Info (2 kolom) ═══ --}}
         <div class="class-info">
             <table>
                 <tr>
                     <td class="label">Kelas</td>
-                    <td>: {{ $kelas->tingkat_kelas }}-{{ $kelas->grup_kelas }}</td>
-                    <td class="label">Tahun Ajaran</td>
-                    <td>: {{ $tahunAjaran->nama_tahun }} - {{ $tahunAjaran->semester }}</td>
+                    <td class="colon">:</td>
+                    <td class="value">{{ $kelas->tingkat_kelas }}-{{ $kelas->grup_kelas }}</td>
+                    <td class="label">Wali Kelas</td>
+                    <td class="colon">:</td>
+                    <td class="value">{{ $kelas->waliKelas?->name ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td class="label">Mata Pelajaran</td>
-                    <td>: {{ $mataPelajaran->nama_mapel }}</td>
-                    <td class="label">Wali Kelas</td>
-                    <td>: {{ $kelas->waliKelas?->name ?? '-' }}</td>
+                    <td class="colon">:</td>
+                    <td class="value">{{ $mataPelajaran->nama_mapel }}</td>
+                    <td class="label">Guru Pengampu</td>
+                    <td class="colon">:</td>
+                    <td class="value">{{ $mataPelajaran->guru?->name ?? '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="label">Jumlah Siswa</td>
-                    <td>: {{ $laporanData->count() }} siswa</td>
-                    <td class="label">Guru Pengampu</td>
-                    <td>: {{ $mataPelajaran->guru?->name ?? '-' }}</td>
+                    <td class="label">Tahun Ajaran</td>
+                    <td class="colon">:</td>
+                    <td class="value">{{ $tahunAjaran->nama_tahun }} - {{ $tahunAjaran->semester }}</td>
+                    <td class="label">Total Siswa</td>
+                    <td class="colon">:</td>
+                    <td class="value">{{ $laporanData->count() }}</td>
                 </tr>
             </table>
         </div>
 
-        {{-- Class Summary --}}
+        {{-- ═══ Ringkasan Kelas ═══ --}}
         @if($laporanData->isNotEmpty())
             @php
                 $avgKehadiran = $laporanData->avg('rata_kehadiran');
-                $avgNilai = $laporanData->avg('rata_nilai');
                 $avgPartisipasi = $laporanData->avg('rata_partisipasi');
+                $totalPertemuan = $laporanData->max('total_kehadiran') ?? 0;
 
-                $highestNilai = $laporanData->max('rata_nilai');
-                $lowestNilai = $laporanData->min('rata_nilai');
-                $highestKehadiran = $laporanData->max('rata_kehadiran');
-                $lowestKehadiran = $laporanData->min('rata_kehadiran');
+                $partisipasiLabel = match(true) {
+                    $avgPartisipasi >= 3.5 => 'Sangat Aktif',
+                    $avgPartisipasi >= 2.5 => 'Aktif',
+                    $avgPartisipasi >= 1.5 => 'Cukup',
+                    default => 'Pasif',
+                };
             @endphp
-            <div class="summary">
-                <div class="summary-title">Ringkasan Kelas</div>
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <div class="summary-value">{{ number_format($avgKehadiran, 1) }}%</div>
-                        <div class="summary-label">Rata-rata Kehadiran</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-value">{{ number_format($avgNilai, 1) }}</div>
-                        <div class="summary-label">Rata-rata Nilai</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-value">{{ number_format($avgPartisipasi, 1) }}/5</div>
-                        <div class="summary-label">Rata-rata Partisipasi</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-value">{{ $laporanData->where('rata_nilai', '>=', 70)->count() }}</div>
-                        <div class="summary-label">Siswa Tuntas (≥70)</div>
-                    </div>
-                </div>
-                <div style="text-align: center; margin-top: 10px;">
-                    <span class="stats-box stats-highest">Nilai Tertinggi: {{ number_format($highestNilai, 1) }}</span>
-                    <span class="stats-box stats-lowest">Nilai Terendah: {{ number_format($lowestNilai, 1) }}</span>
-                </div>
-            </div>
+
+            <div class="section-title">Ringkasan Kelas</div>
+            <table class="summary-table">
+                <tr>
+                    <td>Rata-rata Kehadiran: <strong>{{ number_format($avgKehadiran, 1) }}%</strong></td>
+                    <td>Total Pertemuan: <strong>{{ $totalPertemuan }}</strong></td>
+                    <td>Keaktifan: <strong>{{ $partisipasiLabel }}</strong></td>
+                </tr>
+            </table>
         @endif
 
-        {{-- Student Details Table --}}
+        {{-- ═══ Tabel Rekapitulasi Siswa ═══ --}}
+        <div class="section-title">Tabel Rekapitulasi Siswa</div>
         <table class="report-table">
             <thead>
                 <tr>
-                    <th style="width: 30px;">No</th>
-                    <th style="width: 60px;">NIS</th>
+                    <th style="width: 25px;">No</th>
+                    <th style="width: 65px;">NIS</th>
                     <th>Nama Siswa</th>
-                    <th style="width: 50px;">%</th>
-                    <th style="width: 35px;">H</th>
-                    <th style="width: 35px;">I</th>
-                    <th style="width: 35px;">S</th>
-                    <th style="width: 35px;">A</th>
-                    <th style="width: 50px;">Nilai</th>
-                    <th style="width: 50px;">Part</th>
-                    <th style="width: 40px;">Rank</th>
+                    <th style="width: 50px;">% Kehadiran</th>
+                    <th style="width: 25px;">H</th>
+                    <th style="width: 25px;">I</th>
+                    <th style="width: 25px;">S</th>
+                    <th style="width: 25px;">A</th>
+                    <th style="width: 60px;">Keaktifan</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($laporanData as $index => $laporan)
                     @php
-                        $gradeClass = match(true) {
-                            $laporan->rata_nilai >= 85 => 'grade-excellent',
-                            $laporan->rata_nilai >= 70 => 'grade-good',
-                            $laporan->rata_nilai >= 55 => 'grade-fair',
-                            default => 'grade-poor',
-                        };
-
-                        $attendanceClass = match(true) {
-                            $laporan->rata_kehadiran >= 90 => 'attendance-excellent',
-                            $laporan->rata_kehadiran >= 75 => 'attendance-good',
-                            $laporan->rata_kehadiran >= 60 => 'attendance-fair',
-                            default => 'attendance-poor',
-                        };
-
-                        $rankClass = match($index + 1) {
-                            1 => 'rank-1',
-                            2 => 'rank-2',
-                            3 => 'rank-3',
-                            default => '',
+                        $labelPartisipasi = match(true) {
+                            $laporan->rata_partisipasi >= 4 => 'Sangat Aktif',
+                            $laporan->rata_partisipasi >= 3 => 'Aktif',
+                            $laporan->rata_partisipasi >= 2 => 'Cukup',
+                            default => 'Pasif',
                         };
                     @endphp
-                    <tr class="{{ $rankClass }}">
+                    <tr>
                         <td class="center">{{ $index + 1 }}</td>
                         <td class="center">{{ $laporan->siswa->nis }}</td>
                         <td>{{ $laporan->siswa->user->name }}</td>
-                        <td class="center {{ $attendanceClass }}">{{ number_format($laporan->rata_kehadiran, 1) }}%</td>
+                        <td class="center">{{ number_format($laporan->rata_kehadiran, 1) }}%</td>
                         <td class="center">{{ $laporan->hadir_count }}</td>
                         <td class="center">{{ $laporan->izin_count }}</td>
                         <td class="center">{{ $laporan->sakit_count }}</td>
                         <td class="center">{{ $laporan->alpa_count }}</td>
-                        <td class="center {{ $gradeClass }}">{{ number_format($laporan->rata_nilai, 1) }}</td>
-                        <td class="center">{{ $laporan->rata_partisipasi }}/5</td>
-                        <td class="center"><strong>{{ $index + 1 }}</strong></td>
+                        <td class="center">{{ $labelPartisipasi }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="11" class="center" style="padding: 20px; color: #666;">
+                        <td colspan="9" class="center" style="padding: 20px;">
                             Belum ada data laporan untuk kelas dan mata pelajaran ini
                         </td>
                     </tr>
@@ -432,29 +337,31 @@
             </tbody>
         </table>
 
-        {{-- Notes section --}}
-        <div style="margin-bottom: 15px; font-size: 10px;">
+        {{-- ═══ Keterangan ═══ --}}
+        <div class="keterangan">
             <strong>Keterangan:</strong>
-            <ul style="margin-left: 15px; margin-top: 5px;">
-                <li>Kehadiran: Persentase kehadiran siswa (Hijau ≥90%, Biru ≥75%, Kuning ≥60%, Merah &lt;60%)</li>
-                <li>Nilai: Rata-rata nilai aktivitas (Hijau ≥85, Biru ≥70, Kuning ≥55, Merah &lt;55)</li>
-                <li>Partisipasi: Tingkat keaktifan siswa (skala 1-5)</li>
-                <li>Siswa diurutkan berdasarkan nilai tertinggi</li>
+            <ul>
+                <li><strong>% Kehadiran</strong>: Persentase kehadiran siswa selama aktivitas pembelajaran berlangsung.</li>
+                <li><strong>Keaktifan</strong>: Tingkat rata-rata keaktifan siswa (Sangat Aktif / Aktif / Cukup / Pasif).</li>
             </ul>
         </div>
 
-        {{-- Footer with signatures --}}
+        {{-- ═══ Tanda Tangan ═══ --}}
         <div class="footer">
+            <div class="signature-wrapper">
+                <div class="mengetahui">Mengetahui,</div>
+            </div>
+
             <div class="signature-section">
                 <div class="signature-box">
                     <div>Guru Mata Pelajaran</div>
-                    <div class="signature-line"></div>
-                    <div class="signature-name">{{ $mataPelajaran->guru?->name ?? '.............................' }}</div>
+                    <div class="signature-space"></div>
+                    <div class="signature-name">(............................)</div>
                 </div>
                 <div class="signature-box">
                     <div>Wali Kelas</div>
-                    <div class="signature-line"></div>
-                    <div class="signature-name">{{ $kelas->waliKelas?->name ?? '.............................' }}</div>
+                    <div class="signature-space"></div>
+                    <div class="signature-name">(............................)</div>
                 </div>
             </div>
 
@@ -467,5 +374,6 @@
             </div>
         </div>
     </div>
+
 </body>
 </html>

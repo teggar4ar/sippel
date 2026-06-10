@@ -173,6 +173,35 @@ final class Siswa extends Model
         return $participation->isNotEmpty() ? round($participation->avg(), 2) : null;
     }
 
+    /**
+     * Convert a numeric average participation score to an observation label.
+     * Thresholds: <1.5 = Pasif, <2.5 = Cukup, <3.5 = Aktif, >=3.5 = Sangat Aktif.
+     *
+     * @param  int|null  $mataPelajaranId  Filter by specific subject (optional)
+     * @param  string|null  $startDate  Filter from date (optional)
+     * @param  string|null  $endDate  Filter to date (optional)
+     * @param  int|null  $tahunAjaranId  Filter by academic year (optional)
+     */
+    public function getAverageParticipationLabel(
+        ?int $mataPelajaranId = null,
+        ?string $startDate = null,
+        ?string $endDate = null,
+        ?int $tahunAjaranId = null
+    ): string {
+        $avg = $this->getAverageParticipation($mataPelajaranId, $startDate, $endDate, $tahunAjaranId);
+
+        if ($avg === null) {
+            return '-';
+        }
+
+        return match (true) {
+            $avg < 1.5 => 'Pasif',
+            $avg < 2.5 => 'Cukup',
+            $avg < 3.5 => 'Aktif',
+            default => 'Sangat Aktif',
+        };
+    }
+
     // =========================================================================
     // SCOPES - Query Helpers
     // =========================================================================
@@ -241,6 +270,39 @@ final class Siswa extends Model
     }
 
     /**
+     * Count consecutive "Hadir" attendance records starting from the most recent activity.
+     * The streak breaks as soon as a non-"Hadir" record is found.
+     *
+     * @param  int|null  $tahunAjaranId  Filter by academic year (optional)
+     */
+    public function getAttendanceStreak(?int $tahunAjaranId = null): int
+    {
+        $query = $this->detailAktivitas()
+            ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
+            ->whereNull('aktivitas_pembelajaran.deleted_at')
+            ->orderByDesc('aktivitas_pembelajaran.tanggal')
+            ->orderByDesc('detail_aktivitas.id');
+
+        if ($tahunAjaranId !== null && $tahunAjaranId !== 0) {
+            $query->join('kelas', 'aktivitas_pembelajaran.kelas_id', '=', 'kelas.id')
+                ->where('kelas.tahun_ajaran_id', $tahunAjaranId);
+        }
+
+        $records = $query->select('detail_aktivitas.kehadiran')->get();
+
+        $streak = 0;
+        foreach ($records as $record) {
+            if ($record->kehadiran === KehadiranStatus::Hadir) {
+                $streak++;
+            } else {
+                break;
+            }
+        }
+
+        return $streak;
+    }
+
+    /**
      * Get the attendance percentage attribute (all activities).
      */
     protected function attendancePercentage(): Attribute
@@ -267,6 +329,17 @@ final class Siswa extends Model
     {
         return Attribute::make(
             get: fn (): ?float => $this->getAverageParticipation(),
+        );
+    }
+
+    /**
+     * Get the average participation as a human-readable label (all activities).
+     * Access via $siswa->average_participation_label.
+     */
+    protected function averageParticipationLabel(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => $this->getAverageParticipationLabel(),
         );
     }
 

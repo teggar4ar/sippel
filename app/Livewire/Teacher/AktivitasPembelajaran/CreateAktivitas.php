@@ -18,6 +18,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use RuntimeException;
 
 #[Layout('layouts.teacher')]
 #[Title('Buat Aktivitas - SIPPEL Guru')]
@@ -252,6 +253,28 @@ final class CreateAktivitas extends Component
         }
     }
 
+    /**
+     * Accept the full detailAktivitas payload from Alpine (client-side state)
+     * and immediately save — eliminates multiple $wire.set() round-trips.
+     *
+     * @param  array<int|string, array{kehadiran: string|null, partisipasi: int|null, catatan: string}>  $detailAktivitas
+     */
+    public function saveWithDetail(array $detailAktivitas): void
+    {
+        $validSiswaIds = array_keys($this->initializeDetailAktivitasData());
+
+        $invalidIds = array_diff(array_keys($detailAktivitas), $validSiswaIds);
+        if ($invalidIds !== []) {
+            report(new RuntimeException('Invalid siswa_id(s) in saveWithDetail: '.implode(', ', $invalidIds)));
+            session()->flash('error', 'Data tidak valid. Silakan muat ulang halaman.');
+
+            return;
+        }
+
+        $this->detailAktivitas = $detailAktivitas;
+        $this->save();
+    }
+
     public function save(): void
     {
         $contextTahunAjaran = $this->validateSaveContext();
@@ -281,6 +304,8 @@ final class CreateAktivitas extends Component
                 ]);
 
                 $this->createDetailRecords($aktivitas);
+                $this->clearStudentStreakCache(array_keys($this->detailAktivitas), $aktivitas->kelas?->tahun_ajaran_id);
+                $this->clearStudentTopMapelCache(array_keys($this->detailAktivitas), $aktivitas->kelas?->tahun_ajaran_id);
             });
         } catch (Exception $e) {
             report($e);
@@ -343,11 +368,11 @@ final class CreateAktivitas extends Component
             $kehadiran = mb_strtolower((string) $detail['kehadiran']);
             $isHadir = $kehadiran === 'hadir';
 
-            $nilai = null;
             $partisipasi = null;
-            if ($isHadir) {
-                $nilai = $detail['nilai'] ?: null;
-                $partisipasi = $detail['partisipasi'] ?: null;
+            $nilai = null;
+            if ($isHadir && $detail['partisipasi']) {
+                $partisipasi = (int) $detail['partisipasi'];
+                $nilai = $this->resolveNilaiFromPartisipasi($partisipasi);
             }
 
             DetailAktivitas::create([
@@ -368,6 +393,34 @@ final class CreateAktivitas extends Component
     {
         $contextYear = TahunAjaran::getContext();
         Cache::forget('teacher_dashboard_stats_'.$userId.'_'.($contextYear?->id ?? 'none'));
+    }
+
+    /**
+     * Bust cached student streaks for the given siswa IDs.
+     *
+     * @param  array<int|string>  $siswaIds
+     */
+    private function clearStudentStreakCache(array $siswaIds, ?int $tahunAjaranId): void
+    {
+        foreach ($siswaIds as $siswaId) {
+            $id = (int) $siswaId;
+            Cache::forget('student_streak_'.$id.'_'.($tahunAjaranId ?? 'none'));
+            Cache::forget('student_streak_'.$id.'_none');
+        }
+    }
+
+    /**
+     * Bust cached student top-performa mapel data for the given siswa IDs.
+     *
+     * @param  array<int|string>  $siswaIds
+     */
+    private function clearStudentTopMapelCache(array $siswaIds, ?int $tahunAjaranId): void
+    {
+        foreach ($siswaIds as $siswaId) {
+            $id = (int) $siswaId;
+            Cache::forget('student_top_mapel_'.$id.'_'.($tahunAjaranId ?? 'none'));
+            Cache::forget('student_top_mapel_'.$id.'_none');
+        }
     }
 
     private function rulesForStep1(): array
@@ -405,20 +458,49 @@ final class CreateAktivitas extends Component
         ];
     }
 
+    /**
+     * Map a participation level (1–4) to its corresponding fixed observation score.
+     * Pasif=60, Cukup=75, Aktif=85, Sangat Aktif=95.
+     */
+    private function resolveNilaiFromPartisipasi(int $partisipasi): ?int
+    {
+        return match ($partisipasi) {
+            1 => 60,
+            2 => 75,
+            3 => 85,
+            4 => 95,
+            default => null,
+        };
+    }
+
+    /**
+     * Build the default detailAktivitas array for all students in the selected class
+     * without mutating $this->detailAktivitas.
+     *
+     * @return array<int, array{siswa_id: int, kehadiran: null, nilai: null, partisipasi: null, catatan: string}>
+     */
+    private function initializeDetailAktivitasData(): array
+    {
+        $data = [];
+        foreach ($this->siswaList as $siswa) {
+            $data[$siswa->id] = [
+                'siswa_id' => $siswa->id,
+                'kehadiran' => null,
+                'nilai' => null,
+                'partisipasi' => null,
+                'catatan' => '',
+            ];
+        }
+
+        return $data;
+    }
+
     private function initializeDetailAktivitas(): void
     {
         if ($this->detailAktivitas !== []) {
             return; // Already initialized
         }
 
-        foreach ($this->siswaList as $siswa) {
-            $this->detailAktivitas[$siswa->id] = [
-                'siswa_id' => $siswa->id,
-                'kehadiran' => null, // No default - teacher must select
-                'nilai' => null,
-                'partisipasi' => null,
-                'catatan' => '',
-            ];
-        }
+        $this->detailAktivitas = $this->initializeDetailAktivitasData();
     }
 }

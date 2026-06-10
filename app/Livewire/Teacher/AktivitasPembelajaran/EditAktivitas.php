@@ -13,10 +13,12 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use RuntimeException;
 
 #[Layout('layouts.teacher')]
 #[Title('Edit Aktivitas - SIPPEL Guru')]
@@ -135,6 +137,47 @@ final class EditAktivitas extends Component
         }
     }
 
+    /**
+     * Accept the full detailAktivitas payload from Alpine (client-side state)
+     * and immediately save — eliminates multiple $wire.set() round-trips.
+     *
+     * @param  array<int|string, array{kehadiran: string|null, partisipasi: int|null, catatan: string}>  $detailAktivitas
+     */
+    public function saveWithDetail(array $detailAktivitas): void
+    {
+        $this->loadDetailAktivitas();
+        $validSiswaIds = array_keys($this->detailAktivitas);
+
+        $invalidIds = array_diff(array_keys($detailAktivitas), $validSiswaIds);
+        if ($invalidIds !== []) {
+            report(new RuntimeException('Invalid siswa_id(s) in saveWithDetail: '.implode(', ', $invalidIds)));
+            session()->flash('error', 'Data tidak valid. Silakan muat ulang halaman.');
+
+            return;
+        }
+
+        $detailAktivitasRules = array_filter(
+            $this->rules(),
+            fn (string $key): bool => str_starts_with($key, 'detailAktivitas'),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        $validator = Validator::make(
+            ['detailAktivitas' => $detailAktivitas],
+            $detailAktivitasRules,
+            $this->messages()
+        );
+
+        if ($validator->fails()) {
+            session()->flash('error', $validator->errors()->first());
+
+            return;
+        }
+
+        $this->detailAktivitas = $detailAktivitas;
+        $this->save();
+    }
+
     public function save(): void
     {
         // Re-verify the context guard (mirrors the mount() check).
@@ -234,11 +277,11 @@ final class EditAktivitas extends Component
             $kehadiran = mb_strtolower((string) $detail['kehadiran']);
             $isHadir = $kehadiran === 'hadir';
 
-            $nilai = null;
             $partisipasi = null;
-            if ($isHadir) {
-                $nilai = $detail['nilai'] ?: null;
-                $partisipasi = $detail['partisipasi'] ?: null;
+            $nilai = null;
+            if ($isHadir && $detail['partisipasi']) {
+                $partisipasi = (int) $detail['partisipasi'];
+                $nilai = $this->resolveNilaiFromPartisipasi($partisipasi);
             }
 
             DetailAktivitas::updateOrCreate(
@@ -259,6 +302,9 @@ final class EditAktivitas extends Component
         DetailAktivitas::where('aktivitas_pembelajaran_id', $this->aktivitas->id)
             ->whereNotIn('siswa_id', array_keys($this->detailAktivitas))
             ->delete();
+
+        $this->clearStudentStreakCache(array_keys($this->detailAktivitas), $this->aktivitas->kelas?->tahun_ajaran_id);
+        $this->clearStudentTopMapelCache(array_keys($this->detailAktivitas), $this->aktivitas->kelas?->tahun_ajaran_id);
     }
 
     /**
@@ -268,6 +314,49 @@ final class EditAktivitas extends Component
     {
         $contextYear = TahunAjaran::getContext();
         Cache::forget('teacher_dashboard_stats_'.Auth::id().'_'.($contextYear?->id ?? 'none'));
+    }
+
+    /**
+     * Bust cached student streaks for the given siswa IDs.
+     *
+     * @param  array<int|string>  $siswaIds
+     */
+    private function clearStudentStreakCache(array $siswaIds, ?int $tahunAjaranId): void
+    {
+        foreach ($siswaIds as $siswaId) {
+            $id = (int) $siswaId;
+            Cache::forget('student_streak_'.$id.'_'.($tahunAjaranId ?? 'none'));
+            Cache::forget('student_streak_'.$id.'_none');
+        }
+    }
+
+    /**
+     * Bust cached student top-performa mapel data for the given siswa IDs.
+     *
+     * @param  array<int|string>  $siswaIds
+     */
+    private function clearStudentTopMapelCache(array $siswaIds, ?int $tahunAjaranId): void
+    {
+        foreach ($siswaIds as $siswaId) {
+            $id = (int) $siswaId;
+            Cache::forget('student_top_mapel_'.$id.'_'.($tahunAjaranId ?? 'none'));
+            Cache::forget('student_top_mapel_'.$id.'_none');
+        }
+    }
+
+    /**
+     * Map a participation level (1–4) to its corresponding fixed observation score.
+     * Pasif=60, Cukup=75, Aktif=85, Sangat Aktif=95.
+     */
+    private function resolveNilaiFromPartisipasi(int $partisipasi): ?int
+    {
+        return match ($partisipasi) {
+            1 => 60,
+            2 => 75,
+            3 => 85,
+            4 => 95,
+            default => null,
+        };
     }
 
     private function loadDetailAktivitas(): void

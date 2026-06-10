@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Tracks a student's class enrollment for each academic year.
@@ -38,5 +39,42 @@ final class SiswaKelasHistory extends Model
     public function tahunAjaran(): BelongsTo
     {
         return $this->belongsTo(TahunAjaran::class);
+    }
+
+    protected static function booted(): void
+    {
+        self::created(function (self $history): void {
+            $history->clearTeacherDashboardCache($history->kelas_id, $history->tahun_ajaran_id);
+        });
+
+        self::updated(function (self $history): void {
+            $originalKelasId = $history->getOriginal('kelas_id');
+            $originalTahunAjaranId = $history->getOriginal('tahun_ajaran_id');
+
+            $history->clearTeacherDashboardCache($originalKelasId, $originalTahunAjaranId);
+            $history->clearTeacherDashboardCache($history->kelas_id, $history->tahun_ajaran_id);
+        });
+
+        self::deleted(function (self $history): void {
+            $history->clearTeacherDashboardCache($history->kelas_id, $history->tahun_ajaran_id);
+        });
+    }
+
+    private function clearTeacherDashboardCache(?int $kelasId, ?int $tahunAjaranId): void
+    {
+        if ($kelasId === null || $kelasId === 0 || ($tahunAjaranId === null || $tahunAjaranId === 0)) {
+            return;
+        }
+
+        $guruIds = MataPelajaran::query()
+            ->where('kelas_id', $kelasId)
+            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaranId))
+            ->pluck('guru_id')
+            ->filter()
+            ->unique();
+
+        foreach ($guruIds as $guruId) {
+            Cache::forget('teacher_dashboard_stats_'.$guruId.'_'.$tahunAjaranId);
+        }
     }
 }

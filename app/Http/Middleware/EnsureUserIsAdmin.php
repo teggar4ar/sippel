@@ -19,8 +19,8 @@ final class EnsureUserIsAdmin
 {
     /** @var array<string,string> Role → redirect path for non-admin users. */
     private const array NON_ADMIN_REDIRECTS = [
-        'teacher' => '/teacher',
-        'student' => '/student',
+        'teacher' => '/guru',
+        'student' => '/siswa',
     ];
 
     public function handle(Request $request, Closure $next): Response

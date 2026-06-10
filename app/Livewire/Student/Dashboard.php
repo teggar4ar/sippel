@@ -4,32 +4,81 @@ declare(strict_types=1);
 
 namespace App\Livewire\Student;
 
+use App\Enums\KehadiranStatus;
+use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
+use App\Models\TahunAjaran;
 use App\Models\User;
-use Illuminate\Contracts\View\View;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 #[Layout('layouts.student')]
 #[Title('Dashboard - SIPPEL Siswa')]
 final class Dashboard extends Component
 {
+    #[Url(as: 'dari')]
+    public ?string $tanggalMulai = null;
+
+    #[Url(as: 'sampai')]
+    public ?string $tanggalSelesai = null;
+
+    public string $filterCepat = 'semester';
+
     public function mount(): void
     {
         /** @var User|null $user */
         $user = Auth::user();
 
-        // Ensure only students can access
         if (! $user || ! $user->hasRole('student')) {
             abort(403);
         }
+
+        $tahunAjaran = TahunAjaran::getContext();
+        if ($tahunAjaran instanceof TahunAjaran) {
+            $this->tanggalMulai = $tahunAjaran->tanggal_mulai->toDateString();
+            $this->tanggalSelesai = $tahunAjaran->tanggal_selesai->toDateString();
+        }
+    }
+
+    public function updatedFilterCepat(string $value): void
+    {
+        $tahunAjaran = TahunAjaran::getContext();
+
+        switch ($value) {
+            case 'semester':
+                if ($tahunAjaran instanceof TahunAjaran) {
+                    $this->tanggalMulai = $tahunAjaran->tanggal_mulai->toDateString();
+                    $this->tanggalSelesai = $tahunAjaran->tanggal_selesai->toDateString();
+                }
+                break;
+            case 'bulan':
+                $this->tanggalMulai = now()->startOfMonth()->toDateString();
+                $this->tanggalSelesai = now()->toDateString();
+                break;
+            case 'minggu':
+                $this->tanggalMulai = now()->startOfWeek()->toDateString();
+                $this->tanggalSelesai = now()->toDateString();
+                break;
+        }
+    }
+
+    public function updatedTanggalMulai(): void
+    {
+        $this->filterCepat = '';
+    }
+
+    public function updatedTanggalSelesai(): void
+    {
+        $this->filterCepat = '';
     }
 
     #[Computed]
@@ -42,19 +91,218 @@ final class Dashboard extends Component
     }
 
     #[Computed]
-    public function performancePerMapel(): Collection
+    public function contextKelas(): ?\App\Models\Kelas
+    {
+        $siswa = $this->siswa();
+        if (! $siswa instanceof Siswa) {
+            return null;
+        }
+
+        $contextTahunAjaran = TahunAjaran::getContext();
+
+        return $contextTahunAjaran instanceof TahunAjaran
+            ? $siswa->getKelasForTahunAjaran($contextTahunAjaran->id)
+            : $siswa->kelas;
+    }
+
+    #[Computed]
+    public function stats(): array
+    {
+        $siswa = $this->siswa();
+        if (! $siswa instanceof Siswa) {
+            return ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpa' => 0];
+        }
+
+        $contextTahunAjaran = TahunAjaran::getContext();
+        $cacheKey = 'student_dashboard_stats_'
+            .$siswa->id.'_'
+            .($contextTahunAjaran?->id ?? 'none').'_'
+            .($this->tanggalMulai ?? 'none').'_'
+            .($this->tanggalSelesai ?? 'none');
+
+        return Cache::remember($cacheKey, 300, function () use ($siswa, $contextTahunAjaran): array {
+            $query = DetailAktivitas::where('siswa_id', $siswa->id)
+                ->whereHas('aktivitasPembelajaran', function ($q) use ($contextTahunAjaran): void {
+                    $q->whereNull('deleted_at')
+                        ->when($contextTahunAjaran, fn ($q) => $q->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
+                        ->when($this->tanggalMulai, fn ($q) => $q->where('tanggal', '>=', $this->tanggalMulai))
+                        ->when($this->tanggalSelesai, fn ($q) => $q->where('tanggal', '<=', $this->tanggalSelesai));
+                });
+
+            return [
+                'hadir' => (clone $query)->where('kehadiran', KehadiranStatus::Hadir)->count(),
+                'izin' => (clone $query)->where('kehadiran', KehadiranStatus::Izin)->count(),
+                'sakit' => (clone $query)->where('kehadiran', KehadiranStatus::Sakit)->count(),
+                'alpa' => (clone $query)->where('kehadiran', KehadiranStatus::Alpa)->count(),
+            ];
+        });
+    }
+
+    #[Computed]
+    public function heatmapData(): array
+    {
+        $siswa = $this->siswa();
+        if (! $siswa instanceof Siswa) {
+            return ['weeks' => [], 'total_columns' => 0, 'enrolled' => false];
+        }
+
+        $contextTahunAjaran = TahunAjaran::getContext();
+        if (! $contextTahunAjaran instanceof TahunAjaran) {
+            return ['weeks' => [], 'total_columns' => 0, 'enrolled' => false];
+        }
+
+        $kelas = $siswa->getKelasForTahunAjaran($contextTahunAjaran->id);
+        if (! $kelas instanceof \App\Models\Kelas) {
+            return ['weeks' => [], 'total_columns' => 0, 'enrolled' => false];
+        }
+
+        $startDate = $contextTahunAjaran->tanggal_mulai->copy()->startOfDay();
+        $endDate = $contextTahunAjaran->tanggal_selesai->copy()->startOfDay();
+        $startDateStr = $startDate->format('Y-m-d');
+        $endDateStr = $endDate->format('Y-m-d');
+
+        $aktivitasByDate = AktivitasPembelajaran::where('kelas_id', $kelas->id)
+            ->whereBetween('tanggal', [$startDateStr, $endDateStr])
+            ->whereNull('deleted_at')
+            ->with(['detailAktivitas' => fn ($q) => $q->where('siswa_id', $siswa->id)])
+            ->orderBy('tanggal')
+            ->get()
+            ->groupBy(fn ($a) => $a->tanggal->format('Y-m-d'));
+
+        $weeks = [];
+        $seenMonths = [];
+
+        // Anchor to Monday of the start-date week; extend to Sunday of the end-date week
+        // so every column is a complete Mon–Fri block with blank padding on both ends.
+        $weekStart = $startDate->copy()->startOfWeek(Carbon::MONDAY);
+        $weekEnd = $endDate->copy()->endOfWeek(Carbon::SUNDAY);
+        $currentDate = $weekStart->copy();
+        $todayStr = now()->startOfDay()->format('Y-m-d');
+
+        $currentWeekDays = [];
+        $weekMonthSet = [];
+        $iterations = 0;
+
+        while ($currentDate->lte($weekEnd)) {
+            $iterations++;
+            if ($iterations > 750) {
+                break;
+            }
+
+            $isWeekend = in_array($currentDate->dayOfWeek, [0, 6], true);
+
+            if ($isWeekend) {
+                $currentDate = $currentDate->addDay();
+
+                continue;
+            }
+
+            $dateStr = $currentDate->format('Y-m-d');
+            $inRange = $dateStr >= $startDateStr && $dateStr <= $endDateStr;
+
+            $dayData = [
+                'date_string' => $dateStr,
+                'day_name' => $currentDate->translatedFormat('D'),
+                'formatted_date' => '',
+            ];
+
+            if (! $inRange) {
+                $dayData['status'] = 'blank';
+            } elseif ($dateStr > $todayStr) {
+                $dayData['status'] = 'future';
+                $dayData['formatted_date'] = $currentDate->translatedFormat('d M Y');
+            } else {
+                $dayData['formatted_date'] = $currentDate->translatedFormat('d M Y');
+                $aktivitasGroup = $aktivitasByDate->get($dateStr);
+
+                if (! $aktivitasGroup || $aktivitasGroup->isEmpty()) {
+                    $dayData['status'] = 'no_activity';
+                } else {
+                    // Merge detail records from ALL activities sharing this date
+                    // (one AktivitasPembelajaran per subject — keyBy would have dropped all but one).
+                    $mergedDetails = collect();
+                    foreach ($aktivitasGroup as $ap) {
+                        foreach ($ap->detailAktivitas as $detail) {
+                            $mergedDetails->push($detail);
+                        }
+                    }
+
+                    if ($mergedDetails->isEmpty()) {
+                        $dayData['status'] = 'no_activity';
+                    } else {
+                        $allHadir = $mergedDetails->every(
+                            fn ($d): bool => $d->kehadiran === KehadiranStatus::Hadir
+                        );
+                        $noneHadir = $mergedDetails->every(
+                            fn ($d): bool => $d->kehadiran !== KehadiranStatus::Hadir
+                        );
+
+                        if ($allHadir) {
+                            $dayData['status'] = 'hadir';
+                        } elseif ($noneHadir) {
+                            $dayData['status'] = 'absent';
+                        } else {
+                            $dayData['status'] = 'incomplete';
+                        }
+                    }
+                }
+            }
+
+            // Track which month this day belongs to (only for in-range days).
+            if ($inRange) {
+                $month = $currentDate->translatedFormat('F');
+                $weekMonthSet[$month] = true;
+            }
+
+            $currentWeekDays[] = $dayData;
+
+            // Finalize the week once we have 5 weekday slots.
+            if (count($currentWeekDays) === 5) {
+                $monthLabel = null;
+                $isFirstWeekOfMonth = false;
+
+                foreach (array_keys($weekMonthSet) as $month) {
+                    if (! isset($seenMonths[$month])) {
+                        $seenMonths[$month] = true;
+                        $monthLabel = $month;
+                        $isFirstWeekOfMonth = true;
+                        break;
+                    }
+                }
+
+                $weeks[] = [
+                    'days' => $currentWeekDays,
+                    'month_label' => $monthLabel,
+                    'is_first_week_of_month' => $isFirstWeekOfMonth,
+                ];
+
+                $currentWeekDays = [];
+                $weekMonthSet = [];
+            }
+
+            $currentDate = $currentDate->addDay();
+        }
+
+        return [
+            'weeks' => $weeks,
+            'total_columns' => count($weeks),
+            'enrolled' => true,
+        ];
+    }
+
+    #[Computed]
+    public function mataPelajaranList(): Collection
     {
         $siswa = $this->siswa();
         if (! $siswa instanceof Siswa) {
             return collect();
         }
 
-        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
-        $cacheKey = 'student_performance_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none');
+        $contextTahunAjaran = TahunAjaran::getContext();
+        $cacheKey = 'student_all_mapel_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none');
 
         return Cache::remember($cacheKey, 300, function () use ($siswa, $contextTahunAjaran) {
-            // Get student's historical class for the context year
-            $kelasId = $contextTahunAjaran instanceof \App\Models\TahunAjaran
+            $kelasId = $contextTahunAjaran instanceof TahunAjaran
                 ? $siswa->getKelasForTahunAjaran($contextTahunAjaran->id)?->id
                 : $siswa->kelas_id;
 
@@ -62,66 +310,31 @@ final class Dashboard extends Component
                 return collect();
             }
 
-            // Get all subjects for student's class in the context year
-            $subjects = MataPelajaran::where('kelas_id', $kelasId)->get();
+            $subjects = MataPelajaran::where('kelas_id', $kelasId)->orderBy('nama_mapel')->get();
 
-            return $subjects->map(function (MataPelajaran $mapel) use ($siswa, $contextTahunAjaran): array {
-                // Calculate average only from context year and non-deleted records
-                $avgNilai = DetailAktivitas::where('siswa_id', $siswa->id)
-                    ->whereNull('deleted_at')
-                    ->whereHas('aktivitasPembelajaran', function ($q) use ($mapel, $contextTahunAjaran): void {
-                        $q->where('mata_pelajaran_id', $mapel->id)
-                            ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
-                            ->whereNull('deleted_at');
-                    })
-                    ->whereNotNull('nilai')
-                    ->avg('nilai');
+            if ($subjects->isEmpty()) {
+                return collect();
+            }
 
-                return [
-                    'nama_mapel' => $mapel->nama_mapel,
-                    'avg_nilai' => $avgNilai ?? 0,
-                ];
-            })->filter(fn (array $data): bool => $data['avg_nilai'] > 0)
-                ->sortByDesc('avg_nilai')
-                ->take(5)
-                ->values();
+            $mapelIds = $subjects->pluck('id')->all();
+
+            $allDetails = DetailAktivitas::where('siswa_id', $siswa->id)
+                ->whereNull('deleted_at')
+                ->whereHas('aktivitasPembelajaran', function ($q) use ($mapelIds, $contextTahunAjaran): void {
+                    $q->whereIn('mata_pelajaran_id', $mapelIds)
+                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
+                        ->whereNull('deleted_at');
+                })
+                ->with(['aktivitasPembelajaran' => fn ($q) => $q->select('id', 'mata_pelajaran_id')])
+                ->get()
+                ->groupBy(fn ($d) => $d->aktivitasPembelajaran->mata_pelajaran_id);
+
+            return $subjects->map(function (MataPelajaran $mapel) use ($allDetails): array {
+                $details = $allDetails->get($mapel->id, collect());
+
+                return $this->computeMapelStatsFromCollection($mapel, $details);
+            })->values();
         });
-    }
-
-    #[Computed]
-    public function motivationalMessage(): array
-    {
-        $siswa = $this->siswa();
-        if (! $siswa instanceof Siswa) {
-            return ['text' => 'Selamat datang di SIPPEL! 👋', 'variant' => 'info'];
-        }
-
-        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
-        $attendance = $siswa->getAttendancePercentage(null, null, null, $contextTahunAjaran?->id);
-        $grade = $siswa->getAverageGrade(null, null, null, $contextTahunAjaran?->id) ?? 0;
-
-        return match (true) {
-            $attendance >= 90 && $grade >= 85 => [
-                'text' => 'Luar biasa! Kamu siswa teladan! 🌟',
-                'variant' => 'success',
-            ],
-            $attendance >= 90 => [
-                'text' => 'Kehadiran sempurna! Pertahankan! ✨',
-                'variant' => 'info',
-            ],
-            $grade >= 85 => [
-                'text' => 'Nilai bagus! Terus semangat! 📚',
-                'variant' => 'success',
-            ],
-            $attendance >= 75 && $grade >= 70 => [
-                'text' => 'Kamu di jalur yang tepat! Pertahankan! 👍',
-                'variant' => 'info',
-            ],
-            default => [
-                'text' => 'Ayo tingkatkan belajar! Kamu pasti bisa! 💪',
-                'variant' => 'warning',
-            ],
-        };
     }
 
     #[Computed]
@@ -132,123 +345,72 @@ final class Dashboard extends Component
             return 0;
         }
 
-        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
+        $contextTahunAjaran = TahunAjaran::getContext();
         $cacheKey = 'student_streak_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none');
 
-        return Cache::remember($cacheKey, 300, function () use ($siswa, $contextTahunAjaran): int {
-            // Get all activities for this student ordered by date desc using DB query
-            $query = \Illuminate\Support\Facades\DB::table('detail_aktivitas')
-                ->where('detail_aktivitas.siswa_id', $siswa->id)
-                ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
-                ->whereNull('aktivitas_pembelajaran.deleted_at')
-                ->whereNull('detail_aktivitas.deleted_at');
-
-            if ($contextTahunAjaran instanceof \App\Models\TahunAjaran) {
-                $query->join('kelas', 'aktivitas_pembelajaran.kelas_id', '=', 'kelas.id')
-                    ->where('kelas.tahun_ajaran_id', $contextTahunAjaran->id);
-            }
-
-            /** @var Collection<int, object{kehadiran: string, tanggal: string}> $activities */
-            $activities = $query->orderByDesc('aktivitas_pembelajaran.tanggal')
-                ->select('detail_aktivitas.kehadiran', 'aktivitas_pembelajaran.tanggal')
-                ->get();
-
-            if ($activities->isEmpty()) {
-                return 0;
-            }
-
-            return $this->calculateStreakFromActivities($activities);
-        });
+        return Cache::remember($cacheKey, 300, fn (): int => $siswa->getAttendanceStreak($contextTahunAjaran?->id));
     }
 
-    public function render(): View
+    #[Computed]
+    public function motivationalMessage(): array
     {
         $siswa = $this->siswa();
-        $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
-
-        $totalAktivitas = 0;
-        $recentAktivitas = collect();
-        $attendancePercentage = 0;
-        $averageGrade = 0;
-        $averageParticipation = 0;
-
-        if ($siswa instanceof Siswa) {
-            $totalAktivitas = $siswa->detailAktivitas()
-                ->when($contextTahunAjaran, fn ($q) => $q->whereHas('aktivitasPembelajaran.kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)))
-                ->count();
-
-            // Get recent activities (last 5)
-            $recentAktivitas = DetailAktivitas::query()
-                ->where('siswa_id', $siswa->id)
-                ->with(['aktivitasPembelajaran.mataPelajaran'])
-                ->whereHas('aktivitasPembelajaran', function ($q) use ($contextTahunAjaran): void {
-                    $q->whereNull('deleted_at')
-                        ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
-                })
-                ->orderByDesc(
-                    DetailAktivitas::query()
-                        ->select('tanggal')
-                        ->from('aktivitas_pembelajaran')
-                        ->whereColumn('aktivitas_pembelajaran.id', 'detail_aktivitas.aktivitas_pembelajaran_id')
-                        ->limit(1)
-                )
-                ->limit(5)
-                ->get();
-
-            // Context-aware stats for view
-            $attendancePercentage = $siswa->getAttendancePercentage(null, null, null, $contextTahunAjaran?->id);
-            $averageGrade = $siswa->getAverageGrade(null, null, null, $contextTahunAjaran?->id) ?? 0;
-            $averageParticipation = $siswa->getAverageParticipation(null, null, null, $contextTahunAjaran?->id) ?? 0;
+        if (! $siswa instanceof Siswa) {
+            return ['text' => 'Selamat datang di SIPPEL! 👋', 'variant' => 'info'];
         }
 
-        // Resolve the class for the selected academic year via kelasHistory,
-        // falling back to the student's current class when no context is set.
-        $contextKelas = null;
-        if ($siswa instanceof Siswa) {
-            $contextKelas = $contextTahunAjaran instanceof \App\Models\TahunAjaran
-                ? $siswa->getKelasForTahunAjaran($contextTahunAjaran->id)
-                : $siswa->kelas;
-        }
+        $contextTahunAjaran = TahunAjaran::getContext();
+        $attendance = $siswa->getAttendancePercentage(null, null, null, $contextTahunAjaran?->id);
+        $avgPartisipasi = $siswa->getAverageParticipation(null, null, null, $contextTahunAjaran?->id) ?? 0;
 
-        return view('livewire.student.dashboard', [
-            'siswa' => $siswa,
-            'contextKelas' => $contextKelas,
-            'totalAktivitas' => $totalAktivitas,
-            'recentAktivitas' => $recentAktivitas,
-            'attendancePercentage' => $attendancePercentage,
-            'averageGrade' => $averageGrade,
-            'averageParticipation' => $averageParticipation,
-        ]);
+        return match (true) {
+            $attendance >= 90 && $avgPartisipasi >= 3.5 => [
+                'text' => 'Luar biasa! Kamu siswa teladan! 🌟',
+                'variant' => 'success',
+            ],
+            $attendance >= 90 => [
+                'text' => 'Kehadiran sempurna! Pertahankan! ✨',
+                'variant' => 'info',
+            ],
+            $avgPartisipasi >= 3.5 => [
+                'text' => 'Keaktifan hebat! Terus semangat! 📚',
+                'variant' => 'success',
+            ],
+            $attendance >= 75 && $avgPartisipasi >= 2.5 => [
+                'text' => 'Kamu di jalur yang tepat! Pertahankan! 👍',
+                'variant' => 'info',
+            ],
+            default => [
+                'text' => 'Ayo tingkatkan keaktifan! Kamu pasti bisa! 💪',
+                'variant' => 'warning',
+            ],
+        };
     }
 
-    /**
-     * Calculate consecutive attendance streak from a descending-date activity list.
-     *
-     * @param  iterable<object{kehadiran: string, tanggal: string}>  $activities
-     */
-    private function calculateStreakFromActivities(iterable $activities): int
+    private function computeMapelStatsFromCollection(MataPelajaran $mapel, Collection $details): array
     {
-        $streak = 0;
-        $lastDate = null;
+        $total = $details->count();
+        $hadir = $details->where('kehadiran', KehadiranStatus::Hadir)->count();
+        $attendancePct = $total > 0 ? round(($hadir / $total) * 100) : 0;
 
-        foreach ($activities as $activity) {
-            if (mb_strtolower($activity->kehadiran) !== 'hadir') {
-                break; // Not present, stop counting
-            }
+        $avgPartisipasi = $details->whereNotNull('partisipasi')->avg('partisipasi');
+        $partisipasiLabel = match (true) {
+            $avgPartisipasi === null => '-',
+            $avgPartisipasi < 1.5 => 'Pasif',
+            $avgPartisipasi < 2.5 => 'Cukup',
+            $avgPartisipasi < 3.5 => 'Aktif',
+            default => 'Sangat Aktif',
+        };
 
-            $activityDate = \Carbon\Carbon::parse($activity->tanggal);
+        $compositeScore = ($attendancePct * 0.6)
+            + (($avgPartisipasi ? ($avgPartisipasi / 4 * 100) : 0) * 0.4);
 
-            if (! $lastDate instanceof \Carbon\Carbon) {
-                $streak++;
-                $lastDate = $activityDate;
-            } elseif ($activityDate->isSameDay($lastDate) || $activityDate->diffInDays($lastDate) <= 1) {
-                $streak++;
-                $lastDate = $activityDate;
-            } else {
-                break; // Gap in attendance, stop counting
-            }
-        }
-
-        return $streak;
+        return [
+            'nama_mapel' => $mapel->nama_mapel,
+            'attendance_pct' => $attendancePct,
+            'partisipasi_label' => $partisipasiLabel,
+            'composite_score' => $compositeScore,
+            'total_activities' => $total,
+        ];
     }
 }

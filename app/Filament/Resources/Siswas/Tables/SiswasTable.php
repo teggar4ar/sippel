@@ -32,9 +32,9 @@ final class SiswasTable
                     ->copyMessage('NIS disalin!')
                     ->copyMessageDuration(1500),
 
-                TextColumn::make('user.nama')
+                TextColumn::make('user.name')
                     ->label('Nama Lengkap')
-                    ->searchable(['users.name'])
+                    ->searchable()
                     ->sortable()
                     ->description(fn ($record) => $record->user->email),
 
