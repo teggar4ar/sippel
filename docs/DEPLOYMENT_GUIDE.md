@@ -8,7 +8,7 @@ This guide covers how to deploy and manage the SIPPEL application on Heroku usin
 - Git repository with `heroku` remote configured
 - App name: `sippel-prod-1` (adjust as needed)
 
-## Quick Deploy
+## Quick Deployy
 
 When you've made changes and want to deploy:
 
