@@ -67,6 +67,7 @@ final class KelasTable
                     ->counts('siswa')
                     ->badge()
                     ->color('warning')
+                    ->sortable()
                     ->toggleable(),
 
                 TextColumn::make('created_at')

@@ -335,7 +335,7 @@ final class Dashboard extends Component
             $rows = $query->get();
 
             if ($rows->isEmpty()) {
-                return $this->dummyTrenKehadiran();
+                return ['series' => [], 'categories' => [], 'empty' => true];
             }
 
             // Group by month for semester (5-6 labels), by week for bulan
@@ -430,7 +430,7 @@ final class Dashboard extends Component
             $rows = $query->get();
 
             if ($rows->isEmpty()) {
-                return $this->dummyKeaktifanPerTopik();
+                return ['series' => [], 'categories' => [], 'empty' => true];
             }
 
             $topiks = [];
@@ -504,7 +504,7 @@ final class Dashboard extends Component
                 ->first();
 
             if (! $result || ($result->sangat_aktif + $result->aktif + $result->cukup + $result->pasif) === 0) {
-                return $this->dummyDistribusiKeaktifan();
+                return ['series' => [0, 0, 0, 0], 'labels' => ['Sangat Aktif', 'Aktif', 'Cukup', 'Pasif'], 'empty' => true];
             }
 
             return [
@@ -536,49 +536,5 @@ final class Dashboard extends Component
                 'end' => $tahunAjaran?->tanggal_selesai ?? now()->endOfYear(),
             ],
         };
-    }
-
-    /** @return array<string, mixed> */
-    private function dummyTrenKehadiran(): array
-    {
-        return [
-            'series' => [
-                ['name' => 'Hadir', 'type' => 'column', 'data' => [28, 30, 25, 32, 27, 35, 29, 31]],
-                ['name' => 'Sakit', 'type' => 'column', 'data' => [2,  1,  3,  1,  2,  0,  2,  1]],
-                ['name' => 'Izin',  'type' => 'column', 'data' => [1,  2,  1,  0,  2,  1,  1,  0]],
-                ['name' => 'Alpa',  'type' => 'column', 'data' => [1,  0,  2,  1,  0,  1,  0,  2]],
-            ],
-            'categories' => ['Mg 1', 'Mg 2', 'Mg 3', 'Mg 4', 'Mg 5', 'Mg 6', 'Mg 7', 'Mg 8'],
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function dummyKeaktifanPerTopik(): array
-    {
-        return [
-            'series' => [
-                ['name' => 'Sangat Aktif', 'data' => [8, 12, 6, 10, 15, 9]],
-                ['name' => 'Aktif',        'data' => [10, 8, 12, 8, 7, 11]],
-                ['name' => 'Cukup',        'data' => [7, 5, 8, 6, 5, 6]],
-                ['name' => 'Pasif',        'data' => [3, 3, 4, 2, 3, 4]],
-            ],
-            'categories' => [
-                'Persamaan Linear',
-                'Sistem Persamaan',
-                'Fungsi Kuadrat',
-                'Trigonometri',
-                'Statistika Dasar',
-                'Peluang',
-            ],
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function dummyDistribusiKeaktifan(): array
-    {
-        return [
-            'series' => [45, 30, 15, 10],
-            'labels' => ['Sangat Aktif', 'Aktif', 'Cukup', 'Pasif'],
-        ];
     }
 }

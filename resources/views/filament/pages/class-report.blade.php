@@ -87,7 +87,7 @@
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Sakit</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Alpa</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Nilai</th>
-                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Partisipasi</th>
+                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Keaktifan</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y dark:divide-gray-700">

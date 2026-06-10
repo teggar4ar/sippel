@@ -61,8 +61,7 @@ final class UsersTable
                     'L' => 'Laki-laki',
                     'P' => 'Perempuan',
                     default => $state,
-                })
-                ->sortable(),
+                }),
 
             TextColumn::make('roles.name')
                 ->label('Role')
@@ -78,8 +77,7 @@ final class UsersTable
                     'teacher' => 'Guru',
                     'student' => 'Siswa',
                     default => ucfirst($state),
-                })
-                ->sortable(),
+                }),
 
             TextColumn::make('email_verified_at')
                 ->label('Email Terverifikasi')

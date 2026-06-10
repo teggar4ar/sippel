@@ -52,8 +52,8 @@ final class SystemStatisticsWidget extends StatsOverviewWidget
         });
 
         return [
-            Stat::make('Admin', (string) $stats['admin_count'])
-                ->description('Pengguna admin')
+            Stat::make('Operator', (string) $stats['admin_count'])
+                ->description('Pengguna operator terdaftar')
                 ->descriptionIcon('heroicon-m-shield-check')
                 ->color('danger'),
 
