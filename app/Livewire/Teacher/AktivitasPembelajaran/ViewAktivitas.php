@@ -6,9 +6,10 @@ namespace App\Livewire\Teacher\AktivitasPembelajaran;
 
 use App\Models\AktivitasPembelajaran;
 use App\Models\TahunAjaran;
+use App\Services\StudentDashboardCacheService;
+use App\Services\TeacherDashboardCacheService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -81,9 +82,17 @@ final class ViewAktivitas extends Component
         }
 
         try {
+            $affectedSiswaIds = $this->aktivitas->detailAktivitas()->pluck('siswa_id')->all();
             $this->aktivitas->delete();
 
-            Cache::forget('teacher_dashboard_stats_'.Auth::id().'_'.($contextTahunAjaran->id ?? 'none'));
+            app(TeacherDashboardCacheService::class)->invalidate(
+                (int) Auth::id(),
+                $contextTahunAjaran->id
+            );
+            app(StudentDashboardCacheService::class)->invalidateMany(
+                $affectedSiswaIds,
+                $contextTahunAjaran->id
+            );
 
             session()->flash('success', 'Aktivitas berhasil dihapus.');
 

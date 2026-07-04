@@ -6,10 +6,11 @@ namespace App\Livewire\Teacher\AktivitasPembelajaran;
 
 use App\Models\AktivitasPembelajaran;
 use App\Models\MataPelajaran;
+use App\Services\StudentDashboardCacheService;
+use App\Services\TeacherDashboardCacheService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -175,11 +176,17 @@ final class ListAktivitas extends Component
             }
 
             try {
+                $affectedSiswaIds = $aktivitas->detailAktivitas()->pluck('siswa_id')->all();
                 $aktivitas->delete();
 
-                // Clear dashboard cache for current context
-                $contextYear = \App\Models\TahunAjaran::getContext();
-                Cache::forget('teacher_dashboard_stats_'.Auth::id().'_'.($contextYear?->id ?? 'none'));
+                app(TeacherDashboardCacheService::class)->invalidate(
+                    (int) Auth::id(),
+                    $contextTahunAjaran->id
+                );
+                app(StudentDashboardCacheService::class)->invalidateMany(
+                    $affectedSiswaIds,
+                    $contextTahunAjaran->id
+                );
 
                 $this->inlineSuccess = 'Aktivitas berhasil dihapus.';
             } catch (Exception $e) {

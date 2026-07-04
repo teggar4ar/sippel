@@ -24,7 +24,6 @@ final class Siswa extends Model
         'kelas_id',
     ];
 
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

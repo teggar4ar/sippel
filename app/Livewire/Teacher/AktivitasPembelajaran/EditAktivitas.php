@@ -10,9 +10,10 @@ use App\Models\MataPelajaran;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
 use App\Services\LaporanCalculatorService;
+use App\Services\StudentDashboardCacheService;
+use App\Services\TeacherDashboardCacheService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
@@ -196,6 +197,10 @@ final class EditAktivitas extends Component
         }
 
         $this->validate();
+        $affectedSiswaIds = array_unique(array_merge(
+            $this->aktivitas->detailAktivitas()->pluck('siswa_id')->all(),
+            array_keys($this->detailAktivitas)
+        ));
 
         try {
             DB::transaction(function (): void {
@@ -217,7 +222,14 @@ final class EditAktivitas extends Component
             return;
         }
 
-        $this->clearTeacherDashboardCache();
+        app(TeacherDashboardCacheService::class)->invalidate(
+            (int) Auth::id(),
+            $contextTahunAjaran->id
+        );
+        app(StudentDashboardCacheService::class)->invalidateMany(
+            $affectedSiswaIds,
+            $contextTahunAjaran->id
+        );
 
         session()->flash('success', 'Aktivitas pembelajaran berhasil diperbarui!');
 
@@ -236,8 +248,16 @@ final class EditAktivitas extends Component
      */
     protected function rules(): array
     {
+        $contextTahunAjaran = TahunAjaran::getContext();
+        $tanggalRules = ['required', 'date'];
+
+        if ($contextTahunAjaran instanceof TahunAjaran) {
+            $tanggalRules[] = 'after_or_equal:'.$contextTahunAjaran->tanggal_mulai->toDateString();
+            $tanggalRules[] = 'before_or_equal:'.$contextTahunAjaran->tanggal_selesai->toDateString();
+        }
+
         return [
-            'tanggal' => 'required|date',
+            'tanggal' => $tanggalRules,
             'mataPelajaranId' => 'required|exists:mata_pelajaran,id',
             'topik' => 'required|string|max:200',
             'catatan' => 'nullable|string|max:500',
@@ -258,6 +278,8 @@ final class EditAktivitas extends Component
     {
         return [
             'tanggal.required' => 'Tanggal harus diisi.',
+            'tanggal.after_or_equal' => 'Tanggal aktivitas tidak boleh sebelum semester dimulai.',
+            'tanggal.before_or_equal' => 'Tanggal aktivitas tidak boleh setelah semester berakhir.',
             'mataPelajaranId.required' => 'Mata pelajaran harus dipilih.',
             'topik.required' => 'Topik pembelajaran harus diisi.',
             'topik.max' => 'Topik maksimal 200 karakter.',
@@ -343,45 +365,6 @@ final class EditAktivitas extends Component
             }
         }
 
-        $this->clearStudentStreakCache(array_keys($this->detailAktivitas), $this->aktivitas->kelas?->tahun_ajaran_id);
-        $this->clearStudentTopMapelCache(array_keys($this->detailAktivitas), $this->aktivitas->kelas?->tahun_ajaran_id);
-    }
-
-    /**
-     * Bust the cached teacher dashboard stats for the current user.
-     */
-    private function clearTeacherDashboardCache(): void
-    {
-        $contextYear = TahunAjaran::getContext();
-        Cache::forget('teacher_dashboard_stats_'.Auth::id().'_'.($contextYear?->id ?? 'none'));
-    }
-
-    /**
-     * Bust cached student streaks for the given siswa IDs.
-     *
-     * @param  array<int|string>  $siswaIds
-     */
-    private function clearStudentStreakCache(array $siswaIds, ?int $tahunAjaranId): void
-    {
-        foreach ($siswaIds as $siswaId) {
-            $id = (int) $siswaId;
-            Cache::forget('student_streak_'.$id.'_'.($tahunAjaranId ?? 'none'));
-            Cache::forget('student_streak_'.$id.'_none');
-        }
-    }
-
-    /**
-     * Bust cached student top-performa mapel data for the given siswa IDs.
-     *
-     * @param  array<int|string>  $siswaIds
-     */
-    private function clearStudentTopMapelCache(array $siswaIds, ?int $tahunAjaranId): void
-    {
-        foreach ($siswaIds as $siswaId) {
-            $id = (int) $siswaId;
-            Cache::forget('student_top_mapel_'.$id.'_'.($tahunAjaranId ?? 'none'));
-            Cache::forget('student_top_mapel_'.$id.'_none');
-        }
     }
 
     /**

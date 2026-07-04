@@ -11,6 +11,7 @@ use App\Models\MataPelajaran;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
 use App\Models\User;
+use App\Services\StudentDashboardCacheService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -114,9 +115,13 @@ final class Dashboard extends Component
         }
 
         $contextTahunAjaran = TahunAjaran::getContext();
+        $cacheVersion = $contextTahunAjaran instanceof TahunAjaran
+            ? app(StudentDashboardCacheService::class)->version($siswa->id, $contextTahunAjaran->id)
+            : 'none';
         $cacheKey = 'student_dashboard_stats_'
             .$siswa->id.'_'
             .($contextTahunAjaran?->id ?? 'none').'_'
+            .$cacheVersion.'_'
             .($this->tanggalMulai ?? 'none').'_'
             .($this->tanggalSelesai ?? 'none');
 
@@ -299,7 +304,10 @@ final class Dashboard extends Component
         }
 
         $contextTahunAjaran = TahunAjaran::getContext();
-        $cacheKey = 'student_all_mapel_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none');
+        $cacheVersion = $contextTahunAjaran instanceof TahunAjaran
+            ? app(StudentDashboardCacheService::class)->version($siswa->id, $contextTahunAjaran->id)
+            : 'none';
+        $cacheKey = 'student_all_mapel_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none').'_'.$cacheVersion;
 
         return Cache::remember($cacheKey, 300, function () use ($siswa, $contextTahunAjaran) {
             $kelasId = $contextTahunAjaran instanceof TahunAjaran
@@ -346,7 +354,10 @@ final class Dashboard extends Component
         }
 
         $contextTahunAjaran = TahunAjaran::getContext();
-        $cacheKey = 'student_streak_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none');
+        $cacheVersion = $contextTahunAjaran instanceof TahunAjaran
+            ? app(StudentDashboardCacheService::class)->version($siswa->id, $contextTahunAjaran->id)
+            : 'none';
+        $cacheKey = 'student_streak_'.$siswa->id.'_'.($contextTahunAjaran?->id ?? 'none').'_'.$cacheVersion;
 
         return Cache::remember($cacheKey, 300, fn (): int => $siswa->getAttendanceStreak($contextTahunAjaran?->id));
     }

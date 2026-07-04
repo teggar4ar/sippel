@@ -9,6 +9,7 @@ use App\Models\Kelas;
 use App\Models\MataPelajaran;
 use App\Models\SiswaKelasHistory;
 use App\Models\TahunAjaran;
+use App\Services\TeacherDashboardCacheService;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -300,7 +301,9 @@ final class Dashboard extends Component
         $kelasId = $this->kelasId;
         $mapelId = $this->mapelId;
         $rentang = $this->rentangWaktu;
-        $cacheKey = 'chart_tren_'.Auth::id().'_'.$tahunAjaran->id.'_'.$rentang.'_'.$kelasId.'_'.$mapelId;
+        $chartVersion = app(TeacherDashboardCacheService::class)
+            ->chartVersion((int) Auth::id(), $tahunAjaran->id);
+        $cacheKey = 'chart_tren_v2_'.Auth::id().'_'.$tahunAjaran->id.'_'.$chartVersion.'_'.$rentang.'_'.$kelasId.'_'.$mapelId;
 
         return Cache::remember($cacheKey, 300, function () use ($tahunAjaran, $dateRange, $kelasId, $mapelId, $rentang): array {
             $query = DB::table('detail_aktivitas as da')
@@ -394,7 +397,9 @@ final class Dashboard extends Component
         $kelasId = $this->kelasId;
         $mapelId = $this->mapelId;
         $rentang = $this->rentangWaktu;
-        $cacheKey = 'chart_topik_'.Auth::id().'_'.$tahunAjaran->id.'_'.$rentang.'_'.$kelasId.'_'.$mapelId;
+        $chartVersion = app(TeacherDashboardCacheService::class)
+            ->chartVersion((int) Auth::id(), $tahunAjaran->id);
+        $cacheKey = 'chart_topik_v2_'.Auth::id().'_'.$tahunAjaran->id.'_'.$chartVersion.'_'.$rentang.'_'.$kelasId.'_'.$mapelId;
 
         return Cache::remember($cacheKey, 300, function () use ($tahunAjaran, $dateRange, $kelasId, $mapelId): array {
             $hadirVal = KehadiranStatus::Hadir->value;
@@ -470,7 +475,9 @@ final class Dashboard extends Component
         $dateRange = $this->getDateRange();
         $kelasId = $this->kelasId;
         $mapelId = $this->mapelId;
-        $cacheKey = 'chart_dist_'.Auth::id().'_'.$tahunAjaran->id.'_'.$this->rentangWaktu.'_'.$kelasId.'_'.$mapelId;
+        $chartVersion = app(TeacherDashboardCacheService::class)
+            ->chartVersion((int) Auth::id(), $tahunAjaran->id);
+        $cacheKey = 'chart_dist_v2_'.Auth::id().'_'.$tahunAjaran->id.'_'.$chartVersion.'_'.$this->rentangWaktu.'_'.$kelasId.'_'.$mapelId;
 
         return Cache::remember($cacheKey, 300, function () use ($tahunAjaran, $dateRange, $kelasId, $mapelId): array {
             $hadirVal = KehadiranStatus::Hadir->value;
@@ -527,14 +534,28 @@ final class Dashboard extends Component
     private function getDateRange(): array
     {
         $tahunAjaran = $this->activeTahunAjaran();
+        $semesterStart = CarbonImmutable::parse(
+            $tahunAjaran?->tanggal_mulai ?? now()->startOfYear()
+        )->startOfDay();
+        $semesterEnd = CarbonImmutable::parse(
+            $tahunAjaran?->tanggal_selesai ?? now()->endOfYear()
+        )->endOfDay();
 
-        return match ($this->rentangWaktu) {
-            'minggu' => ['start' => now()->startOfWeek(), 'end' => now()->endOfWeek()],
-            'bulan' => ['start' => now()->startOfMonth(), 'end' => now()->endOfMonth()],
-            default => [
-                'start' => $tahunAjaran?->tanggal_mulai ?? now()->startOfYear(),
-                'end' => $tahunAjaran?->tanggal_selesai ?? now()->endOfYear(),
+        [$start, $end] = match ($this->rentangWaktu) {
+            'minggu' => [
+                CarbonImmutable::now()->startOfWeek(),
+                CarbonImmutable::now()->endOfWeek(),
             ],
+            'bulan' => [
+                CarbonImmutable::now()->startOfMonth(),
+                CarbonImmutable::now()->endOfMonth(),
+            ],
+            default => [$semesterStart, $semesterEnd],
         };
+
+        return [
+            'start' => $start->lessThan($semesterStart) ? $semesterStart : $start,
+            'end' => $end->greaterThan($semesterEnd) ? $semesterEnd : $end,
+        ];
     }
 }
