@@ -32,17 +32,11 @@ final class DetailAktivitas extends Model
         'partisipasi' => 'decimal:2',
     ];
 
-    /**
-     * Get the learning activity this detail belongs to
-     */
     public function aktivitasPembelajaran(): BelongsTo
     {
         return $this->belongsTo(AktivitasPembelajaran::class);
     }
 
-    /**
-     * Get the student for this activity detail
-     */
     public function siswa(): BelongsTo
     {
         return $this->belongsTo(Siswa::class);

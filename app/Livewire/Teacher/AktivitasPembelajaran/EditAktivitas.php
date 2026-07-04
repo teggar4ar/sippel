@@ -9,6 +9,7 @@ use App\Models\DetailAktivitas;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
+use App\Services\LaporanCalculatorService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -272,8 +273,10 @@ final class EditAktivitas extends Component
      */
     private function updateDetailRecords(): void
     {
+        $records = [];
+        $currentSiswaIds = [];
+
         foreach ($this->detailAktivitas as $siswaId => $detail) {
-            // Convert kehadiran to lowercase for database enum
             $kehadiran = mb_strtolower((string) $detail['kehadiran']);
             $isHadir = $kehadiran === 'hadir';
 
@@ -284,24 +287,61 @@ final class EditAktivitas extends Component
                 $nilai = $this->resolveNilaiFromPartisipasi($partisipasi);
             }
 
-            DetailAktivitas::updateOrCreate(
-                [
-                    'aktivitas_pembelajaran_id' => $this->aktivitas->id,
-                    'siswa_id' => $siswaId,
-                ],
-                [
-                    'kehadiran' => $kehadiran,
-                    'nilai' => $nilai,
-                    'partisipasi' => $partisipasi,
-                    'catatan' => ($detail['catatan'] !== '') ? $detail['catatan'] : null,
-                ]
+            $records[] = [
+                'aktivitas_pembelajaran_id' => $this->aktivitas->id,
+                'siswa_id' => $siswaId,
+                'kehadiran' => $kehadiran,
+                'nilai' => $nilai,
+                'partisipasi' => $partisipasi,
+                'catatan' => ($detail['catatan'] !== '') ? $detail['catatan'] : null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $currentSiswaIds[] = $siswaId;
+        }
+
+        if ($records !== []) {
+            DetailAktivitas::upsert(
+                $records,
+                ['aktivitas_pembelajaran_id', 'siswa_id'],
+                ['kehadiran', 'nilai', 'partisipasi', 'catatan', 'updated_at']
             );
         }
 
-        // Remove records for students no longer in the list
+        $deletedSiswaIds = DetailAktivitas::where('aktivitas_pembelajaran_id', $this->aktivitas->id)
+            ->whereNotIn('siswa_id', $currentSiswaIds)
+            ->pluck('siswa_id')
+            ->all();
+
         DetailAktivitas::where('aktivitas_pembelajaran_id', $this->aktivitas->id)
-            ->whereNotIn('siswa_id', array_keys($this->detailAktivitas))
+            ->whereNotIn('siswa_id', $currentSiswaIds)
             ->delete();
+
+        $this->aktivitas->loadMissing('kelas');
+        $tahunAjaranId = $this->aktivitas->kelas?->tahun_ajaran_id;
+        $mataPelajaranId = $this->aktivitas->mata_pelajaran_id;
+
+        if ($tahunAjaranId && $mataPelajaranId) {
+            $calculator = app(LaporanCalculatorService::class);
+
+            foreach ($currentSiswaIds as $siswaId) {
+                $calculator->recalculateForCombination(
+                    (int) $siswaId,
+                    $mataPelajaranId,
+                    $tahunAjaranId
+                );
+            }
+
+            foreach ($deletedSiswaIds as $siswaId) {
+                $calculator->recalculateForCombination(
+                    (int) $siswaId,
+                    $mataPelajaranId,
+                    $tahunAjaranId,
+                    true
+                );
+            }
+        }
 
         $this->clearStudentStreakCache(array_keys($this->detailAktivitas), $this->aktivitas->kelas?->tahun_ajaran_id);
         $this->clearStudentTopMapelCache(array_keys($this->detailAktivitas), $this->aktivitas->kelas?->tahun_ajaran_id);

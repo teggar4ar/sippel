@@ -25,57 +25,36 @@ final class Kelas extends Model
         'tahun_ajaran_id',
     ];
 
-    /**
-     * Get the academic year that owns this class
-     */
     public function tahunAjaran(): BelongsTo
     {
         return $this->belongsTo(TahunAjaran::class);
     }
 
-    /**
-     * Get the homeroom teacher (wali kelas) for this class
-     */
     public function waliKelas(): BelongsTo
     {
         return $this->belongsTo(User::class, 'wali_kelas_id');
     }
 
-    /**
-     * Get all students in this class
-     */
     public function siswa(): HasMany
     {
         return $this->hasMany(Siswa::class);
     }
 
-    /**
-     * Get all subjects for this class
-     */
     public function mataPelajaran(): HasMany
     {
         return $this->hasMany(MataPelajaran::class);
     }
 
-    /**
-     * Get all learning activities for this class
-     */
     public function aktivitasPembelajaran(): HasMany
     {
         return $this->hasMany(AktivitasPembelajaran::class);
     }
 
-    /**
-     * Get all student enrollment history records for this class
-     */
     public function siswaHistory(): HasMany
     {
         return $this->hasMany(SiswaKelasHistory::class);
     }
 
-    /**
-     * Get the full class name (e.g., "7A", "8B")
-     */
     public function getNamaLengkapAttribute(): string
     {
         return $this->tingkat_kelas.$this->grup_kelas;

@@ -39,25 +39,16 @@ final class Laporan extends Model
         'rata_partisipasi' => 'integer',
     ];
 
-    /**
-     * Get the student this report belongs to
-     */
     public function siswa(): BelongsTo
     {
         return $this->belongsTo(Siswa::class);
     }
 
-    /**
-     * Get the subject this report belongs to
-     */
     public function mataPelajaran(): BelongsTo
     {
         return $this->belongsTo(MataPelajaran::class);
     }
 
-    /**
-     * Get the academic year this report belongs to
-     */
     public function tahunAjaran(): BelongsTo
     {
         return $this->belongsTo(TahunAjaran::class);

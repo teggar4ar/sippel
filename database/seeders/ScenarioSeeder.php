@@ -43,8 +43,8 @@ final class ScenarioSeeder extends Seeder
             'nama_tahun' => '2025/2026',
             'semester' => 'Genap',
             'status' => true,
-            'tanggal_mulai' => '2026-01-01',
-            'tanggal_selesai' => '2026-06-01',
+            'tanggal_mulai' => '2026-03-01',
+            'tanggal_selesai' => '2026-07-25',
         ]);
     }
 

@@ -10,6 +10,7 @@ use App\Models\Kelas;
 use App\Models\MataPelajaran;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
+use App\Services\LaporanCalculatorService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -283,7 +284,6 @@ final class CreateAktivitas extends Component
             return;
         }
 
-        // Validate both steps
         $this->validate(
             array_merge($this->rulesForStep1(), $this->rulesForStep2()),
             $this->messagesForValidation()
@@ -293,7 +293,6 @@ final class CreateAktivitas extends Component
 
         try {
             DB::transaction(function () use ($userId): void {
-                // Create the activity
                 $aktivitas = AktivitasPembelajaran::create([
                     'tanggal' => $this->tanggal,
                     'topik' => $this->topik,
@@ -364,6 +363,9 @@ final class CreateAktivitas extends Component
      */
     private function createDetailRecords(AktivitasPembelajaran $aktivitas): void
     {
+        $records = [];
+        $siswaIds = [];
+
         foreach ($this->detailAktivitas as $siswaId => $detail) {
             $kehadiran = mb_strtolower((string) $detail['kehadiran']);
             $isHadir = $kehadiran === 'hadir';
@@ -375,14 +377,35 @@ final class CreateAktivitas extends Component
                 $nilai = $this->resolveNilaiFromPartisipasi($partisipasi);
             }
 
-            DetailAktivitas::create([
+            $records[] = [
                 'aktivitas_pembelajaran_id' => $aktivitas->id,
                 'siswa_id' => $siswaId,
                 'kehadiran' => $kehadiran,
                 'nilai' => $nilai,
                 'partisipasi' => $partisipasi,
                 'catatan' => ($detail['catatan'] !== '') ? $detail['catatan'] : null,
-            ]);
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $siswaIds[] = $siswaId;
+        }
+
+        DetailAktivitas::insert($records);
+
+        $aktivitas->loadMissing('kelas');
+        $tahunAjaranId = $aktivitas->kelas?->tahun_ajaran_id;
+        $mataPelajaranId = $aktivitas->mata_pelajaran_id;
+
+        if ($tahunAjaranId && $mataPelajaranId) {
+            $calculator = app(LaporanCalculatorService::class);
+            foreach ($siswaIds as $siswaId) {
+                $calculator->recalculateForCombination(
+                    (int) $siswaId,
+                    $mataPelajaranId,
+                    $tahunAjaranId
+                );
+            }
         }
     }
 

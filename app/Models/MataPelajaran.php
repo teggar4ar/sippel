@@ -22,33 +22,21 @@ final class MataPelajaran extends Model
         'kelas_id',
     ];
 
-    /**
-     * Get the teacher for this subject
-     */
     public function guru(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guru_id');
     }
 
-    /**
-     * Get the class for this subject
-     */
     public function kelas(): BelongsTo
     {
         return $this->belongsTo(Kelas::class);
     }
 
-    /**
-     * Get all learning activities for this subject
-     */
     public function aktivitasPembelajaran(): HasMany
     {
         return $this->hasMany(AktivitasPembelajaran::class);
     }
 
-    /**
-     * Get all reports for this subject
-     */
     public function laporan(): HasMany
     {
         return $this->hasMany(Laporan::class);

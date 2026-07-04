@@ -24,41 +24,27 @@ final class Siswa extends Model
         'kelas_id',
     ];
 
-    /**
-     * Get the user account for this student
-     */
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the class this student belongs to
-     */
     public function kelas(): BelongsTo
     {
         return $this->belongsTo(Kelas::class);
     }
 
-    /**
-     * Get all activity details for this student
-     */
     public function detailAktivitas(): HasMany
     {
         return $this->hasMany(DetailAktivitas::class);
     }
 
-    /**
-     * Get all reports for this student
-     */
     public function laporan(): HasMany
     {
         return $this->hasMany(Laporan::class);
     }
 
-    /**
-     * Get all class enrollment history records for this student
-     */
     public function kelasHistory(): HasMany
     {
         return $this->hasMany(SiswaKelasHistory::class);

@@ -28,33 +28,21 @@ final class AktivitasPembelajaran extends Model
         'tanggal' => 'date',
     ];
 
-    /**
-     * Get the class for this learning activity
-     */
     public function kelas(): BelongsTo
     {
         return $this->belongsTo(Kelas::class);
     }
 
-    /**
-     * Get the subject for this learning activity
-     */
     public function mataPelajaran(): BelongsTo
     {
         return $this->belongsTo(MataPelajaran::class);
     }
 
-    /**
-     * Get the teacher who created this activity
-     */
     public function guru(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guru_id');
     }
 
-    /**
-     * Get all activity details (student records) for this activity
-     */
     public function detailAktivitas(): HasMany
     {
         return $this->hasMany(DetailAktivitas::class);
