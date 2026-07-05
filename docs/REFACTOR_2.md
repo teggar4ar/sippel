@@ -18,7 +18,7 @@ Hasil audit menyeluruh terhadap seluruh codebase: Models, Livewire Components, F
 
 ## 🔴 KRITIS — N+1 Query & Loop Query
 
-### 1. `CreateAktivitas::createDetailRecords()` — N INSERT per siswa
+### 1. `CreateAktivitas::createDetailRecords()` — N INSERT per siswa (DONE``)
 
 [CreateAktivitas.php](file:///d:/laragon/www/sippel/app/Livewire/Teacher/AktivitasPembelajaran/CreateAktivitas.php)
 
@@ -62,7 +62,7 @@ Setiap siswa di kelas = 1 INSERT query. Kelas 30 siswa = **30 INSERT queries**.
 
 ---
 
-### 2. `EditAktivitas::updateDetailRecords()` — N × 2 query (SELECT + UPDATE)
+### 2. `EditAktivitas::updateDetailRecords()` — N × 2 query (SELECT + UPDATE) (DONE)
 
 [EditAktivitas.php](file:///d:/laragon/www/sippel/app/Livewire/Teacher/AktivitasPembelajaran/EditAktivitas.php)
 
@@ -95,9 +95,9 @@ Setiap siswa di kelas = 1 INSERT query. Kelas 30 siswa = **30 INSERT queries**.
 
 ---
 
-### 3. `ActivityChartWidget` — 7 COUNT queries dalam loop
+### 3. `ActivityChartWidget` — 7 COUNT queries dalam loop (DONE)
 
-[ActivityChartWidget.php](file:///d:/laragon/www/sippel/app/Filament/Widgets/ActivityChartWidget.php)
+[Activity`ChartWidget.php](file:///d:/laragon/www/sippel/app/Filament/Widgets/ActivityChartWidget.php)
 
 ```diff
 - // SEKARANG: 7 query (1 per hari)
@@ -121,7 +121,7 @@ Setiap siswa di kelas = 1 INSERT query. Kelas 30 siswa = **30 INSERT queries**.
 
 ---
 
-### 4. `Student\Dashboard::stats()` — 4 COUNT queries, harus 1
+### 4. `Student\Dashboard::stats()` — 4 COUNT queries, harus 1 (DONE)
 
 [Dashboard.php (Student)](file:///d:/laragon/www/sippel/app/Livewire/Student/Dashboard.php)
 
@@ -157,7 +157,7 @@ Setiap siswa di kelas = 1 INSERT query. Kelas 30 siswa = **30 INSERT queries**.
 
 ---
 
-### 5. `GantiSemesterPage::migrateStudentsToNewSemester()` — N query per siswa per kelas
+### 5. `GantiSemesterPage::migrateStudentsToNewSemester()` — N query per siswa per kelas (DONE)
 
 [GantiSemesterPage.php](file:///d:/laragon/www/sippel/app/Filament/Pages/GantiSemesterPage.php)
 
@@ -185,7 +185,7 @@ Per-kelas loop → per-siswa loop → `SiswaKelasHistory::firstOrCreate()` (×2)
 
 ---
 
-### 6. `KenaikanKelasPage::processStudentDecisions()` — find() per siswa
+### 6. `KenaikanKelasPage::processStudentDecisions()` — find() per siswa (DONE)
 
 [KenaikanKelasPage.php](file:///d:/laragon/www/sippel/app/Filament/Pages/KenaikanKelasPage.php)
 
@@ -209,7 +209,7 @@ Per-kelas loop → per-siswa loop → `SiswaKelasHistory::firstOrCreate()` (×2)
 
 ---
 
-### 7. `DetailAktivitasPolicy::getTeacherKelasIds()` — 2 query tanpa cache
+### 7. `DetailAktivitasPolicy::getTeacherKelasIds()` — 2 query tanpa cache (DONE)
 
 [DetailAktivitasPolicy.php](file:///d:/laragon/www/sippel/app/Policies/DetailAktivitasPolicy.php)
 
@@ -231,7 +231,7 @@ Setiap policy check (view, create, update, delete) = 2 DB queries. Bisa dipanggi
 
 ---
 
-### 8. `KelasForm` — 3 query identik untuk grup kelas
+### 8. `KelasForm` — 3 query identik untuk grup kelas (DONE)
 
 [KelasForm.php](file:///d:/laragon/www/sippel/app/Filament/Resources/Kelas/Schemas/KelasForm.php)
 
@@ -253,7 +253,7 @@ Setiap policy check (view, create, update, delete) = 2 DB queries. Bisa dipanggi
 
 ---
 
-### 9. Wizard `User::role('teacher')->pluck()` dipanggil per field
+### 9. Wizard `User::role('teacher')->pluck()` dipanggil per field (DONE)
 
 [GantiSemesterPage.php](file:///d:/laragon/www/sippel/app/Filament/Pages/GantiSemesterPage.php) &
 [KenaikanKelasPage.php](file:///d:/laragon/www/sippel/app/Filament/Pages/KenaikanKelasPage.php)
@@ -269,7 +269,7 @@ Setiap field wali kelas di wizard menjalankan `User::role('teacher')->pluck('nam
 
 ---
 
-### 10. `Siswa::getAttendanceStreak()` — fetch ALL lalu iterate PHP
+### 10. `Siswa::getAttendanceStreak()` — fetch ALL lalu iterate PHP (DONE)
 
 [Siswa.php](file:///d:/laragon/www/sippel/app/Models/Siswa.php)
 
@@ -300,7 +300,7 @@ Mengambil SEMUA record dari DB lalu loop satu per satu di PHP. Untuk siswa aktif
 
 ---
 
-### 11. `Siswa::getAttendanceBreakdown()` — selalu hit DB meski relasi loaded
+### 11. `Siswa::getAttendanceBreakdown()` — selalu hit DB meski relasi loaded (DONE)
 
 [Siswa.php](file:///d:/laragon/www/sippel/app/Models/Siswa.php)
 
@@ -320,7 +320,7 @@ Metode ini selalu menjalankan query baru, mengabaikan `detailAktivitas` yang sud
 
 ---
 
-### 12. `DetailAktivitas::scopeWithTimelineJoin()` — whereHas + JOIN redundan
+### 12. `DetailAktivitas::scopeWithTimelineJoin()` — whereHas + JOIN redundan (DONE)
 
 [DetailAktivitas.php](file:///d:/laragon/www/sippel/app/Models/DetailAktivitas.php)
 
@@ -350,7 +350,7 @@ Scope ini menjalankan `whereHas('aktivitasPembelajaran')` (subquery) DAN `join('
 
 ## 🟠 TINGGI — Redundant/Duplicate Queries
 
-### 13. `TahunAjaran::getContext()` — dipanggil 6+ kali per render tanpa memo
+### 13. `TahunAjaran::getContext()` — dipanggil 6+ kali per render tanpa memo (DONE)
 
 [TahunAjaran.php](file:///d:/laragon/www/sippel/app/Models/TahunAjaran.php)
 
@@ -373,7 +373,7 @@ Setiap `#[Computed]` property di Student/Teacher Dashboard memanggil `getContext
 
 ---
 
-### 14. `Teacher\Dashboard::dashboardStats()` — query MataPelajaran duplikat
+### 14. `Teacher\Dashboard::dashboardStats()` — query MataPelajaran duplikat (DONE)
 
 [Dashboard.php (Teacher)](file:///d:/laragon/www/sippel/app/Livewire/Teacher/Dashboard.php)
 
@@ -390,7 +390,7 @@ Setiap `#[Computed]` property di Student/Teacher Dashboard memanggil `getContext
 
 ---
 
-### 15. `Teacher\Dashboard::partisipasiPerKelas()` — duplikat mySubjects()
+### 15. `Teacher\Dashboard::partisipasiPerKelas()` — duplikat mySubjects() (DONE)
 
 [Dashboard.php (Teacher)](file:///d:/laragon/www/sippel/app/Livewire/Teacher/Dashboard.php)
 

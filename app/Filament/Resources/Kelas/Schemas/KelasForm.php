@@ -9,6 +9,8 @@ use App\Models\TahunAjaran;
 use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 final class KelasForm
 {
@@ -94,17 +96,12 @@ final class KelasForm
         $tahunAjaranId = $get('tahun_ajaran_id');
 
         $taken = ($tingkat && $tahunAjaranId)
-            ? Kelas::where('tingkat_kelas', $tingkat)
-                ->where('tahun_ajaran_id', $tahunAjaranId)
-                ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
-                ->pluck('grup_kelas')
-                ->map(fn ($l) => mb_strtoupper((string) $l))
-                ->all()
-            : [];
+            ? self::getTakenGroups((int) $tingkat, (int) $tahunAjaranId, $record?->id)
+            : collect();
 
         return collect(range('A', 'Z'))
             ->mapWithKeys(function (string $letter) use ($taken): array {
-                $label = in_array($letter, $taken, true)
+                $label = $taken->contains($letter)
                     ? "{$letter} (sudah ada)"
                     : $letter;
 
@@ -125,11 +122,7 @@ final class KelasForm
             return 'Pilih tingkat kelas dan tahun ajaran terlebih dahulu.';
         }
 
-        $taken = Kelas::where('tingkat_kelas', $tingkat)
-            ->where('tahun_ajaran_id', $tahunAjaranId)
-            ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
-            ->pluck('grup_kelas')
-            ->map(fn ($l) => mb_strtoupper((string) $l))
+        $taken = self::getTakenGroups((int) $tingkat, (int) $tahunAjaranId, $record?->id)
             ->sort()
             ->values()
             ->all();
@@ -145,11 +138,11 @@ final class KelasForm
     private static function grupKelasValidationRule(mixed $get, mixed $record): Closure
     {
         return function (string $_, mixed $value, Closure $fail) use ($get, $record): void {
-            $exists = Kelas::where('tingkat_kelas', $get('tingkat_kelas'))
-                ->where('tahun_ajaran_id', $get('tahun_ajaran_id'))
-                ->where('grup_kelas', mb_strtoupper((string) $value))
-                ->when($record?->id, fn ($q) => $q->where('id', '!=', $record->id))
-                ->exists();
+            $exists = self::getTakenGroups(
+                (int) $get('tingkat_kelas'),
+                (int) $get('tahun_ajaran_id'),
+                $record?->id,
+            )->contains(mb_strtoupper((string) $value));
 
             if ($exists) {
                 $fail("Kelas {$get('tingkat_kelas')}{$value} sudah ada untuk tahun ajaran ini.");
@@ -168,19 +161,31 @@ final class KelasForm
             return null;
         }
 
-        $taken = Kelas::where('tingkat_kelas', $tingkat)
-            ->where('tahun_ajaran_id', $tahunAjaranId)
-            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
-            ->pluck('grup_kelas')
-            ->map(fn ($l) => mb_strtoupper((string) $l))
-            ->all();
+        $taken = self::getTakenGroups((int) $tingkat, (int) $tahunAjaranId, $ignoreId);
 
         foreach (range('A', 'Z') as $letter) {
-            if (! in_array($letter, $taken, true)) {
+            if (! $taken->contains($letter)) {
                 return $letter;
             }
         }
 
         return null;
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    private static function getTakenGroups(int $tingkat, int $tahunAjaranId, ?int $excludeId): Collection
+    {
+        $cacheKey = "kelas_taken_groups_{$tingkat}_{$tahunAjaranId}_".($excludeId ?? 'none');
+
+        return Cache::store('array')->rememberForever(
+            $cacheKey,
+            fn (): Collection => Kelas::where('tingkat_kelas', $tingkat)
+                ->where('tahun_ajaran_id', $tahunAjaranId)
+                ->when($excludeId, fn ($query) => $query->where('id', '!=', $excludeId))
+                ->pluck('grup_kelas')
+                ->map(fn (mixed $group): string => mb_strtoupper((string) $group)),
+        );
     }
 }

@@ -51,6 +51,9 @@ final class KenaikanKelasPage extends Page implements HasForms
 
     protected string $view = 'filament.pages.kenaikan-kelas';
 
+    /** @var array<int, string>|null */
+    private ?array $teacherOptions = null;
+
     public static function getNavigationGroup(): string
     {
         return 'Master Data';
@@ -214,6 +217,7 @@ final class KenaikanKelasPage extends Page implements HasForms
         return Wizard\Step::make('Wali Kelas')
             ->schema(function (): array {
                 $fields = [];
+                $teachers = $this->getTeacherOptions();
 
                 // Grade 8 new classes mirror current Grade 7 groups (promotion source).
                 // Grade 9 new classes mirror current Grade 8 groups (promotion source).
@@ -231,7 +235,7 @@ final class KenaikanKelasPage extends Page implements HasForms
                         $key = "{$tingkat}_{$grup}";
                         $fields[] = Select::make("waliKelasAssignments.{$key}")
                             ->label("Wali Kelas {$tingkat}{$grup}")
-                            ->options(User::role('teacher')->pluck('name', 'id'))
+                            ->options($teachers)
                             ->native(false)
                             ->searchable()
                             ->preload()
@@ -241,6 +245,17 @@ final class KenaikanKelasPage extends Page implements HasForms
 
                 return [Section::make('Daftar Kelas Baru')->schema($fields)->columns(2)];
             });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function getTeacherOptions(): array
+    {
+        return $this->teacherOptions ??= User::role('teacher')
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
     }
 
     private function buildWizardStepSiswa(): Wizard\Step
@@ -373,9 +388,14 @@ final class KenaikanKelasPage extends Page implements HasForms
      */
     private function processStudentDecisions(TahunAjaran $newTahunAjaran, array $studentDecisions, array $kelasMap): void
     {
+        $students = Siswa::with(['kelas', 'user'])
+            ->whereIn('id', array_keys($studentDecisions))
+            ->get()
+            ->keyBy('id');
+
         foreach ($studentDecisions as $siswaId => $decision) {
-            $siswa = Siswa::with('kelas')->find($siswaId);
-            if (! $siswa) {
+            $siswa = $students->get($siswaId);
+            if (! $siswa instanceof Siswa) {
                 continue;
             }
             if (! $siswa->kelas) {

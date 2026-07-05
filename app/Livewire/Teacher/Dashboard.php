@@ -101,13 +101,12 @@ final class Dashboard extends Component
                 return ['kelas_diampu' => 0, 'total_siswa' => 0, 'aktivitas_minggu_ini' => 0, 'rata_kehadiran' => 0];
             }
 
-            $mapelDiampu = MataPelajaran::where('guru_id', Auth::id())
+            $mapel = MataPelajaran::where('guru_id', Auth::id())
                 ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
-                ->count();
+                ->get(['id', 'kelas_id']);
 
-            $kelasIds = MataPelajaran::where('guru_id', Auth::id())
-                ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
-                ->pluck('kelas_id')->unique();
+            $mapelDiampu = $mapel->count();
+            $kelasIds = $mapel->pluck('kelas_id')->unique();
 
             $totalSiswa = SiswaKelasHistory::where('tahun_ajaran_id', $tahunAjaran->id)
                 ->whereIn('kelas_id', $kelasIds)
@@ -154,11 +153,7 @@ final class Dashboard extends Component
             return collect();
         }
 
-        // Get all mapel IDs taught by this teacher in the active year
-        $mapelList = MataPelajaran::with(['kelas' => fn ($q) => $q->withCount('siswa')])
-            ->where('guru_id', Auth::id())
-            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
-            ->get();
+        $mapelList = $this->mySubjects;
 
         if ($mapelList->isEmpty()) {
             return collect();

@@ -48,14 +48,13 @@ final class DetailAktivitas extends Model
      */
     public function scopeWithTimelineJoin(Builder $query, ?int $kelasId, int $tahunAjaranId): void
     {
-        $query->whereHas('aktivitasPembelajaran', function ($q) use ($kelasId, $tahunAjaranId): void {
-            if ($kelasId !== null) {
-                $q->where('kelas_id', $kelasId);
-            }
-            $q->whereHas('kelas', fn ($kq) => $kq->where('tahun_ajaran_id', $tahunAjaranId));
-        })
-            ->with(['aktivitasPembelajaran.mataPelajaran', 'aktivitasPembelajaran'])
-            ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
+        $query->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
+            ->join('kelas', 'aktivitas_pembelajaran.kelas_id', '=', 'kelas.id')
+            ->where('kelas.tahun_ajaran_id', $tahunAjaranId)
+            ->when($kelasId !== null, fn ($builder) => $builder->where('aktivitas_pembelajaran.kelas_id', $kelasId))
+            ->whereNull('aktivitas_pembelajaran.deleted_at')
+            ->whereNull('kelas.deleted_at')
+            ->with('aktivitasPembelajaran.mataPelajaran')
             ->orderByDesc('aktivitas_pembelajaran.tanggal')
             ->orderByDesc('detail_aktivitas.id')
             ->select('detail_aktivitas.*');

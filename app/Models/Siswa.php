@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 
 final class Siswa extends Model
 {
@@ -235,6 +236,10 @@ final class Siswa extends Model
      */
     public function getAttendanceBreakdown(?int $mataPelajaranId = null): array
     {
+        if (! $this->needsQuery($mataPelajaranId, null, null, null)) {
+            return $this->computeAttendanceBreakdown($this->detailAktivitas);
+        }
+
         $query = $this->detailAktivitas()
             ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
             ->whereNull('aktivitas_pembelajaran.deleted_at');
@@ -245,13 +250,7 @@ final class Siswa extends Model
 
         $details = $query->get(['detail_aktivitas.kehadiran']);
 
-        return [
-            'total' => $details->count(),
-            'hadir' => $details->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Hadir)->count(),
-            'izin' => $details->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Izin)->count(),
-            'sakit' => $details->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Sakit)->count(),
-            'alpa' => $details->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Alpa)->count(),
-        ];
+        return $this->computeAttendanceBreakdown($details);
     }
 
     /**
@@ -273,10 +272,8 @@ final class Siswa extends Model
                 ->where('kelas.tahun_ajaran_id', $tahunAjaranId);
         }
 
-        $records = $query->select('detail_aktivitas.kehadiran')->get();
-
         $streak = 0;
-        foreach ($records as $record) {
+        foreach ($query->select('detail_aktivitas.kehadiran')->lazy(100) as $record) {
             if ($record->kehadiran === KehadiranStatus::Hadir) {
                 $streak++;
             } else {
@@ -326,6 +323,21 @@ final class Siswa extends Model
         return Attribute::make(
             get: fn (): string => $this->getAverageParticipationLabel(),
         );
+    }
+
+    /**
+     * @param  Collection<int, DetailAktivitas>  $details
+     * @return array{total: int, hadir: int, izin: int, sakit: int, alpa: int}
+     */
+    private function computeAttendanceBreakdown(Collection $details): array
+    {
+        return [
+            'total' => $details->count(),
+            'hadir' => $details->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Hadir)->count(),
+            'izin' => $details->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Izin)->count(),
+            'sakit' => $details->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Sakit)->count(),
+            'alpa' => $details->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Alpa)->count(),
+        ];
     }
 
     /**

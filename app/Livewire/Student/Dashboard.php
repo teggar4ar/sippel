@@ -134,11 +134,24 @@ final class Dashboard extends Component
                         ->when($this->tanggalSelesai, fn ($q) => $q->where('tanggal', '<=', $this->tanggalSelesai));
                 });
 
+            $stats = $query->selectRaw(
+                'SUM(CASE WHEN kehadiran = ? THEN 1 ELSE 0 END) as hadir,
+                SUM(CASE WHEN kehadiran = ? THEN 1 ELSE 0 END) as izin,
+                SUM(CASE WHEN kehadiran = ? THEN 1 ELSE 0 END) as sakit,
+                SUM(CASE WHEN kehadiran = ? THEN 1 ELSE 0 END) as alpa',
+                [
+                    KehadiranStatus::Hadir->value,
+                    KehadiranStatus::Izin->value,
+                    KehadiranStatus::Sakit->value,
+                    KehadiranStatus::Alpa->value,
+                ],
+            )->first();
+
             return [
-                'hadir' => (clone $query)->where('kehadiran', KehadiranStatus::Hadir)->count(),
-                'izin' => (clone $query)->where('kehadiran', KehadiranStatus::Izin)->count(),
-                'sakit' => (clone $query)->where('kehadiran', KehadiranStatus::Sakit)->count(),
-                'alpa' => (clone $query)->where('kehadiran', KehadiranStatus::Alpa)->count(),
+                'hadir' => (int) $stats?->hadir,
+                'izin' => (int) $stats?->izin,
+                'sakit' => (int) $stats?->sakit,
+                'alpa' => (int) $stats?->alpa,
             ];
         });
     }
