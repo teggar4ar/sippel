@@ -173,7 +173,7 @@ final class KelasForm
     }
 
     /**
-     * @return Collection<int, string>
+     * @return Collection<int, uppercase-string>
      */
     private static function getTakenGroups(int $tingkat, int $tahunAjaranId, ?int $excludeId): Collection
     {
@@ -185,7 +185,8 @@ final class KelasForm
                 ->where('tahun_ajaran_id', $tahunAjaranId)
                 ->when($excludeId, fn ($query) => $query->where('id', '!=', $excludeId))
                 ->pluck('grup_kelas')
-                ->map(fn (mixed $group): string => mb_strtoupper((string) $group)),
+                ->map(fn (mixed $group): string => mb_strtoupper((string) $group))
+                ->values(),
         );
     }
 }

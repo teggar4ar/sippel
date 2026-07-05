@@ -15,7 +15,7 @@ final class TahunAjaran extends Model
     /** @use HasFactory<TahunAjaranFactory> */
     use HasFactory, SoftDeletes;
 
-    private const CONTEXT_MEMO_KEY = 'tahun_ajaran_context_model';
+    private const string CONTEXT_MEMO_KEY = 'tahun_ajaran_context_model';
 
     protected $table = 'tahun_ajaran';
 

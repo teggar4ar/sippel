@@ -35,6 +35,9 @@ final class Siswa extends Model
         return $this->belongsTo(Kelas::class);
     }
 
+    /**
+     * @return HasMany<DetailAktivitas, $this>
+     */
     public function detailAktivitas(): HasMany
     {
         return $this->hasMany(DetailAktivitas::class);
