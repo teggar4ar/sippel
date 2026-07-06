@@ -19,7 +19,7 @@ final class TeacherDashboardCacheService
 
     public function invalidate(int $teacherId, int $tahunAjaranId): void
     {
-        Cache::forget('teacher_dashboard_stats_'.$teacherId.'_'.$tahunAjaranId);
+        Cache::forget('teacher_dashboard_stats_v2_'.$teacherId.'_'.$tahunAjaranId);
         Cache::forever(
             $this->chartVersionKey($teacherId, $tahunAjaranId),
             (string) Str::uuid()

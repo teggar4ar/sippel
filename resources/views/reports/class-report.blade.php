@@ -269,13 +269,14 @@
         @if($laporanData->isNotEmpty())
             @php
                 $avgKehadiran = $laporanData->avg('rata_kehadiran');
-                $avgPartisipasi = $laporanData->avg('rata_partisipasi');
+                $keaktifanWeights = $laporanData->pluck('rata_keaktifan')->filter()->map->weight();
+                $avgKeaktifan = $keaktifanWeights->isNotEmpty() ? $keaktifanWeights->avg() : 0;
                 $totalPertemuan = $laporanData->max('total_kehadiran') ?? 0;
 
-                $partisipasiLabel = match(true) {
-                    $avgPartisipasi >= 3.5 => 'Sangat Aktif',
-                    $avgPartisipasi >= 2.5 => 'Aktif',
-                    $avgPartisipasi >= 1.5 => 'Cukup',
+                $keaktifanLabel = match(true) {
+                    $avgKeaktifan >= 3.5 => 'Sangat Aktif',
+                    $avgKeaktifan >= 2.5 => 'Aktif',
+                    $avgKeaktifan >= 1.5 => 'Cukup',
                     default => 'Pasif',
                 };
             @endphp
@@ -285,7 +286,7 @@
                 <tr>
                     <td>Rata-rata Kehadiran: <strong>{{ number_format($avgKehadiran, 1) }}%</strong></td>
                     <td>Total Pertemuan: <strong>{{ $totalPertemuan }}</strong></td>
-                    <td>Keaktifan: <strong>{{ $partisipasiLabel }}</strong></td>
+                    <td>Keaktifan: <strong>{{ $keaktifanLabel }}</strong></td>
                 </tr>
             </table>
         @endif
@@ -309,12 +310,7 @@
             <tbody>
                 @forelse($laporanData as $index => $laporan)
                     @php
-                        $labelPartisipasi = match(true) {
-                            $laporan->rata_partisipasi >= 4 => 'Sangat Aktif',
-                            $laporan->rata_partisipasi >= 3 => 'Aktif',
-                            $laporan->rata_partisipasi >= 2 => 'Cukup',
-                            default => 'Pasif',
-                        };
+                        $labelKeaktifan = $laporan->rata_keaktifan?->label() ?? '-';
                     @endphp
                     <tr>
                         <td class="center">{{ $index + 1 }}</td>
@@ -325,7 +321,7 @@
                         <td class="center">{{ $laporan->izin_count }}</td>
                         <td class="center">{{ $laporan->sakit_count }}</td>
                         <td class="center">{{ $laporan->alpa_count }}</td>
-                        <td class="center">{{ $labelPartisipasi }}</td>
+                        <td class="center">{{ $labelKeaktifan }}</td>
                     </tr>
                 @empty
                     <tr>

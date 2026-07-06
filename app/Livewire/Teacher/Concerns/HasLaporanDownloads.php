@@ -16,6 +16,20 @@ use Illuminate\Database\Eloquent\Collection;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Provides PDF/Excel download actions for the teacher Laporan page.
+ *
+ * This trait relies on computed properties defined by the companion trait
+ * {@see HasLaporanComputed}, which must be
+ * used alongside this one in the consuming Livewire component. The
+ * declarations below expose those cross-trait computed properties to static
+ * analysis and IDE autocompletion, since Livewire resolves them via magic
+ * `__get()` rather than native property declarations.
+ *
+ * @property-read Collection<int, Kelas> $kelasWali
+ * @property-read ?TahunAjaran $contextTahunAjaran
+ * @property-read Collection<int, LaporanModel> $classReportData
+ */
 trait HasLaporanDownloads
 {
     private const string MSG_NO_CLASS_ACCESS = 'Anda tidak memiliki akses ke kelas ini.';
@@ -90,6 +104,26 @@ trait HasLaporanDownloads
     // ──────────────────────────────────────────────────────
 
     /**
+     * Determine whether the teacher may access the given student's data.
+     * Access is granted when the student is (or was) enrolled in one of the
+     * teacher's wali-kelas, checked against both the current `siswa.kelas_id`
+     * and the historical `siswa_kelas_history` records.
+     */
+    private function canAccessSiswa(?Siswa $siswa): bool
+    {
+        if (! $siswa instanceof Siswa) {
+            return false;
+        }
+
+        $kelasWaliIds = $this->kelasWali->pluck('id');
+        if ($kelasWaliIds->contains($siswa->kelas_id)) {
+            return true;
+        }
+
+        return $siswa->kelasHistory()->whereIn('kelas_id', $kelasWaliIds)->exists();
+    }
+
+    /**
      * Run the correct access check depending on the selected report type.
      * Dispatches error notifications on failure and returns false.
      */
@@ -114,13 +148,8 @@ trait HasLaporanDownloads
         }
 
         $siswa = Siswa::withTrashed()->find($this->siswaId);
-        $kelasWaliIds = $this->kelasWali->pluck('id');
-        $hasAccess = $siswa && (
-            $kelasWaliIds->contains($siswa->kelas_id) ||
-            $siswa->kelasHistory()->whereIn('kelas_id', $kelasWaliIds)->exists()
-        );
 
-        if (! $hasAccess) {
+        if (! $this->canAccessSiswa($siswa)) {
             $this->dispatch('notify', type: 'error', message: 'Anda tidak memiliki akses ke data siswa ini.');
 
             return false;
@@ -169,13 +198,8 @@ trait HasLaporanDownloads
         }
 
         $siswa = Siswa::withTrashed()->with(['user', 'kelas.waliKelas'])->find($this->siswaId);
-        $kelasWaliIds = $this->kelasWali->pluck('id');
-        $hasAccess = $siswa && (
-            $kelasWaliIds->contains($siswa->kelas_id) ||
-            $siswa->kelasHistory()->whereIn('kelas_id', $kelasWaliIds)->exists()
-        );
 
-        if (! $hasAccess) {
+        if (! $this->canAccessSiswa($siswa)) {
             $this->dispatch('notify', type: 'error', message: 'Anda tidak memiliki akses ke data siswa ini.');
 
             return null;

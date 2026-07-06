@@ -255,12 +255,13 @@
                 $hadirCount = $activityData->where('kehadiran', \App\Enums\KehadiranStatus::Hadir)->count();
                 $avgKehadiranPct = $totalActivities > 0 ? ($hadirCount / $totalActivities) * 100 : 0;
                 $hadirActivities = $activityData->where('kehadiran', \App\Enums\KehadiranStatus::Hadir);
-                $avgPartisipasi = $hadirActivities->isNotEmpty() ? $hadirActivities->avg('partisipasi') : 0;
+                $keaktifanWeights = $hadirActivities->whereNotNull('keaktifan')->map(fn($detail) => $detail->keaktifan->weight());
+                $avgKeaktifan = $keaktifanWeights->isNotEmpty() ? $keaktifanWeights->avg() : 0;
 
-                $partisipasiLabel = match(true) {
-                    $avgPartisipasi >= 3.5 => 'Sangat Aktif',
-                    $avgPartisipasi >= 2.5 => 'Aktif',
-                    $avgPartisipasi >= 1.5 => 'Cukup',
+                $keaktifanLabel = match(true) {
+                    $avgKeaktifan >= 3.5 => 'Sangat Aktif',
+                    $avgKeaktifan >= 2.5 => 'Aktif',
+                    $avgKeaktifan >= 1.5 => 'Cukup',
                     default => 'Pasif',
                 };
             @endphp
@@ -270,7 +271,7 @@
                 <tr>
                     <td>Rata-rata Kehadiran: <strong>{{ number_format($avgKehadiranPct, 1) }}%</strong></td>
                     <td>Total Pertemuan: <strong>{{ $totalActivities }}</strong></td>
-                    <td>Keaktifan: <strong>{{ $partisipasiLabel }}</strong></td>
+                    <td>Keaktifan: <strong>{{ $keaktifanLabel }}</strong></td>
                 </tr>
             </table>
         @endif
@@ -298,22 +299,15 @@
                             default => '-',
                         };
 
-                        $partLabel = '-';
-                        if ($detail->kehadiran === \App\Enums\KehadiranStatus::Hadir && $detail->partisipasi) {
-                            $partLabel = match((int) $detail->partisipasi) {
-                                4 => 'Sangat Aktif',
-                                3 => 'Aktif',
-                                2 => 'Cukup',
-                                1 => 'Pasif',
-                                default => '-',
-                            };
-                        }
+                        $keaktifanLabel = $detail->kehadiran === \App\Enums\KehadiranStatus::Hadir
+                            ? ($detail->keaktifan?->label() ?? '-')
+                            : '-';
                     @endphp
                     <tr>
                         <td class="center">{{ $detail->aktivitasPembelajaran->tanggal->format('d/m/Y') }}</td>
                         <td>{{ $detail->aktivitasPembelajaran->mataPelajaran?->nama_mapel }}</td>
                         <td class="center">{{ $kehadiranLabel }}</td>
-                        <td class="center">{{ $partLabel }}</td>
+                        <td class="center">{{ $keaktifanLabel }}</td>
                         <td>{{ $detail->catatan ?? '-' }}</td>
                     </tr>
                 @empty

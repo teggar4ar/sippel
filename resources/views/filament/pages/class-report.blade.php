@@ -86,7 +86,6 @@
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Izin</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Sakit</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Alpa</th>
-                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Nilai</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Keaktifan</th>
                                 </tr>
                             </thead>
@@ -117,31 +116,17 @@
                                             {{ $laporan->alpa_count }}
                                         </td>
                                         <td class="py-3 text-center">
-                                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                                                {{ $laporan->rata_nilai >= 80 ? 'bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400' :
-                                                   ($laporan->rata_nilai >= 60 ? 'bg-warning-100 text-warning-700 dark:bg-warning-500/20 dark:text-warning-400' :
-                                                   'bg-danger-100 text-danger-700 dark:bg-danger-500/20 dark:text-danger-400') }}">
-                                                {{ number_format($laporan->rata_nilai, 1) }}
-                                            </span>
-                                        </td>
-                                        <td class="py-3 text-center">
                                             @php
-                                                $partisipasi = $laporan->rata_partisipasi;
-                                                $partLabel = match(true) {
-                                                    $partisipasi >= 4 => 'Sangat Aktif',
-                                                    $partisipasi >= 3 => 'Aktif',
-                                                    $partisipasi >= 2 => 'Cukup',
-                                                    default => 'Pasif',
-                                                };
-                                                $partColor = match(true) {
-                                                    $partisipasi >= 4 => 'bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400',
-                                                    $partisipasi >= 3 => 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-400',
-                                                    $partisipasi >= 2 => 'bg-warning-100 text-warning-700 dark:bg-warning-500/20 dark:text-warning-400',
+                                                $keaktifanLabel = $laporan->rata_keaktifan?->label() ?? '-';
+                                                $keaktifanColor = match($laporan->rata_keaktifan) {
+                                                    \App\Enums\Keaktifan::SangatAktif => 'bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400',
+                                                    \App\Enums\Keaktifan::Aktif => 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-400',
+                                                    \App\Enums\Keaktifan::Cukup => 'bg-warning-100 text-warning-700 dark:bg-warning-500/20 dark:text-warning-400',
                                                     default => 'bg-danger-100 text-danger-700 dark:bg-danger-500/20 dark:text-danger-400',
                                                 };
                                             @endphp
-                                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $partColor }}">
-                                                {{ $partLabel }}
+                                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $keaktifanColor }}">
+                                                {{ $keaktifanLabel }}
                                             </span>
                                         </td>
                                     </tr>

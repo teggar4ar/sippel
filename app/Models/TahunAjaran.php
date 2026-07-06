@@ -15,6 +15,8 @@ final class TahunAjaran extends Model
     /** @use HasFactory<TahunAjaranFactory> */
     use HasFactory, SoftDeletes;
 
+    private const string CONTEXT_MEMO_KEY = 'tahun_ajaran_context_model';
+
     protected $table = 'tahun_ajaran';
 
     protected $fillable = [
@@ -47,17 +49,28 @@ final class TahunAjaran extends Model
      */
     public static function getContext(): ?self
     {
+        $request = request();
+
+        if ($request->attributes->has(self::CONTEXT_MEMO_KEY)) {
+            $memoized = $request->attributes->get(self::CONTEXT_MEMO_KEY);
+
+            return $memoized instanceof self ? $memoized : null;
+        }
+
+        $tahunAjaran = null;
         $contextId = session('tahun_ajaran_context');
 
         if ($contextId) {
             $tahunAjaran = self::find($contextId);
-            if ($tahunAjaran) {
-                return $tahunAjaran;
-            }
         }
 
-        // Fallback ke tahun ajaran aktif
-        return self::getActive();
+        if (! $tahunAjaran instanceof self) {
+            $tahunAjaran = self::getActive();
+        }
+
+        $request->attributes->set(self::CONTEXT_MEMO_KEY, $tahunAjaran);
+
+        return $tahunAjaran;
     }
 
     /**
@@ -70,6 +83,8 @@ final class TahunAjaran extends Model
         } else {
             session(['tahun_ajaran_context' => $tahunAjaranId]);
         }
+
+        self::forgetContextMemo();
     }
 
     /**
@@ -120,5 +135,15 @@ final class TahunAjaran extends Model
 
         // Fallback: just return current name
         return $this->nama_tahun;
+    }
+
+    /**
+     * Clear the request-scoped context memo.
+     */
+    private static function forgetContextMemo(): void
+    {
+        if (app()->bound('request')) {
+            request()->attributes->remove(self::CONTEXT_MEMO_KEY);
+        }
     }
 }

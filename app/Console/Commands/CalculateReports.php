@@ -14,7 +14,7 @@ use Illuminate\Console\Command;
 /**
  * Calculate and cache report statistics in the laporan table.
  *
- * This command calculates aggregated statistics (attendance, grades, participation)
+ * This command calculates aggregated attendance and keaktifan statistics.
  * for each student, for each subject, for each academic year. The results are cached
  * in the laporan table to improve report generation performance.
  */

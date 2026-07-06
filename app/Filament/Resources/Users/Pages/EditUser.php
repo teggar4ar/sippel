@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Users\Pages;
 
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Filament\Resources\Users\UserResource;
+use App\Services\AdminDashboardCacheService;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -87,6 +88,8 @@ final class EditUser extends EditRecord
         if ($role) {
             $record->syncRoles([$role]);
         }
+
+        app(AdminDashboardCacheService::class)->invalidate();
 
         return $record;
     }

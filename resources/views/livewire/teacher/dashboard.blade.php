@@ -190,7 +190,7 @@
                     <h2 class="font-semibold text-slate-900 dark:text-white">Mata Pelajaran Diampu</h2>
                 </div>
                 <div class="grid gap-3 p-3">
-                    @forelse($this->partisipasiPerKelas as $mapel)
+                    @forelse($this->keaktifanPerKelas as $mapel)
                         @php
                             $pl = match(true) {
                                 $mapel['avg'] >= 3.5 => 'Sangat Aktif',

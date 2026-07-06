@@ -71,14 +71,8 @@
     <div class="space-y-2">
         <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Ringkasan Pertemuan</p>
         @php
-            $avgPart = $this->stats['avg_partisipasi'];
-            $partisipasiLabel = match(true) {
-                $avgPart >= 3.5 => 'Sangat Aktif',
-                $avgPart >= 2.5 => 'Aktif',
-                $avgPart >= 1.5 => 'Cukup',
-                $avgPart >= 0.1 => 'Pasif',
-                default => '-',
-            };
+            $avgKeaktifan = $this->stats['avg_keaktifan'];
+            $keaktifanLabel = $avgKeaktifan === null ? '-' : \App\Enums\Keaktifan::fromAverage((float) $avgKeaktifan)->label();
         @endphp
         <div class="flex flex-wrap gap-2">
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
@@ -99,7 +93,7 @@
             </span>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
                 <flux:icon name="star" class="w-3.5 h-3.5 text-violet-500" />
-                Rata-rata Keaktifan: {{ $partisipasiLabel }}
+                Rata-rata Keaktifan: {{ $keaktifanLabel }}
             </span>
         </div>
     </div>
@@ -131,14 +125,13 @@
                                 \App\Enums\KehadiranStatus::Alpa  => ['Alpa', 'red'],
                                 default => ['-', 'zinc'],
                             };
-                            $partBadge = null;
-                            if ($detail->kehadiran === \App\Enums\KehadiranStatus::Hadir && $detail->partisipasi) {
-                                $partBadge = match((int) $detail->partisipasi) {
-                                    4 => ['S. Aktif', 'green'],
-                                    3 => ['Aktif', 'blue'],
-                                    2 => ['Cukup', 'amber'],
-                                    1 => ['Pasif', 'red'],
-                                    default => ['-', 'zinc'],
+                            $keaktifanBadge = null;
+                            if ($detail->kehadiran === \App\Enums\KehadiranStatus::Hadir && $detail->keaktifan) {
+                                $keaktifanBadge = match($detail->keaktifan) {
+                                    \App\Enums\Keaktifan::SangatAktif => ['S. Aktif', 'green'],
+                                    \App\Enums\Keaktifan::Aktif => ['Aktif', 'blue'],
+                                    \App\Enums\Keaktifan::Cukup => ['Cukup', 'amber'],
+                                    \App\Enums\Keaktifan::Pasif => ['Pasif', 'red'],
                                 };
                             }
                         @endphp
@@ -156,8 +149,8 @@
                                 <flux:badge color="{{ $kehadiranBadge[1] }}" size="sm" inset="top bottom">{{ $kehadiranBadge[0] }}</flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
-                                @if($partBadge)
-                                    <flux:badge color="{{ $partBadge[1] }}" size="sm" inset="top bottom">{{ $partBadge[0] }}</flux:badge>
+                                @if($keaktifanBadge)
+                                    <flux:badge color="{{ $keaktifanBadge[1] }}" size="sm" inset="top bottom">{{ $keaktifanBadge[0] }}</flux:badge>
                                 @else
                                     <span class="text-xs text-slate-400">-</span>
                                 @endif
@@ -186,14 +179,13 @@
                         \App\Enums\KehadiranStatus::Alpa  => ['Alpa', 'red'],
                         default => ['-', 'zinc'],
                     };
-                    $partBadge = null;
-                    if ($detail->kehadiran === \App\Enums\KehadiranStatus::Hadir && $detail->partisipasi) {
-                        $partBadge = match((int) $detail->partisipasi) {
-                            4 => ['S. Aktif', 'green'],
-                            3 => ['Aktif', 'blue'],
-                            2 => ['Cukup', 'amber'],
-                            1 => ['Pasif', 'red'],
-                            default => ['-', 'zinc'],
+                    $keaktifanBadge = null;
+                    if ($detail->kehadiran === \App\Enums\KehadiranStatus::Hadir && $detail->keaktifan) {
+                        $keaktifanBadge = match($detail->keaktifan) {
+                            \App\Enums\Keaktifan::SangatAktif => ['S. Aktif', 'green'],
+                            \App\Enums\Keaktifan::Aktif => ['Aktif', 'blue'],
+                            \App\Enums\Keaktifan::Cukup => ['Cukup', 'amber'],
+                            \App\Enums\Keaktifan::Pasif => ['Pasif', 'red'],
                         };
                     }
                 @endphp
@@ -216,8 +208,8 @@
                         {{-- Row 2: Badges --}}
                         <div class="flex items-center gap-1.5 mt-1.5">
                             <flux:badge color="{{ $kehadiranBadge[1] }}" size="sm">{{ $kehadiranBadge[0] }}</flux:badge>
-                            @if($partBadge)
-                                <flux:badge color="{{ $partBadge[1] }}" size="sm">{{ $partBadge[0] }}</flux:badge>
+                            @if($keaktifanBadge)
+                                <flux:badge color="{{ $keaktifanBadge[1] }}" size="sm">{{ $keaktifanBadge[0] }}</flux:badge>
                             @else
                                 <span class="text-[10px] text-slate-400">-</span>
                             @endif
@@ -246,7 +238,7 @@
                 <flux:heading size="lg">Hapus Aktivitas ini?</flux:heading>
                 <flux:text class="font-medium line-clamp-2">"{{ $aktivitas->topik }}"</flux:text>
                 <flux:text class="!text-xs !text-slate-500 dark:!text-slate-400">
-                    Data kehadiran & nilai akan terhapus permanen
+                    Data kehadiran dan keaktifan akan terhapus permanen
                 </flux:text>
             </div>
             <div class="flex gap-2">

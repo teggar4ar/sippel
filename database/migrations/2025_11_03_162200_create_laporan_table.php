@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Keaktifan;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,8 +21,7 @@ return new class() extends Migration
             $table->integer('sakit_count')->default(0);
             $table->integer('alpa_count')->default(0);
             $table->integer('total_kehadiran')->default(0);
-            $table->float('rata_nilai')->nullable();
-            $table->integer('rata_partisipasi')->nullable();
+            $table->enum('rata_keaktifan', Keaktifan::values())->nullable();
 
             // Foreign keys
             $table->foreignId('siswa_id')->constrained('siswa')->cascadeOnDelete();

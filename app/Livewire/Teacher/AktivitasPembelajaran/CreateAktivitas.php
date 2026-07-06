@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Teacher\AktivitasPembelajaran;
 
+use App\Enums\Keaktifan;
 use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
 use App\Models\Kelas;
@@ -16,6 +17,7 @@ use App\Services\TeacherDashboardCacheService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -247,10 +249,9 @@ final class CreateAktivitas extends Component
         foreach (array_keys($this->detailAktivitas) as $siswaId) {
             $this->detailAktivitas[$siswaId]['kehadiran'] = $status;
 
-            // Clear nilai and partisipasi if not present
+            // Keaktifan is only recorded when the student is present.
             if ($status !== 'Hadir') {
-                $this->detailAktivitas[$siswaId]['nilai'] = null;
-                $this->detailAktivitas[$siswaId]['partisipasi'] = null;
+                $this->detailAktivitas[$siswaId]['keaktifan'] = null;
             }
         }
     }
@@ -259,7 +260,7 @@ final class CreateAktivitas extends Component
      * Accept the full detailAktivitas payload from Alpine (client-side state)
      * and immediately save — eliminates multiple $wire.set() round-trips.
      *
-     * @param  array<int|string, array{kehadiran: string|null, partisipasi: int|null, catatan: string}>  $detailAktivitas
+     * @param  array<int|string, array{kehadiran: string|null, keaktifan: string|null, catatan: string}>  $detailAktivitas
      */
     public function saveWithDetail(array $detailAktivitas): void
     {
@@ -376,19 +377,13 @@ final class CreateAktivitas extends Component
             $kehadiran = mb_strtolower((string) $detail['kehadiran']);
             $isHadir = $kehadiran === 'hadir';
 
-            $partisipasi = null;
-            $nilai = null;
-            if ($isHadir && $detail['partisipasi']) {
-                $partisipasi = (int) $detail['partisipasi'];
-                $nilai = $this->resolveNilaiFromPartisipasi($partisipasi);
-            }
+            $keaktifan = $isHadir ? ($detail['keaktifan'] ?? null) : null;
 
             $records[] = [
                 'aktivitas_pembelajaran_id' => $aktivitas->id,
                 'siswa_id' => $siswaId,
                 'kehadiran' => $kehadiran,
-                'nilai' => $nilai,
-                'partisipasi' => $partisipasi,
+                'keaktifan' => $keaktifan,
                 'catatan' => ($detail['catatan'] !== '') ? $detail['catatan'] : null,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -438,8 +433,7 @@ final class CreateAktivitas extends Component
         return [
             'detailAktivitas' => 'required|array|min:1',
             'detailAktivitas.*.kehadiran' => 'required|in:Hadir,Izin,Sakit,Alpa',
-            'detailAktivitas.*.nilai' => 'nullable|numeric|min:0|max:100',
-            'detailAktivitas.*.partisipasi' => 'nullable|integer|min:1|max:5',
+            'detailAktivitas.*.keaktifan' => ['nullable', Rule::enum(Keaktifan::class)],
             'detailAktivitas.*.catatan' => 'nullable|string|max:500',
         ];
     }
@@ -454,32 +448,15 @@ final class CreateAktivitas extends Component
             'topik.required' => 'Topik pembelajaran harus diisi.',
             'topik.max' => 'Topik maksimal 200 karakter.',
             'detailAktivitas.*.kehadiran.required' => 'Status kehadiran harus dipilih.',
-            'detailAktivitas.*.nilai.numeric' => 'Nilai harus berupa angka.',
-            'detailAktivitas.*.nilai.min' => 'Nilai minimal 0.',
-            'detailAktivitas.*.nilai.max' => 'Nilai maksimal 100.',
+            'detailAktivitas.*.keaktifan.enum' => 'Tingkat keaktifan tidak valid.',
         ];
-    }
-
-    /**
-     * Map a participation level (1–4) to its corresponding fixed observation score.
-     * Pasif=60, Cukup=75, Aktif=85, Sangat Aktif=95.
-     */
-    private function resolveNilaiFromPartisipasi(int $partisipasi): ?int
-    {
-        return match ($partisipasi) {
-            1 => 60,
-            2 => 75,
-            3 => 85,
-            4 => 95,
-            default => null,
-        };
     }
 
     /**
      * Build the default detailAktivitas array for all students in the selected class
      * without mutating $this->detailAktivitas.
      *
-     * @return array<int, array{siswa_id: int, kehadiran: null, nilai: null, partisipasi: null, catatan: string}>
+     * @return array<int, array{siswa_id: int, kehadiran: null, keaktifan: null, catatan: string}>
      */
     private function initializeDetailAktivitasData(): array
     {
@@ -488,8 +465,7 @@ final class CreateAktivitas extends Component
             $data[$siswa->id] = [
                 'siswa_id' => $siswa->id,
                 'kehadiran' => null,
-                'nilai' => null,
-                'partisipasi' => null,
+                'keaktifan' => null,
                 'catatan' => '',
             ];
         }

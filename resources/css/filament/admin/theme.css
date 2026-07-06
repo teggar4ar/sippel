@@ -10,3 +10,15 @@
 .dark .fi-sidebar-nav {
     border-right: 1px solid  #18181B;
 }
+
+/*
+ * Filament's `line-clamp` rule forces `display: -webkit-box` on text items,
+ * stretching single badges across the table cell. The single-badge case puts
+ * `fi-ta-text`, `fi-ta-text-item` and `fi-ta-text-has-badges` on one element;
+ * the list case (line-clamp / descriptions / multiple states) puts
+ * `fi-ta-text-item` on a descendant `<li>`, so cover both.
+ */
+div.fi-ta-text.fi-ta-text-item.fi-ta-text-has-badges,
+div.fi-ta-text.fi-ta-text-has-badges .fi-ta-text-item {
+    display: block;
+}

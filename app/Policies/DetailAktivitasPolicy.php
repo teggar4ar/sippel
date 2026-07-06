@@ -8,6 +8,7 @@ use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
 use App\Models\Siswa;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Policy for DetailAktivitas model.
@@ -134,12 +135,12 @@ final class DetailAktivitasPolicy
      */
     private function getTeacherKelasIds(User $user): array
     {
-        // Classes where user is homeroom teacher (wali kelas)
-        $waliKelasIds = $user->kelasAsWali()->pluck('id')->toArray();
-
-        // Classes where user teaches a subject
-        $guruMapelKelasIds = $user->mataPelajaranAsGuru()->pluck('kelas_id')->toArray();
-
-        return array_unique(array_merge($waliKelasIds, $guruMapelKelasIds));
+        return Cache::store('array')->rememberForever(
+            'detail_aktivitas_policy_teacher_kelas_ids_'.$user->id,
+            fn (): array => array_values(array_unique(array_merge(
+                $user->kelasAsWali()->pluck('id')->all(),
+                $user->mataPelajaranAsGuru()->pluck('kelas_id')->all(),
+            ))),
+        );
     }
 }

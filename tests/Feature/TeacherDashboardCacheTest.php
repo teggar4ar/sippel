@@ -11,11 +11,11 @@ it('invalidates teacher dashboard stats and every chart cache generation', funct
     $service = app(TeacherDashboardCacheService::class);
 
     $initialVersion = $service->chartVersion($teacherId, $tahunAjaranId);
-    Cache::put('teacher_dashboard_stats_'.$teacherId.'_'.$tahunAjaranId, ['cached' => true], 300);
+    Cache::put('teacher_dashboard_stats_v2_'.$teacherId.'_'.$tahunAjaranId, ['cached' => true], 300);
 
     $service->invalidate($teacherId, $tahunAjaranId);
 
-    expect(Cache::has('teacher_dashboard_stats_'.$teacherId.'_'.$tahunAjaranId))->toBeFalse()
+    expect(Cache::has('teacher_dashboard_stats_v2_'.$teacherId.'_'.$tahunAjaranId))->toBeFalse()
         ->and($service->chartVersion($teacherId, $tahunAjaranId))->not->toBe($initialVersion);
 });
 

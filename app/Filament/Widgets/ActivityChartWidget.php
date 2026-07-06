@@ -6,6 +6,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\AktivitasPembelajaran;
 use App\Models\User;
+use App\Services\AdminDashboardCacheService;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -36,17 +37,24 @@ final class ActivityChartWidget extends ChartWidget
 
     protected function getData(): array
     {
-        $data = Cache::remember('admin_activity_chart', 300, function (): array {
+        $cacheVersion = app(AdminDashboardCacheService::class)->version();
+        $data = Cache::remember('admin_activity_chart_v2_'.$cacheVersion, 300, function (): array {
+            $today = Carbon::now();
+            $startDate = $today->copy()->subDays(6)->startOfDay();
+            $endDate = $today->copy()->endOfDay();
             $dates = collect();
             $counts = collect();
 
-            // Get last 7 days
-            for ($i = 6; $i >= 0; $i--) {
-                $date = Carbon::now()->subDays($i);
-                $dates->push($date->format('d M'));
+            $activityCounts = AktivitasPembelajaran::query()
+                ->whereBetween('tanggal', [$startDate, $endDate])
+                ->selectRaw('DATE(tanggal) as activity_date, COUNT(*) as aggregate')
+                ->groupBy('activity_date')
+                ->pluck('aggregate', 'activity_date');
 
-                $count = AktivitasPembelajaran::whereDate('tanggal', $date->toDateString())->count();
-                $counts->push($count);
+            for ($i = 6; $i >= 0; $i--) {
+                $date = $today->copy()->subDays($i);
+                $dates->push($date->format('d M'));
+                $counts->push((int) $activityCounts->get($date->toDateString(), 0));
             }
 
             return [

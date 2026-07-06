@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Teacher;
 
+use App\Enums\Keaktifan;
 use App\Enums\KehadiranStatus;
 use App\Models\Kelas;
 use App\Models\MataPelajaran;
@@ -94,20 +95,19 @@ final class Dashboard extends Component
     public function dashboardStats(): array
     {
         $tahunAjaran = $this->activeTahunAjaran();
-        $cacheKey = 'teacher_dashboard_stats_'.Auth::id().'_'.($tahunAjaran?->id ?? 'none');
+        $cacheKey = 'teacher_dashboard_stats_v2_'.Auth::id().'_'.($tahunAjaran?->id ?? 'none');
 
         return Cache::remember($cacheKey, 300, function () use ($tahunAjaran): array {
             if (! $tahunAjaran instanceof TahunAjaran) {
                 return ['kelas_diampu' => 0, 'total_siswa' => 0, 'aktivitas_minggu_ini' => 0, 'rata_kehadiran' => 0];
             }
 
-            $mapelDiampu = MataPelajaran::where('guru_id', Auth::id())
+            $mapel = MataPelajaran::where('guru_id', Auth::id())
                 ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
-                ->count();
+                ->get(['id', 'kelas_id']);
 
-            $kelasIds = MataPelajaran::where('guru_id', Auth::id())
-                ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
-                ->pluck('kelas_id')->unique();
+            $mapelDiampu = $mapel->count();
+            $kelasIds = $mapel->pluck('kelas_id')->unique();
 
             $totalSiswa = SiswaKelasHistory::where('tahun_ajaran_id', $tahunAjaran->id)
                 ->whereIn('kelas_id', $kelasIds)
@@ -115,6 +115,8 @@ final class Dashboard extends Component
 
             $aktivitasMingguIni = DB::table('aktivitas_pembelajaran as ap')
                 ->join('kelas as k', 'ap.kelas_id', '=', 'k.id')
+                ->whereNull('ap.deleted_at')
+                ->whereNull('k.deleted_at')
                 ->where('ap.guru_id', Auth::id())
                 ->where('k.tahun_ajaran_id', $tahunAjaran->id)
                 ->whereBetween('ap.tanggal', [now()->copy()->startOfWeek(), now()->copy()->endOfWeek()])
@@ -124,6 +126,9 @@ final class Dashboard extends Component
             $kehadiranStats = DB::table('detail_aktivitas as da')
                 ->join('aktivitas_pembelajaran as ap', 'da.aktivitas_pembelajaran_id', '=', 'ap.id')
                 ->join('kelas as k', 'ap.kelas_id', '=', 'k.id')
+                ->whereNull('da.deleted_at')
+                ->whereNull('ap.deleted_at')
+                ->whereNull('k.deleted_at')
                 ->where('ap.guru_id', Auth::id())
                 ->where('k.tahun_ajaran_id', $tahunAjaran->id)
                 ->selectRaw('COUNT(*) as total, SUM(CASE WHEN da.kehadiran = ? THEN 1 ELSE 0 END) as hadir', [KehadiranStatus::Hadir->value])
@@ -143,22 +148,18 @@ final class Dashboard extends Component
     }
 
     /**
-     * Mata pelajaran diampu — all subjects taught by the teacher with participation stats.
+     * Mata pelajaran diampu — all subjects taught by the teacher with keaktifan stats.
      * Optimized: single JOIN query instead of N×3 subqueries.
      */
     #[Computed]
-    public function partisipasiPerKelas(): Collection
+    public function keaktifanPerKelas(): Collection
     {
         $tahunAjaran = $this->activeTahunAjaran();
         if (! $tahunAjaran instanceof TahunAjaran) {
             return collect();
         }
 
-        // Get all mapel IDs taught by this teacher in the active year
-        $mapelList = MataPelajaran::with(['kelas' => fn ($q) => $q->withCount('siswa')])
-            ->where('guru_id', Auth::id())
-            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaran->id))
-            ->get();
+        $mapelList = $this->mySubjects;
 
         if ($mapelList->isEmpty()) {
             return collect();
@@ -169,6 +170,8 @@ final class Dashboard extends Component
         // One aggregate query for all mapel (replaces N×3 separate queries)
         $stats = DB::table('detail_aktivitas as da')
             ->join('aktivitas_pembelajaran as ap', 'da.aktivitas_pembelajaran_id', '=', 'ap.id')
+            ->whereNull('da.deleted_at')
+            ->whereNull('ap.deleted_at')
             ->whereIn('ap.mata_pelajaran_id', $mapelIds)
             ->selectRaw(
                 'ap.mata_pelajaran_id,
@@ -176,7 +179,7 @@ final class Dashboard extends Component
                  COUNT(*) as total_detail,
                  COUNT(DISTINCT ap.id) as total_aktivitas,
                  SUM(CASE WHEN da.kehadiran = ? THEN 1 ELSE 0 END) as hadir_count,
-                 AVG(CASE WHEN da.kehadiran = ? AND da.partisipasi IS NOT NULL THEN da.partisipasi ELSE NULL END) as avg_partisipasi',
+                 AVG(CASE WHEN da.kehadiran = ? THEN '.$this->keaktifanWeightSql('da.keaktifan').' ELSE NULL END) as avg_keaktifan',
                 [KehadiranStatus::Hadir->value, KehadiranStatus::Hadir->value]
             )
             ->groupBy('ap.mata_pelajaran_id', 'ap.kelas_id')
@@ -186,14 +189,14 @@ final class Dashboard extends Component
         return $mapelList->map(function (MataPelajaran $mapel) use ($stats): array {
             $stat = $stats->get($mapel->id);
 
-            $avgPartisipasi = $stat ? (float) $stat->avg_partisipasi : 0.0;
+            $avgKeaktifan = $stat ? (float) $stat->avg_keaktifan : 0.0;
             $totalDetail = $stat ? (int) $stat->total_detail : 0;
             $totalAktivitas = $stat ? (int) $stat->total_aktivitas : 0;
             $hadirCount = $stat ? (int) $stat->hadir_count : 0;
 
             $kehadiranPct = $totalDetail > 0 ? round(($hadirCount / $totalDetail) * 100, 0) : 0;
-            $partisipasiScore = $avgPartisipasi > 0 ? min(max($avgPartisipasi, 0), 4) / 4 * 100 : 0;
-            $score = round(($kehadiranPct * 0.6) + ($partisipasiScore * 0.4), 1);
+            $keaktifanScore = $avgKeaktifan > 0 ? min(max($avgKeaktifan, 0), 4) / 4 * 100 : 0;
+            $score = round(($kehadiranPct * 0.6) + ($keaktifanScore * 0.4), 1);
 
             /** @var Kelas $kelas */
             $kelas = $mapel->kelas;
@@ -204,7 +207,7 @@ final class Dashboard extends Component
                 'mapel' => $mapel->nama_mapel,
                 'siswa_count' => $kelas->siswa_count ?? 0,
                 'total_aktivitas' => $totalAktivitas,
-                'avg' => round($avgPartisipasi, 1),
+                'avg' => round($avgKeaktifan, 1),
                 'kehadiran_pct' => $kehadiranPct,
                 'score' => $score,
             ];
@@ -303,12 +306,15 @@ final class Dashboard extends Component
         $rentang = $this->rentangWaktu;
         $chartVersion = app(TeacherDashboardCacheService::class)
             ->chartVersion((int) Auth::id(), $tahunAjaran->id);
-        $cacheKey = 'chart_tren_v2_'.Auth::id().'_'.$tahunAjaran->id.'_'.$chartVersion.'_'.$rentang.'_'.$kelasId.'_'.$mapelId;
+        $cacheKey = 'chart_tren_v3_'.Auth::id().'_'.$tahunAjaran->id.'_'.$chartVersion.'_'.$rentang.'_'.$kelasId.'_'.$mapelId;
 
         return Cache::remember($cacheKey, 300, function () use ($tahunAjaran, $dateRange, $kelasId, $mapelId, $rentang): array {
             $query = DB::table('detail_aktivitas as da')
                 ->join('aktivitas_pembelajaran as ap', 'da.aktivitas_pembelajaran_id', '=', 'ap.id')
                 ->join('kelas as k', 'ap.kelas_id', '=', 'k.id')
+                ->whereNull('da.deleted_at')
+                ->whereNull('ap.deleted_at')
+                ->whereNull('k.deleted_at')
                 ->where('ap.guru_id', Auth::id())
                 ->where('k.tahun_ajaran_id', $tahunAjaran->id)
                 ->whereBetween('ap.tanggal', [$dateRange['start'], $dateRange['end']])
@@ -399,7 +405,7 @@ final class Dashboard extends Component
         $rentang = $this->rentangWaktu;
         $chartVersion = app(TeacherDashboardCacheService::class)
             ->chartVersion((int) Auth::id(), $tahunAjaran->id);
-        $cacheKey = 'chart_topik_v2_'.Auth::id().'_'.$tahunAjaran->id.'_'.$chartVersion.'_'.$rentang.'_'.$kelasId.'_'.$mapelId;
+        $cacheKey = 'chart_topik_v3_'.Auth::id().'_'.$tahunAjaran->id.'_'.$chartVersion.'_'.$rentang.'_'.$kelasId.'_'.$mapelId;
 
         return Cache::remember($cacheKey, 300, function () use ($tahunAjaran, $dateRange, $kelasId, $mapelId): array {
             $hadirVal = KehadiranStatus::Hadir->value;
@@ -407,6 +413,9 @@ final class Dashboard extends Component
             $query = DB::table('aktivitas_pembelajaran as ap')
                 ->join('kelas as k', 'ap.kelas_id', '=', 'k.id')
                 ->join('detail_aktivitas as da', 'da.aktivitas_pembelajaran_id', '=', 'ap.id')
+                ->whereNull('ap.deleted_at')
+                ->whereNull('k.deleted_at')
+                ->whereNull('da.deleted_at')
                 ->where('ap.guru_id', Auth::id())
                 ->where('k.tahun_ajaran_id', $tahunAjaran->id)
                 ->whereBetween('ap.tanggal', [$dateRange['start'], $dateRange['end']])
@@ -415,11 +424,16 @@ final class Dashboard extends Component
                     'ap.id as aktivitas_id,
                      ap.topik,
                      ap.tanggal,
-                     SUM(CASE WHEN da.kehadiran = ? AND da.partisipasi >= 3.5 THEN 1 ELSE 0 END) as sangat_aktif,
-                     SUM(CASE WHEN da.kehadiran = ? AND da.partisipasi >= 2.5 AND da.partisipasi < 3.5 THEN 1 ELSE 0 END) as aktif,
-                     SUM(CASE WHEN da.kehadiran = ? AND da.partisipasi >= 1.5 AND da.partisipasi < 2.5 THEN 1 ELSE 0 END) as cukup,
-                     SUM(CASE WHEN da.kehadiran = ? AND da.partisipasi IS NOT NULL AND da.partisipasi < 1.5 THEN 1 ELSE 0 END) as pasif',
-                    [$hadirVal, $hadirVal, $hadirVal, $hadirVal]
+                     SUM(CASE WHEN da.kehadiran = ? AND da.keaktifan = ? THEN 1 ELSE 0 END) as sangat_aktif,
+                     SUM(CASE WHEN da.kehadiran = ? AND da.keaktifan = ? THEN 1 ELSE 0 END) as aktif,
+                     SUM(CASE WHEN da.kehadiran = ? AND da.keaktifan = ? THEN 1 ELSE 0 END) as cukup,
+                     SUM(CASE WHEN da.kehadiran = ? AND da.keaktifan = ? THEN 1 ELSE 0 END) as pasif',
+                    [
+                        $hadirVal, Keaktifan::SangatAktif->value,
+                        $hadirVal, Keaktifan::Aktif->value,
+                        $hadirVal, Keaktifan::Cukup->value,
+                        $hadirVal, Keaktifan::Pasif->value,
+                    ]
                 )
                 ->groupBy('ap.id', 'ap.topik', 'ap.tanggal')
                 ->orderByDesc('ap.tanggal')
@@ -477,7 +491,7 @@ final class Dashboard extends Component
         $mapelId = $this->mapelId;
         $chartVersion = app(TeacherDashboardCacheService::class)
             ->chartVersion((int) Auth::id(), $tahunAjaran->id);
-        $cacheKey = 'chart_dist_v2_'.Auth::id().'_'.$tahunAjaran->id.'_'.$chartVersion.'_'.$this->rentangWaktu.'_'.$kelasId.'_'.$mapelId;
+        $cacheKey = 'chart_dist_v3_'.Auth::id().'_'.$tahunAjaran->id.'_'.$chartVersion.'_'.$this->rentangWaktu.'_'.$kelasId.'_'.$mapelId;
 
         return Cache::remember($cacheKey, 300, function () use ($tahunAjaran, $dateRange, $kelasId, $mapelId): array {
             $hadirVal = KehadiranStatus::Hadir->value;
@@ -485,12 +499,15 @@ final class Dashboard extends Component
             $subQuery = DB::table('detail_aktivitas as da')
                 ->join('aktivitas_pembelajaran as ap', 'da.aktivitas_pembelajaran_id', '=', 'ap.id')
                 ->join('kelas as k', 'ap.kelas_id', '=', 'k.id')
+                ->whereNull('da.deleted_at')
+                ->whereNull('ap.deleted_at')
+                ->whereNull('k.deleted_at')
                 ->where('ap.guru_id', Auth::id())
                 ->where('k.tahun_ajaran_id', $tahunAjaran->id)
                 ->whereBetween('ap.tanggal', [$dateRange['start'], $dateRange['end']])
                 ->where('da.kehadiran', $hadirVal)
-                ->whereNotNull('da.partisipasi')
-                ->selectRaw('da.siswa_id, AVG(da.partisipasi) as avg_partisipasi')
+                ->whereNotNull('da.keaktifan')
+                ->selectRaw('da.siswa_id, AVG('.$this->keaktifanWeightSql('da.keaktifan').') as avg_keaktifan')
                 ->groupBy('da.siswa_id');
 
             if ($kelasId !== '') {
@@ -503,10 +520,10 @@ final class Dashboard extends Component
             $result = DB::table(DB::raw("({$subQuery->toSql()}) as sub"))
                 ->mergeBindings($subQuery)
                 ->selectRaw(
-                    'SUM(CASE WHEN sub.avg_partisipasi >= 3.5 THEN 1 ELSE 0 END) as sangat_aktif,
-                     SUM(CASE WHEN sub.avg_partisipasi >= 2.5 AND sub.avg_partisipasi < 3.5 THEN 1 ELSE 0 END) as aktif,
-                     SUM(CASE WHEN sub.avg_partisipasi >= 1.5 AND sub.avg_partisipasi < 2.5 THEN 1 ELSE 0 END) as cukup,
-                     SUM(CASE WHEN sub.avg_partisipasi < 1.5 THEN 1 ELSE 0 END) as pasif'
+                    'SUM(CASE WHEN sub.avg_keaktifan >= 3.5 THEN 1 ELSE 0 END) as sangat_aktif,
+                     SUM(CASE WHEN sub.avg_keaktifan >= 2.5 AND sub.avg_keaktifan < 3.5 THEN 1 ELSE 0 END) as aktif,
+                     SUM(CASE WHEN sub.avg_keaktifan >= 1.5 AND sub.avg_keaktifan < 2.5 THEN 1 ELSE 0 END) as cukup,
+                     SUM(CASE WHEN sub.avg_keaktifan < 1.5 THEN 1 ELSE 0 END) as pasif'
                 )
                 ->first();
 
@@ -527,6 +544,18 @@ final class Dashboard extends Component
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
+
+    private function keaktifanWeightSql(string $column): string
+    {
+        return sprintf(
+            "CASE %s WHEN '%s' THEN 1 WHEN '%s' THEN 2 WHEN '%s' THEN 3 WHEN '%s' THEN 4 ELSE NULL END",
+            $column,
+            Keaktifan::Pasif->value,
+            Keaktifan::Cukup->value,
+            Keaktifan::Aktif->value,
+            Keaktifan::SangatAktif->value,
+        );
+    }
 
     /**
      * @return array{start: CarbonImmutable, end: CarbonImmutable}

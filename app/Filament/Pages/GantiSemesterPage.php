@@ -53,6 +53,9 @@ final class GantiSemesterPage extends Page implements HasForms
 
     protected string $view = 'filament.pages.ganti-semester';
 
+    /** @var array<int, string>|null */
+    private ?array $teacherOptions = null;
+
     public static function getNavigationGroup(): string
     {
         return 'Master Data';
@@ -137,10 +140,12 @@ final class GantiSemesterPage extends Page implements HasForms
                     Wizard\Step::make('Wali Kelas')
                         ->schema(function (): array {
                             $fields = [];
+                            $teachers = $this->getTeacherOptions();
+
                             foreach ($this->currentClasses as $kelas) {
                                 $fields[] = Select::make("waliKelasAssignments.{$kelas->id}")
                                     ->label("Wali Kelas {$kelas->tingkat_kelas} {$kelas->grup_kelas}")
-                                    ->options(User::role('teacher')->pluck('name', 'id'))
+                                    ->options($teachers)
                                     ->native(false)
                                     ->searchable()
                                     ->preload()
@@ -239,6 +244,17 @@ final class GantiSemesterPage extends Page implements HasForms
         return $this->currentClasses->sum(fn ($kelas) => $kelas->siswa->count());
     }
 
+    /**
+     * @return array<int, string>
+     */
+    private function getTeacherOptions(): array
+    {
+        return $this->teacherOptions ??= User::role('teacher')
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
+    }
+
     private function tahunAjaranAlreadyExists(string $namaTahun, string $semester): bool
     {
         return TahunAjaran::where('nama_tahun', $namaTahun)
@@ -277,32 +293,36 @@ final class GantiSemesterPage extends Page implements HasForms
      */
     private function migrateStudentsToNewSemester(TahunAjaran $newTahunAjaran, array $kelasMapping): void
     {
+        $timestamp = now();
+
         foreach ($this->currentClasses as $oldKelas) {
             $newKelasId = $kelasMapping[$oldKelas->id];
-            $siswaInClass = Siswa::where('kelas_id', $oldKelas->id)->get();
+            $siswaIds = Siswa::where('kelas_id', $oldKelas->id)->pluck('id');
 
-            foreach ($siswaInClass as $siswa) {
-                // Record OLD enrollment (current semester) before it is overwritten
-                SiswaKelasHistory::firstOrCreate(
-                    [
-                        'siswa_id' => $siswa->id,
-                        'tahun_ajaran_id' => $this->activeTahunAjaran->id,
-                    ],
-                    ['kelas_id' => $oldKelas->id]
-                );
-
-                // Move student to the new class
-                $siswa->update(['kelas_id' => $newKelasId]);
-
-                // Record NEW enrollment (new semester)
-                SiswaKelasHistory::firstOrCreate(
-                    [
-                        'siswa_id' => $siswa->id,
-                        'tahun_ajaran_id' => $newTahunAjaran->id,
-                    ],
-                    ['kelas_id' => $newKelasId]
-                );
+            if ($siswaIds->isEmpty()) {
+                continue;
             }
+
+            $historyRecords = $siswaIds->flatMap(fn (int $siswaId): array => [
+                [
+                    'siswa_id' => $siswaId,
+                    'kelas_id' => $oldKelas->id,
+                    'tahun_ajaran_id' => $this->activeTahunAjaran->id,
+                    'created_at' => $timestamp,
+                    'updated_at' => $timestamp,
+                ],
+                [
+                    'siswa_id' => $siswaId,
+                    'kelas_id' => $newKelasId,
+                    'tahun_ajaran_id' => $newTahunAjaran->id,
+                    'created_at' => $timestamp,
+                    'updated_at' => $timestamp,
+                ],
+            ])->all();
+
+            SiswaKelasHistory::insertOrIgnore($historyRecords);
+
+            Siswa::whereIn('id', $siswaIds)->update(['kelas_id' => $newKelasId]);
         }
     }
 

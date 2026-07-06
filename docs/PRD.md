@@ -1,12 +1,12 @@
 # Product Requirements Document: Sistem Informasi Pencatatan Aktivitas Pembelajaran
-## As-Built Documentation (Version 2.0)
+## As-Built Documentation (Version 2.1)
 
 ---
 
 ## Document information
 
-**Version:** 2.0 (As-Built — Updated to Reflect Actual Implementation)  
-**Date:** June 3, 2026  
+**Version:** 2.1 (As-Built — Keaktifan Schema Update)  
+**Date:** July 6, 2026  
 **Project:** SIPPEL - Web-Based Classroom Learning Activity Recording and Monitoring System  
 **Author:** Student Final Project  
 **Status:** Completed Implementation  
@@ -18,7 +18,7 @@
 
 ### 1.1 Project overview
 
-SIPPEL (Sistem Informasi Pencatatan Aktivitas Pembelajaran) is a web-based information system designed to help junior high schools (SMP) monitor and manage classroom learning activities. This system replaces manual, paper-based attendance and grading processes with a digital solution. The system employs a hybrid architecture: a FilamentPHP admin panel for school operators on desktop, and a Flux UI (Livewire) interface for teachers and students on mobile devices.
+SIPPEL (Sistem Informasi Pencatatan Aktivitas Pembelajaran) is a web-based information system designed to help junior high schools (SMP) monitor and manage classroom learning activities. This system replaces manual, paper-based attendance and observation records with a digital solution. The system employs a hybrid architecture: a FilamentPHP admin panel for school operators on desktop, and a Flux UI (Livewire) interface for teachers and students on mobile devices.
 
 ### 1.2 Purpose of this document
 
@@ -51,7 +51,7 @@ This document serves as the as-built specification of the SIPPEL system, outlini
 - Automated backup systems
 - Integration with external systems
 - Advanced analytics or AI features
-- Manual numeric grade input (nilai is auto-computed from keaktifan)
+- Academic grading and manual numeric grade input
 
 ---
 
@@ -190,8 +190,8 @@ The completed system demonstrates:
 | FR-013 | Teacher can create learning activity with date (default today), topic, and notes via cascading filter (tingkat → grup → mata pelajaran → auto-fill kelas) | Must Have |
 | FR-013a | Learning activity creation is blocked if the current tahun ajaran context is inactive | Must Have |
 | FR-014 | Teacher can record attendance for each student (Hadir, Izin, Sakit, Alpa) with bulk "Tandai Semua Hadir" action | Must Have |
-| FR-015 | Teacher can assign keaktifan (participation) scores on a 1-4 scale: 1=Pasif, 2=Cukup, 3=Aktif, 4=Sangat Aktif. Only available when attendance is "Hadir" | Must Have |
-| FR-016 | ~~Teacher can input numeric grades (0-100)~~ **Hidden/Deprecated.** Nilai is auto-computed from keaktifan: Pasif→60, Cukup→75, Aktif→85, Sangat Aktif→95. The `nilai` column remains in the database but is not exposed in the UI. TODO: Full removal from schema | Deprecated |
+| FR-015 | Teacher can assign a qualitative keaktifan category: Pasif, Cukup, Aktif, or Sangat Aktif. Only available when attendance is "Hadir" | Must Have |
+| FR-016 | The system does not store, calculate, or display academic numeric grades | Must Have |
 | FR-017 | Teacher can add notes/feedback for individual students (only when attendance is "Hadir") | Should Have |
 | FR-018 | Teacher can view and edit previously created activities (only within active tahun ajaran context) | Must Have |
 | FR-019 | System displays activities in chronological order grouped by date, with inline attendance/keaktifan statistics | Must Have |
@@ -203,7 +203,7 @@ The completed system demonstrates:
 | FR-020 | System automatically calculates attendance percentage per student (Hadir/Total × 100) | Must Have |
 | FR-020a | System calculates attendance streak (consecutive "Hadir" days from most recent activity) | Must Have |
 | FR-020b | System calculates composite score per subject: (attendance_pct × 0.6) + (normalized_keaktifan × 0.4) | Must Have |
-| FR-021 | System automatically calculates average grades per student per subject (auto-computed from keaktifan) | Must Have |
+| FR-021 | System converts keaktifan categories to internal weights only when calculating aggregate statistics and composite scores | Must Have |
 | FR-022 | System automatically calculates average keaktifan per student with label mapping (Pasif/Cukup/Aktif/Sangat Aktif) | Must Have |
 
 ### 4.5 Student access
@@ -235,7 +235,7 @@ The completed system demonstrates:
 | ID | Requirement | Priority |
 |----|-------------|----------|
 | FR-031 | Admin dashboard shows: 6 stat cards (Admin count, Teacher count, Student count, Total Classes, Total Subjects, Activities This Month) + Recent Activities table (10 entries) + 7-day activity line chart. 60s polling, 5-min cache | Must Have |
-| FR-032 | Teacher dashboard shows: 4 stat cards (Kelas Diampu, Total Siswa, Aktivitas Minggu Ini, Rata-rata Kehadiran) + 3 interactive ApexCharts (Tren Kehadiran stacked column, Keaktifan per Topik stacked bar, Distribusi Keaktifan donut) + Partisipasi per Kelas table with composite scores + filter controls (kelas, mata pelajaran, rentang waktu: semester/bulan/minggu). 5-min cache | Must Have |
+| FR-032 | Teacher dashboard shows: 4 stat cards (Kelas Diampu, Total Siswa, Aktivitas Minggu Ini, Rata-rata Kehadiran) + 3 interactive ApexCharts (Tren Kehadiran stacked column, Keaktifan per Topik stacked bar, Distribusi Keaktifan donut) + Keaktifan per Kelas table with composite scores + filter controls (kelas, mata pelajaran, rentang waktu: semester/bulan/minggu). 5-min cache | Must Have |
 | FR-033 | Student dashboard shows: 4 attendance stat cards (Hadir/Izin/Sakit/Alpa) + Attendance heatmap calendar + Attendance streak + Motivational message + Per-subject list with composite scores + Quick date filter (semester/bulan/minggu). 5-min cache | Must Have |
 
 ### 4.8 Academic year context
@@ -357,20 +357,20 @@ The system implements the following database tables with soft deletes on all pri
 
 #### detail_aktivitas (Activity Details)
 - Individual student records for each activity
-- **Fields:** id, kehadiran (enum: hadir/izin/sakit/alpa, default alpa), nilai (decimal 5,2, nullable — auto-computed, deprecated), partisipasi (tinyInteger, nullable — keaktifan score 1-4), catatan (text, nullable), aktivitas_pembelajaran_id (FK→aktivitas_pembelajaran), siswa_id (FK→siswa), timestamps, softDeletes
-- **Note:** `partisipasi` stores numeric values (1-4) but is displayed as "Keaktifan" with labels. `nilai` is auto-computed from partisipasi via resolveNilaiFromPartisipasi() and is hidden from UI.
+- **Fields:** id, kehadiran (enum: hadir/izin/sakit/alpa, default alpa), keaktifan (enum: pasif/cukup/aktif/sangat_aktif, nullable), catatan (text, nullable), aktivitas_pembelajaran_id (FK→aktivitas_pembelajaran), siswa_id (FK→siswa), timestamps, softDeletes
+- **Note:** `keaktifan` is stored directly as a qualitative enum and is only populated when attendance is `hadir`.
 - **Indexes:**
   - PRIMARY KEY: `id`
   - FOREIGN KEY: `aktivitas_pembelajaran_id` REFERENCES aktivitas_pembelajaran(id) ON UPDATE CASCADE ON DELETE CASCADE
   - FOREIGN KEY: `siswa_id` REFERENCES siswa(id) ON UPDATE CASCADE ON DELETE CASCADE
   - INDEX: `kehadiran` (for attendance status filtering)
-  - COMPOSITE INDEX: `siswa_id, aktivitas_pembelajaran_id` (prevents duplicate entries)
+  - UNIQUE INDEX: `aktivitas_pembelajaran_id, siswa_id` (prevents duplicate entries)
   - COMPOSITE INDEX: `siswa_id, kehadiran` (detail_siswa_kehadiran_idx)
   - COMPOSITE INDEX: `aktivitas_pembelajaran_id, kehadiran` (detail_aktivitas_kehadiran_idx)
 
 #### laporan (Reports)
 - Pre-calculated summary data for faster reporting
-- **Fields:** id, rata_kehadiran (float), hadir_count (integer), izin_count (integer), sakit_count (integer), alpa_count (integer), total_kehadiran (integer), rata_nilai (float, nullable — auto-computed from keaktifan), rata_partisipasi (integer, nullable), siswa_id (FK→siswa), mata_pelajaran_id (FK→mata_pelajaran), tahun_ajaran_id (FK→tahun_ajaran), timestamps, softDeletes
+- **Fields:** id, rata_kehadiran (float), hadir_count (integer), izin_count (integer), sakit_count (integer), alpa_count (integer), total_kehadiran (integer), rata_keaktifan (enum: pasif/cukup/aktif/sangat_aktif, nullable), siswa_id (FK→siswa), mata_pelajaran_id (FK→mata_pelajaran), tahun_ajaran_id (FK→tahun_ajaran), timestamps, softDeletes
 - **Indexes:**
   - PRIMARY KEY: `id`
   - FOREIGN KEY: `siswa_id` REFERENCES siswa(id) ON DELETE CASCADE
@@ -462,8 +462,8 @@ The system implements the following database tables with soft deletes on all pri
 |----|------------|---------------------|
 | US-008 | As a **teacher**, I want to create a daily learning activity | 2-step process: (1) select via cascading filter (tingkat kelas → grup kelas → mata pelajaran, auto-fills kelas_id), enter date (default today), topic, notes; (2) record attendance and keaktifan per student; Blocked if tahun ajaran context is inactive; Activity saved with teacher ID |
 | US-009 | As a **teacher**, I want to record attendance | Student cards are shown for selected class; Can select: Hadir, Izin, Sakit, Alpa for each student via H/I/S/A buttons; "Tandai Semua Hadir" bulk action; Unset count indicator; Attendance is linked to the learning activity |
-| US-010 | As a **teacher**, I want to assign keaktifan (participation) scores | Can select 1-4 for each student via Pasif/Cukup/Aktif/Sangat Aktif buttons; Only available when attendance is "Hadir"; Score is saved with activity details; Nilai is auto-computed from keaktifan (not shown in UI) |
-| US-011 | ~~As a teacher, I want to input grades~~ **Removed.** Nilai is auto-computed from keaktifan and hidden from the UI. | N/A |
+| US-010 | As a **teacher**, I want to record student keaktifan | Can select Pasif/Cukup/Aktif/Sangat Aktif for each student; Only available when attendance is "Hadir"; Category is saved directly with activity details |
+| US-011 | As a **teacher**, I want activity recording to remain observational | No academic numeric grade field or calculation is available |
 | US-012 | As a **teacher**, I want to add feedback notes for students | Catatan button available per student (only when attendance is "Hadir"); Notes are optional; Notes are visible to student; Blue dot indicator when notes exist |
 | US-013 | As a **teacher**, I want to view my learning activities | Activities grouped by date; Can filter by subject and quick period (today/week/month); Search by topic; Pagination with "Load More"; Inline attendance/keaktifan stats per activity; Click to view/edit/delete with confirmation modal |
 
@@ -472,7 +472,7 @@ The system implements the following database tables with soft deletes on all pri
 | ID | User Story | Acceptance Criteria |
 |----|------------|---------------------|
 | US-014 | As a **student**, I want to view my attendance history | Riwayat Aktivitas page with filters (search, subject, attendance status); Paginated table showing date, subject, attendance status (color-coded), keaktifan label; Can export as PDF |
-| US-015 | As a **student**, I want to view my keaktifan and grades | Dashboard shows per-subject list with: attendance percentage, keaktifan label, composite score, total activities; Dashboard heatmap shows daily attendance status for the entire academic year |
+| US-015 | As a **student**, I want to view my attendance and keaktifan | Dashboard shows per-subject list with: attendance percentage, keaktifan label, composite score, total activities; Dashboard heatmap shows daily attendance status for the entire academic year |
 | US-016 | As a **student**, I want to see my dashboard | Dashboard shows: 4 attendance stat cards (Hadir/Izin/Sakit/Alpa counts); Attendance heatmap calendar; Attendance streak counter; Motivational message based on performance; Per-subject composite scores; Quick date filter (semester/bulan/minggu) |
 
 ### 7.5 Reporting (Teacher & Admin)
@@ -488,7 +488,7 @@ The system implements the following database tables with soft deletes on all pri
 | ID | User Story | Acceptance Criteria |
 |----|------------|---------------------|
 | US-019 | As an **admin**, I want to see system overview | Dashboard shows: 6 stat cards (Admin, Guru, Siswa, Kelas, Mata Pelajaran, Aktivitas Bulan Ini); Recent Activities table (10 latest); 7-day activity line chart; 60s polling, 5-min cache |
-| US-020 | As a **teacher**, I want to see my teaching overview | Dashboard shows: 4 stat cards (Kelas Diampu, Total Siswa, Aktivitas Minggu Ini, Rata-rata Kehadiran); 3 ApexCharts (Tren Kehadiran stacked column, Keaktifan per Topik stacked bar, Distribusi Keaktifan donut); Partisipasi per Kelas table with composite scores; Filter controls (kelas, mata pelajaran, rentang waktu); 5-min cache |
+| US-020 | As a **teacher**, I want to see my teaching overview | Dashboard shows: 4 stat cards (Kelas Diampu, Total Siswa, Aktivitas Minggu Ini, Rata-rata Kehadiran); 3 ApexCharts (Tren Kehadiran stacked column, Keaktifan per Topik stacked bar, Distribusi Keaktifan donut); Keaktifan per Kelas table with composite scores; Filter controls (kelas, mata pelajaran, rentang waktu); 5-min cache |
 | US-021 | As a **student**, I want to see my learning summary | Dashboard shows: 4 stat cards (Hadir/Izin/Sakit/Alpa); Heatmap calendar; Streak counter; Motivational message; Per-subject list with composite scores; Quick date filter; 5-min cache |
 
 ### 7.7 Academic year context
@@ -625,7 +625,7 @@ The project is considered complete when:
 - All 24 user stories (US-001 to US-024) work as specified
 - Three user roles function with proper permissions (admin, teacher, student)
 - Teachers can record activities with cascading class selection and bulk attendance save
-- Keaktifan (1-4 scale) is recorded per student; nilai is auto-computed
+- A qualitative keaktifan category is recorded per present student
 - Students can view heatmap calendar, streak, and motivational messages
 - Admin can manage all master data including Ganti Semester and Kenaikan Kelas
 - Tahun Ajaran context selector works across teacher and student interfaces
@@ -743,7 +743,7 @@ For final presentation, system should demonstrate:
 | Database design issues | High | Review schema thoroughly before implementation, use migrations for version control |
 | Time management | Medium | Follow implementation phases strictly, use project management tool |
 | Data validation complexity | Medium | Use Laravel's built-in validation, test thoroughly with edge cases |
-| Keaktifan/nilai data model confusion | Medium | Document clearly that nilai is auto-computed and hidden; plan full removal from schema |
+| Keaktifan terminology inconsistency | Medium | Use the `keaktifan` enum and matching terminology across schema, backend, reports, and UI |
 
 ---
 
@@ -760,7 +760,7 @@ For final presentation, system should demonstrate:
 | Hadir | Present (attendance status) |
 | Heatmap | Calendar visualization showing daily attendance status across the academic year |
 | Izin | Absent with permission |
-| Keaktifan | Participation level (Pasif/Cukup/Aktif/Sangat Aktif) — displayed as "Keaktifan" in UI, stored as `partisipasi` (1-4) in DB |
+| Keaktifan | Qualitative classroom activity level (Pasif/Cukup/Aktif/Sangat Aktif), stored as the `keaktifan` enum |
 | Kelas | Class (e.g., 7A, 8B) |
 | Kenaikan Kelas | Admin wizard to promote students to next grade level |
 | Mata Pelajaran | Subject/course |
@@ -802,8 +802,8 @@ The following is a summary of key discrepancies between the original PRD v1.0 an
 | `laporan` columns | Added 5 stat columns: hadir_count, izin_count, sakit_count, alpa_count, total_kehadiran |
 | `siswa_kelas_history` | New table for tracking enrollment per academic year |
 | Soft Deletes | All primary tables use soft deletes (not in original PRD) |
-| `partisipasi` scale | 1-4 (not 1-5); displayed as "Keaktifan" |
-| `nilai` column | Still exists but auto-computed, hidden from UI, deprecated |
+| `keaktifan` enum | Replaces the numeric 1-4 representation with pasif/cukup/aktif/sangat_aktif |
+| Academic grade columns | Fully removed from activity details and report summaries |
 | MFA columns | `app_authentication_secret` and `app_authentication_recovery_codes` on users table |
 
 ### Feature Additions
@@ -828,15 +828,15 @@ The following is a summary of key discrepancies between the original PRD v1.0 an
 | MFA for admin panel | New (C2) |
 | TahunAjaran canCreate() restricted | Modified (C3) |
 
-### Deprecated Features
+### Removed Features
 | Feature | Status |
 |---------|--------|
-| FR-016 / US-011: Manual numeric grade input | Hidden from UI; nilai auto-computed from keaktifan; TODO: full removal from schema |
+| FR-016 / US-011: Academic numeric grading | Fully removed from UI, backend calculations, and database schema |
 
 ---
 
 **Document prepared for:** Academic Final Project  
-**Document version:** 2.0 (As-Built)  
+**Document version:** 2.1 (As-Built)  
 **Estimated effort:** 200-250 hours of development work  
 **Complexity level:** Intermediate  
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Teacher\AktivitasPembelajaran;
 
+use App\Enums\Keaktifan;
 use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
 use App\Models\MataPelajaran;
@@ -16,6 +17,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -131,10 +133,9 @@ final class EditAktivitas extends Component
         foreach (array_keys($this->detailAktivitas) as $siswaId) {
             $this->detailAktivitas[$siswaId]['kehadiran'] = $status;
 
-            // Clear nilai and partisipasi if not present
+            // Keaktifan is only recorded when the student is present.
             if ($status !== 'Hadir') {
-                $this->detailAktivitas[$siswaId]['nilai'] = null;
-                $this->detailAktivitas[$siswaId]['partisipasi'] = null;
+                $this->detailAktivitas[$siswaId]['keaktifan'] = null;
             }
         }
     }
@@ -143,7 +144,7 @@ final class EditAktivitas extends Component
      * Accept the full detailAktivitas payload from Alpine (client-side state)
      * and immediately save — eliminates multiple $wire.set() round-trips.
      *
-     * @param  array<int|string, array{kehadiran: string|null, partisipasi: int|null, catatan: string}>  $detailAktivitas
+     * @param  array<int|string, array{kehadiran: string|null, keaktifan: string|null, catatan: string}>  $detailAktivitas
      */
     public function saveWithDetail(array $detailAktivitas): void
     {
@@ -263,8 +264,7 @@ final class EditAktivitas extends Component
             'catatan' => 'nullable|string|max:500',
             'detailAktivitas' => 'required|array|min:1',
             'detailAktivitas.*.kehadiran' => 'required|in:Hadir,Izin,Sakit,Alpa',
-            'detailAktivitas.*.nilai' => 'nullable|numeric|min:0|max:100',
-            'detailAktivitas.*.partisipasi' => 'nullable|integer|min:1|max:5',
+            'detailAktivitas.*.keaktifan' => ['nullable', Rule::enum(Keaktifan::class)],
             'detailAktivitas.*.catatan' => 'nullable|string|max:500',
         ];
     }
@@ -284,9 +284,7 @@ final class EditAktivitas extends Component
             'topik.required' => 'Topik pembelajaran harus diisi.',
             'topik.max' => 'Topik maksimal 200 karakter.',
             'detailAktivitas.*.kehadiran.required' => 'Status kehadiran harus dipilih.',
-            'detailAktivitas.*.nilai.numeric' => 'Nilai harus berupa angka.',
-            'detailAktivitas.*.nilai.min' => 'Nilai minimal 0.',
-            'detailAktivitas.*.nilai.max' => 'Nilai maksimal 100.',
+            'detailAktivitas.*.keaktifan.enum' => 'Tingkat keaktifan tidak valid.',
         ];
     }
 
@@ -302,19 +300,13 @@ final class EditAktivitas extends Component
             $kehadiran = mb_strtolower((string) $detail['kehadiran']);
             $isHadir = $kehadiran === 'hadir';
 
-            $partisipasi = null;
-            $nilai = null;
-            if ($isHadir && $detail['partisipasi']) {
-                $partisipasi = (int) $detail['partisipasi'];
-                $nilai = $this->resolveNilaiFromPartisipasi($partisipasi);
-            }
+            $keaktifan = $isHadir ? ($detail['keaktifan'] ?? null) : null;
 
             $records[] = [
                 'aktivitas_pembelajaran_id' => $this->aktivitas->id,
                 'siswa_id' => $siswaId,
                 'kehadiran' => $kehadiran,
-                'nilai' => $nilai,
-                'partisipasi' => $partisipasi,
+                'keaktifan' => $keaktifan,
                 'catatan' => ($detail['catatan'] !== '') ? $detail['catatan'] : null,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -327,7 +319,7 @@ final class EditAktivitas extends Component
             DetailAktivitas::upsert(
                 $records,
                 ['aktivitas_pembelajaran_id', 'siswa_id'],
-                ['kehadiran', 'nilai', 'partisipasi', 'catatan', 'updated_at']
+                ['kehadiran', 'keaktifan', 'catatan', 'updated_at']
             );
         }
 
@@ -367,33 +359,38 @@ final class EditAktivitas extends Component
 
     }
 
-    /**
-     * Map a participation level (1–4) to its corresponding fixed observation score.
-     * Pasif=60, Cukup=75, Aktif=85, Sangat Aktif=95.
-     */
-    private function resolveNilaiFromPartisipasi(int $partisipasi): ?int
-    {
-        return match ($partisipasi) {
-            1 => 60,
-            2 => 75,
-            3 => 85,
-            4 => 95,
-            default => null,
-        };
-    }
-
     private function loadDetailAktivitas(): void
     {
-        // Get all students in the class
-        $siswaInClass = Siswa::where('kelas_id', $this->kelasId)
+        if ($this->kelasId === null || $this->kelasId === 0) {
+            return;
+        }
+
+        // Existing detail records (already eager-loaded in mount via
+        // `detailAktivitas.siswa.user`), keyed by siswa_id for O(1) lookup.
+        /** @var \Illuminate\Database\Eloquent\Collection<int|string, DetailAktivitas> $existingDetails */
+        $existingDetails = $this->aktivitas->detailAktivitas->keyBy('siswa_id');
+
+        // Reuse siswa already loaded through the detailAktivitas.siswa relation,
+        // filtered to the currently-selected class so siswa who have since moved
+        // out of this class are not shown (matches the previous where('kelas_id')
+        // behaviour). This avoids re-querying siswa we already have in memory.
+        $loadedSiswa = $existingDetails
+            ->map(fn (DetailAktivitas $detail): ?Siswa => $detail->siswa)
+            ->filter(fn (?Siswa $siswa): bool => $siswa instanceof Siswa && $siswa->kelas_id === $this->kelasId);
+
+        // Query only siswa in the class that don't yet have a loaded detail record.
+        $loadedSiswaIds = $loadedSiswa->keys()->all();
+        $queriedSiswa = Siswa::query()
+            ->where('kelas_id', $this->kelasId)
+            ->when($loadedSiswaIds !== [], fn ($q) => $q->whereNotIn('id', $loadedSiswaIds))
             ->with('user')
             ->orderBy('nis')
             ->get();
 
-        // Get existing detail records
-        $existingDetails = $this->aktivitas->detailAktivitas->keyBy('siswa_id');
+        // Merge both sources and sort consistently by nis.
+        $allSiswa = $loadedSiswa->merge($queriedSiswa)->sortBy('nis')->values();
 
-        foreach ($siswaInClass as $siswa) {
+        foreach ($allSiswa as $siswa) {
             $existing = $existingDetails->get($siswa->id);
 
             // Normalize kehadiran enum to capitalized string (UI expects 'Hadir', 'Izin', etc.)
@@ -404,8 +401,7 @@ final class EditAktivitas extends Component
             $this->detailAktivitas[$siswa->id] = [
                 'siswa_id' => $siswa->id,
                 'kehadiran' => $kehadiran,
-                'nilai' => $existing?->nilai,
-                'partisipasi' => $existing?->partisipasi ? (int) $existing->partisipasi : null,
+                'keaktifan' => $existing?->keaktifan?->value,
                 'catatan' => $existing?->catatan ?? '',
             ];
         }

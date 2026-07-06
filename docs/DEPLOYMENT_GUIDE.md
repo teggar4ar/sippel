@@ -13,7 +13,7 @@ This guide covers how to deploy and manage the SIPPEL application on Heroku usin
 When you've made changes and want to deploy:
 
 ```bash
-# 1. Commit your changes
+# 1. Commit your changess
 git add .
 git commit -m "fix: your bug fix or feature"
 

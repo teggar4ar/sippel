@@ -78,26 +78,12 @@ final class ClassReport extends Page implements HasForms
      */
     public function generatePreview(): void
     {
-        $this->validate([
-            'kelasId' => ['required', 'exists:kelas,id'],
-            'mataPelajaranId' => ['required', 'exists:mata_pelajaran,id'],
-            'tahunAjaranId' => ['required', 'exists:tahun_ajaran,id'],
-        ]);
-
-        $kelas = Kelas::with('waliKelas')->find($this->kelasId);
-        $mataPelajaran = MataPelajaran::with('guru')->find($this->mataPelajaranId);
-        $tahunAjaran = TahunAjaran::find($this->tahunAjaranId);
-
-        if (! $kelas || ! $mataPelajaran || ! $tahunAjaran) {
-            Notification::make()
-                ->title('Data tidak ditemukan')
-                ->danger()
-                ->send();
-
+        $resolved = $this->resolveReportContext();
+        if ($resolved === null) {
             return;
         }
 
-        $laporanData = $this->getLaporanData($kelas, $mataPelajaran, $tahunAjaran);
+        [$kelas, $mataPelajaran, $tahunAjaran, $laporanData] = $resolved;
 
         $this->previewData = [
             'kelas' => $kelas,
@@ -113,26 +99,12 @@ final class ClassReport extends Page implements HasForms
      */
     public function downloadPdf(): ?StreamedResponse
     {
-        $this->validate([
-            'kelasId' => ['required', 'exists:kelas,id'],
-            'mataPelajaranId' => ['required', 'exists:mata_pelajaran,id'],
-            'tahunAjaranId' => ['required', 'exists:tahun_ajaran,id'],
-        ]);
-
-        $kelas = Kelas::with('waliKelas')->find($this->kelasId);
-        $mataPelajaran = MataPelajaran::with('guru')->find($this->mataPelajaranId);
-        $tahunAjaran = TahunAjaran::find($this->tahunAjaranId);
-
-        if (! $kelas || ! $mataPelajaran || ! $tahunAjaran) {
-            Notification::make()
-                ->title('Data tidak ditemukan')
-                ->danger()
-                ->send();
-
+        $resolved = $this->resolveReportContext();
+        if ($resolved === null) {
             return null;
         }
 
-        $laporanData = $this->getLaporanData($kelas, $mataPelajaran, $tahunAjaran);
+        [$kelas, $mataPelajaran, $tahunAjaran, $laporanData] = $resolved;
 
         if ($laporanData->isEmpty()) {
             Notification::make()
@@ -268,12 +240,48 @@ final class ClassReport extends Page implements HasForms
                 ->native(false)
                 ->options([
                     'kehadiran' => 'Kehadiran (Tertinggi)',
+                    'keaktifan' => 'Keaktifan (Tertinggi)',
+                    'keaktifan_asc' => 'Keaktifan (Terendah)',
                     'nama' => 'Nama (A-Z)',
                 ])
                 ->default('kehadiran')
                 ->live()
                 ->afterStateUpdated(fn (): null => $this->previewData = null),
         ];
+    }
+
+    /**
+     * Validate inputs and resolve the shared report context (kelas, mata
+     * pelajaran, tahun ajaran and the sorted laporan data). Sends a Filament
+     * notification and returns null when inputs are invalid or data is missing,
+     * so callers can early-return without re-querying.
+     *
+     * @return array{0: Kelas, 1: MataPelajaran, 2: TahunAjaran, 3: Collection<int, Laporan>}|null
+     */
+    private function resolveReportContext(): ?array
+    {
+        $this->validate([
+            'kelasId' => ['required', 'exists:kelas,id'],
+            'mataPelajaranId' => ['required', 'exists:mata_pelajaran,id'],
+            'tahunAjaranId' => ['required', 'exists:tahun_ajaran,id'],
+        ]);
+
+        $kelas = Kelas::with('waliKelas')->find($this->kelasId);
+        $mataPelajaran = MataPelajaran::with('guru')->find($this->mataPelajaranId);
+        $tahunAjaran = TahunAjaran::find($this->tahunAjaranId);
+
+        if (! $kelas || ! $mataPelajaran || ! $tahunAjaran) {
+            Notification::make()
+                ->title('Data tidak ditemukan')
+                ->danger()
+                ->send();
+
+            return null;
+        }
+
+        $laporanData = $this->getLaporanData($kelas, $mataPelajaran, $tahunAjaran);
+
+        return [$kelas, $mataPelajaran, $tahunAjaran, $laporanData];
     }
 
     /**
@@ -350,6 +358,8 @@ final class ClassReport extends Page implements HasForms
         // Apply sorting
         return match ($this->sortBy) {
             'kehadiran' => $laporanData->sortByDesc('rata_kehadiran')->values(),
+            'keaktifan' => $laporanData->sortByDesc(fn (Laporan $laporan): int => $laporan->rata_keaktifan?->weight() ?? 0)->values(),
+            'keaktifan_asc' => $laporanData->sortBy(fn (Laporan $laporan): int => $laporan->rata_keaktifan?->weight() ?? 0)->values(),
             'nama' => $laporanData->sortBy(function (Laporan $l): string {
                 /** @var \App\Models\Siswa|null $siswa */
                 $siswa = $l->siswa;

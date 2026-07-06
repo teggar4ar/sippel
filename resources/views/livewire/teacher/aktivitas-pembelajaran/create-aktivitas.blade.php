@@ -144,7 +144,7 @@
     {{-- ============================================================ --}}
     {{-- STEP 2: Aktivitas Kelas — Semua state di Alpine, 0 wire.set  --}}
     {{-- ============================================================ --}}
-    @php $partisipasiOptions = [1 => 'Pasif', 2 => 'Cukup', 3 => 'Aktif', 4 => 'Sangat Aktif']; @endphp
+    @php $keaktifanOptions = \App\Enums\Keaktifan::cases(); @endphp
 
     <div
         x-data="{
@@ -161,12 +161,12 @@
             setKehadiran(id, val) {
                 this.students[id].kehadiran = val;
                 if (val !== 'Hadir') {
-                    this.students[id].partisipasi = null;
+                    this.students[id].keaktifan = null;
                 }
             },
-            setPartisipasi(id, val) {
-                const cur = this.students[id].partisipasi;
-                this.students[id].partisipasi = (cur == val) ? null : parseInt(val);
+            setKeaktifan(id, val) {
+                const cur = this.students[id].keaktifan;
+                this.students[id].keaktifan = (cur === val) ? null : val;
             },
             async doSave() {
                 this.saving = true;
@@ -298,18 +298,18 @@
                         <div class="hidden lg:block w-px h-8 bg-slate-100 dark:bg-slate-700 shrink-0"></div>
                         <span class="hidden lg:block text-[10px] font-semibold uppercase tracking-wider text-slate-400 shrink-0 w-20">Keaktifan</span>
 
-                        {{-- Partisipasi buttons — fill width on mobile --}}
+                        {{-- Keaktifan buttons — fill width on mobile --}}
                         <div class="flex gap-1.5 lg:gap-1 lg:flex-1"
                              x-show="students['{{ $siswa->id }}']?.kehadiran === 'Hadir'"
                              x-transition:enter="transition-opacity duration-100"
                              x-transition:enter-start="opacity-0"
                              x-transition:enter-end="opacity-100">
-                            @foreach($partisipasiOptions as $val => $label)
+                            @foreach($keaktifanOptions as $option)
                                 <button type="button"
-                                        x-on:click="setPartisipasi('{{ $siswa->id }}', {{ $val }})"
-                                        x-bind:class="students['{{ $siswa->id }}']?.partisipasi == {{ $val }} ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'"
+                                        x-on:click="setKeaktifan('{{ $siswa->id }}', @js($option->value))"
+                                        x-bind:class="students['{{ $siswa->id }}']?.keaktifan === @js($option->value) ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'"
                                         class="flex-1 lg:flex-none lg:px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-100 whitespace-nowrap cursor-pointer">
-                                    {{ $label }}
+                                    {{ $option->label() }}
                                 </button>
                             @endforeach
                         </div>

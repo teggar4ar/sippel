@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\Keaktifan;
 use App\Enums\KehadiranStatus;
 use App\Models\DetailAktivitas;
 use App\Models\Laporan;
@@ -68,8 +69,7 @@ final class LaporanCalculatorService
         $laporan->sakit_count = $stats['sakit_count'];
         $laporan->alpa_count = $stats['alpa_count'];
         $laporan->total_kehadiran = $stats['total_kehadiran'];
-        $laporan->rata_nilai = $stats['rata_nilai'];
-        $laporan->rata_partisipasi = $stats['rata_partisipasi'];
+        $laporan->rata_keaktifan = $stats['rata_keaktifan'];
         $laporan->save();
 
         return $isNew ? 'created' : 'updated';
@@ -106,25 +106,28 @@ final class LaporanCalculatorService
 
     /**
      * @param  EloquentCollection<int, DetailAktivitas>  $detailAktivitas
-     * @return array{rata_kehadiran: float, hadir_count: int, izin_count: int, sakit_count: int, alpa_count: int, total_kehadiran: int, rata_nilai: float|null, rata_partisipasi: int|null}
+     * @return array{rata_kehadiran: float, hadir_count: int, izin_count: int, sakit_count: int, alpa_count: int, total_kehadiran: int, rata_keaktifan: Keaktifan|null}
      */
     private function calculateStatistics(EloquentCollection $detailAktivitas): array
     {
         $total = $detailAktivitas->count();
 
-        $hadirCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Hadir)->count();
-        $izinCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Izin)->count();
-        $sakitCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Sakit)->count();
-        $alpaCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Alpa)->count();
+        // Single-pass count per attendance status (replaces 4 separate
+        // filter()->count() iterations over the same collection).
+        $counts = $detailAktivitas->countBy(fn ($d): string => $d->kehadiran->value);
+
+        $hadirCount = $counts[KehadiranStatus::Hadir->value] ?? 0;
+        $izinCount = $counts[KehadiranStatus::Izin->value] ?? 0;
+        $sakitCount = $counts[KehadiranStatus::Sakit->value] ?? 0;
+        $alpaCount = $counts[KehadiranStatus::Alpa->value] ?? 0;
 
         $rataKehadiran = $total > 0 ? round(($hadirCount / $total) * 100, 2) : 0;
 
-        $nilaiValues = $detailAktivitas->whereNotNull('nilai')->pluck('nilai');
-        $rataNilai = $nilaiValues->isNotEmpty() ? round($nilaiValues->avg(), 2) : null;
-
-        $partisipasiValues = $detailAktivitas->whereNotNull('partisipasi')->pluck('partisipasi');
-        $rataPartisipasi = $partisipasiValues->isNotEmpty()
-            ? (int) round($partisipasiValues->avg())
+        $keaktifanWeights = $detailAktivitas
+            ->whereNotNull('keaktifan')
+            ->map(fn (DetailAktivitas $detail): int => $detail->keaktifan->weight());
+        $rataKeaktifan = $keaktifanWeights->isNotEmpty()
+            ? Keaktifan::fromAverage((float) $keaktifanWeights->avg())
             : null;
 
         return [
@@ -134,8 +137,7 @@ final class LaporanCalculatorService
             'sakit_count' => $sakitCount,
             'alpa_count' => $alpaCount,
             'total_kehadiran' => $total,
-            'rata_nilai' => $rataNilai,
-            'rata_partisipasi' => $rataPartisipasi,
+            'rata_keaktifan' => $rataKeaktifan,
         ];
     }
 }

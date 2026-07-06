@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Keaktifan;
 use App\Enums\KehadiranStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -19,8 +20,7 @@ final class DetailAktivitas extends Model
 
     protected $fillable = [
         'kehadiran',
-        'nilai',
-        'partisipasi',
+        'keaktifan',
         'catatan',
         'aktivitas_pembelajaran_id',
         'siswa_id',
@@ -28,8 +28,7 @@ final class DetailAktivitas extends Model
 
     protected $casts = [
         'kehadiran' => KehadiranStatus::class,
-        'nilai' => 'decimal:2',
-        'partisipasi' => 'decimal:2',
+        'keaktifan' => Keaktifan::class,
     ];
 
     public function aktivitasPembelajaran(): BelongsTo
@@ -48,24 +47,23 @@ final class DetailAktivitas extends Model
      */
     public function scopeWithTimelineJoin(Builder $query, ?int $kelasId, int $tahunAjaranId): void
     {
-        $query->whereHas('aktivitasPembelajaran', function ($q) use ($kelasId, $tahunAjaranId): void {
-            if ($kelasId !== null) {
-                $q->where('kelas_id', $kelasId);
-            }
-            $q->whereHas('kelas', fn ($kq) => $kq->where('tahun_ajaran_id', $tahunAjaranId));
-        })
-            ->with(['aktivitasPembelajaran.mataPelajaran', 'aktivitasPembelajaran'])
-            ->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
+        $query->join('aktivitas_pembelajaran', 'detail_aktivitas.aktivitas_pembelajaran_id', '=', 'aktivitas_pembelajaran.id')
+            ->join('kelas', 'aktivitas_pembelajaran.kelas_id', '=', 'kelas.id')
+            ->where('kelas.tahun_ajaran_id', $tahunAjaranId)
+            ->when($kelasId !== null, fn ($builder) => $builder->where('aktivitas_pembelajaran.kelas_id', $kelasId))
+            ->whereNull('aktivitas_pembelajaran.deleted_at')
+            ->whereNull('kelas.deleted_at')
+            ->with('aktivitasPembelajaran.mataPelajaran')
             ->orderByDesc('aktivitas_pembelajaran.tanggal')
             ->orderByDesc('detail_aktivitas.id')
             ->select('detail_aktivitas.*');
     }
 
     /**
-     * Translate the numeric participation score into a human-readable observation label.
+     * Translate the keaktifan enum into a human-readable observation label.
      * Returns '-' when the student was not present (Hadir) or has no score recorded.
      */
-    protected function labelPartisipasi(): Attribute
+    protected function labelKeaktifan(): Attribute
     {
         return Attribute::make(
             get: function (): string {
@@ -73,13 +71,7 @@ final class DetailAktivitas extends Model
                     return '-';
                 }
 
-                return match ((int) $this->partisipasi) {
-                    1 => 'Pasif',
-                    2 => 'Cukup',
-                    3 => 'Aktif',
-                    4 => 'Sangat Aktif',
-                    default => '-',
-                };
+                return $this->keaktifan?->label() ?? '-';
             },
         );
     }

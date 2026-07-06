@@ -101,7 +101,7 @@
                                     'alpa'  => 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
                                     default => 'bg-gray-100 text-gray-600',
                                 };
-                                $pLabel = $detail->label_partisipasi;
+                                $pLabel = $detail->label_keaktifan;
                                 $pClass = match($pLabel) {
                                     'Sangat Aktif' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
                                     'Aktif'        => 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
@@ -176,7 +176,7 @@
                             'alpa'  => 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
                             default => 'bg-gray-100 text-gray-600',
                         };
-                        $pLabel = $detail->label_partisipasi;
+                        $pLabel = $detail->label_keaktifan;
                         $pClass = match($pLabel) {
                             'Sangat Aktif' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
                             'Aktif'        => 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',

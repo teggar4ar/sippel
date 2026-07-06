@@ -27,7 +27,7 @@
 
 SIPPEL merupakan sistem yang memungkinkan:
 
-- **Guru** untuk mencatat aktivitas pembelajaran harian, absensi siswa, dan memberikan penilaian
+- **Guru** untuk mencatat aktivitas pembelajaran harian, kehadiran, dan keaktifan siswa
 - **Siswa** untuk melihat progress pembelajaran dan catatan aktivitas pribadi
 - **Admin** untuk mengelola data master (pengguna, mata pelajaran, kelas, tahun ajaran)
 
@@ -46,7 +46,7 @@ Sistem ini mendukung proses pembelajaran dengan menyediakan tracking yang kompre
 - **Kelas**: Manajemen kelas dengan wali kelas
 - **Mata Pelajaran**: Pengelolaan subjek pembelajaran
 - **Aktivitas Pembelajaran**: Pencatatan detail kegiatan belajar mengajar
-- **Absensi & Nilai**: Tracking kehadiran dan penilaian per siswa
+- **Kehadiran & Keaktifan**: Pencatatan status kehadiran dan kategori keaktifan per siswa
 
 ### 📊 Pelaporan
 - **Laporan PDF**: Generate laporan menggunakan DomPDF
@@ -144,7 +144,7 @@ Kelas           // Classroom dengan homeroom teacher
 Siswa           // Student dengan NIS identifier
 MataPelajaran   // Subject/course
 AktivitasPembelajaran  // Learning activity record
-DetailAktivitas        // Per-student attendance & grades
+DetailAktivitas        // Kehadiran dan keaktifan per siswa
 ```
 
 ### Flow Data
@@ -152,9 +152,9 @@ DetailAktivitas        // Per-student attendance & grades
 ```
 Guru membuat AktivitasPembelajaran
     ↓
-DetailAktivitas per siswa (absensi, nilai)
+DetailAktivitas per siswa (kehadiran, keaktifan)
     ↓
-Auto-kalkulasi di model Siswa (% kehadiran, rata-rata nilai)
+Auto-kalkulasi di model Siswa (% kehadiran dan ringkasan keaktifan)
     ↓
 Generate Laporan PDF via DomPDF
 ```
@@ -183,7 +183,7 @@ app/Filament/Resources/
 1. Buka halaman **Buat Aktivitas**
 2. Pilih **Mata Pelajaran** dan **Kelas**
 3. Isi detail aktivitas pembelajaran
-4. Catat **Absensi** dan **Nilai** per siswa
+4. Catat **Kehadiran** dan **Keaktifan** per siswa
 5. **Simpan** data aktivitas
 
 ### Panel Admin - Kelola Data Master
@@ -197,8 +197,8 @@ app/Filament/Resources/
 
 1. Dashboard **Ringkasan Pembelajaran**
 2. Detail **Aktivitas** yang diikuti
-3. **History Absensi** dan nilai
-4. **Progress** akademik personal
+3. **Riwayat Kehadiran** dan keaktifan
+4. **Ringkasan** aktivitas pembelajaran personal
 
 ## 🔧 Pengembangan
 
@@ -342,14 +342,6 @@ APP_TIMEZONE=Asia/Jakarta
 FILAMENT_THEME=sippel
 ```
 
-## 📋 Status Implementasi
-
-Mengacu pada `implementation-phases/` untuk dokumentasi fase detail:
-
-- **Fase 1-2**: ✅ Foundation & master data lengkap
-- **Fase 3-4**: 🔄 Migrasi Teacher/Student Flux UI sedang berjalan  
-- **Fase 5-8**: 🔵 Reporting, dashboard, testing dalam antrian
-
 ## 🤝 Kontribusi
 
 1. Fork repository
@@ -371,14 +363,16 @@ Project ini menggunakan lisensi [MIT License](LICENSE).
 
 ## 👥 Tim Pengembangan
 
-- **Developer**: [Nama Developer]
-- **Thesis Advisor**: [Nama Pembimbing]  
-- **Institution**: [Nama Institusi]
+- **Developer**: Tegar Ardiansyah
+- **Thesis Advisor**: Dr. Lukman Rosyidi, M.T., M.M.
+- **Thesis Examiner**: Dr. Suhendi, S.T., S.Kom., M.M.S.I.  
+- **Institution**: Sekolah Tinggi Teknologi Terpadu Nurul Fikri (STT-NF)
+- **Partner**: SMPIT Al-Itqon Tajurhalang Bogor
 
 ## 📞 Dukungan
 
 Untuk pertanyaan teknis dan dukungan:
-- **Email**: [email-support]
+- **Email**: teggarar123@gmail.com
 - **Documentation**: `docs/`
 - **Issues**: GitHub Issues
 

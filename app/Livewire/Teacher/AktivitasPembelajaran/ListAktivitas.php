@@ -6,6 +6,7 @@ namespace App\Livewire\Teacher\AktivitasPembelajaran;
 
 use App\Models\AktivitasPembelajaran;
 use App\Models\MataPelajaran;
+use App\Services\LaporanCalculatorService;
 use App\Services\StudentDashboardCacheService;
 use App\Services\TeacherDashboardCacheService;
 use Carbon\Carbon;
@@ -178,6 +179,16 @@ final class ListAktivitas extends Component
             try {
                 $affectedSiswaIds = $aktivitas->detailAktivitas()->pluck('siswa_id')->all();
                 $aktivitas->delete();
+
+                $calculator = app(LaporanCalculatorService::class);
+                foreach ($affectedSiswaIds as $siswaId) {
+                    $calculator->recalculateForCombination(
+                        (int) $siswaId,
+                        $aktivitas->mata_pelajaran_id,
+                        $contextTahunAjaran->id,
+                        true
+                    );
+                }
 
                 app(TeacherDashboardCacheService::class)->invalidate(
                     (int) Auth::id(),
