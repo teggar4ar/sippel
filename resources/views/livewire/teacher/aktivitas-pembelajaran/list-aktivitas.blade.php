@@ -108,12 +108,13 @@
                                 $kehadiranPct = $totalSiswa > 0 ? round(($hadirCount / $totalSiswa) * 100) : 0;
 
                                 $hadirDetails = $details->filter(fn($d) => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir);
-                                $avgPart = $hadirDetails->isNotEmpty() ? $hadirDetails->avg('partisipasi') : 0;
-                                $partLabel = match(true) {
-                                    $avgPart >= 3.5 => ['Sangat Aktif', 'green'],
-                                    $avgPart >= 2.5 => ['Aktif', 'blue'],
-                                    $avgPart >= 1.5 => ['Cukup', 'amber'],
-                                    $avgPart >= 0.1 => ['Pasif', 'red'],
+                                $keaktifanWeights = $hadirDetails->whereNotNull('keaktifan')->map(fn($d) => $d->keaktifan->weight());
+                                $avgKeaktifan = $keaktifanWeights->isNotEmpty() ? $keaktifanWeights->avg() : 0;
+                                $keaktifanLabel = match(true) {
+                                    $avgKeaktifan >= 3.5 => ['Sangat Aktif', 'green'],
+                                    $avgKeaktifan >= 2.5 => ['Aktif', 'blue'],
+                                    $avgKeaktifan >= 1.5 => ['Cukup', 'amber'],
+                                    $avgKeaktifan >= 0.1 => ['Pasif', 'red'],
                                     default => ['-', 'zinc'],
                                 };
                             @endphp
@@ -144,7 +145,7 @@
                                     </div>
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <flux:badge color="{{ $partLabel[1] }}" size="sm" inset="top bottom">{{ $partLabel[0] }}</flux:badge>
+                                    <flux:badge color="{{ $keaktifanLabel[1] }}" size="sm" inset="top bottom">{{ $keaktifanLabel[0] }}</flux:badge>
                                 </flux:table.cell>
                                 <flux:table.cell>
                                     <div class="flex items-center gap-0.5">
@@ -182,12 +183,13 @@
                         $kehadiranPct = $totalSiswa > 0 ? round(($hadirCount / $totalSiswa) * 100) : 0;
 
                         $hadirDetails = $details->filter(fn($d) => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir);
-                        $avgPart = $hadirDetails->isNotEmpty() ? $hadirDetails->avg('partisipasi') : 0;
-                        $partLabel = match(true) {
-                            $avgPart >= 3.5 => ['Sangat Aktif', 'green'],
-                            $avgPart >= 2.5 => ['Aktif', 'blue'],
-                            $avgPart >= 1.5 => ['Cukup', 'amber'],
-                            $avgPart >= 0.1 => ['Pasif', 'red'],
+                        $keaktifanWeights = $hadirDetails->whereNotNull('keaktifan')->map(fn($d) => $d->keaktifan->weight());
+                        $avgKeaktifan = $keaktifanWeights->isNotEmpty() ? $keaktifanWeights->avg() : 0;
+                        $keaktifanLabel = match(true) {
+                            $avgKeaktifan >= 3.5 => ['Sangat Aktif', 'green'],
+                            $avgKeaktifan >= 2.5 => ['Aktif', 'blue'],
+                            $avgKeaktifan >= 1.5 => ['Cukup', 'amber'],
+                            $avgKeaktifan >= 0.1 => ['Pasif', 'red'],
                             default => ['-', 'zinc'],
                         };
                     @endphp
@@ -231,12 +233,12 @@
                             {{ $aktivitas->topik }}
                         </p>
 
-                        {{-- Stats row: kehadiran + partisipasi --}}
+                        {{-- Stats row: kehadiran + keaktifan --}}
                                 <div class="flex items-center gap-3">
                                     <span class="text-xs tabular-nums {{ $kehadiranPct >= 80 ? 'text-emerald-600 dark:text-emerald-400' : ($kehadiranPct >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') }} font-semibold">
                                         <flux:icon name="users" class="w-3 h-3 inline -mt-0.5" /> {{ $kehadiranPct }}%
                                     </span>
-                                    <flux:badge color="{{ $partLabel[1] }}" size="sm">{{ $partLabel[0] }}</flux:badge>
+                                    <flux:badge color="{{ $keaktifanLabel[1] }}" size="sm">{{ $keaktifanLabel[0] }}</flux:badge>
                                 </div>
                     </div>
                 @endforeach
@@ -312,7 +314,7 @@
                 <flux:heading size="lg">Hapus Aktivitas ini?</flux:heading>
                 <!-- <flux:text class="font-medium line-clamp-2">"{{ $deleteTopik }}"</flux:text> -->
                 <flux:text class="!text-xs !text-slate-500 dark:!text-slate-400">
-                    Data kehadiran & nilai akan terhapus permanen
+                    Data kehadiran dan keaktifan akan terhapus permanen
                 </flux:text>
             </div>
 

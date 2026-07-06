@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Keaktifan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -21,8 +22,7 @@ final class Laporan extends Model
         'sakit_count',
         'alpa_count',
         'total_kehadiran',
-        'rata_nilai',
-        'rata_partisipasi',
+        'rata_keaktifan',
         'siswa_id',
         'mata_pelajaran_id',
         'tahun_ajaran_id',
@@ -35,8 +35,7 @@ final class Laporan extends Model
         'sakit_count' => 'integer',
         'alpa_count' => 'integer',
         'total_kehadiran' => 'integer',
-        'rata_nilai' => 'float',
-        'rata_partisipasi' => 'integer',
+        'rata_keaktifan' => Keaktifan::class,
     ];
 
     public function siswa(): BelongsTo

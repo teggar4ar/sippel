@@ -245,11 +245,11 @@ trait HasLaporanComputed
 
         // Apply sorting
         return match ($this->sortBy) {
-            'nilai' => $laporanData->sortByDesc('rata_nilai')->values(),
-            'nilai_asc' => $laporanData->sortBy('rata_nilai')->values(),
+            'keaktifan' => $laporanData->sortByDesc(fn (LaporanModel $laporan): int => $laporan->rata_keaktifan?->weight() ?? 0)->values(),
+            'keaktifan_asc' => $laporanData->sortBy(fn (LaporanModel $laporan): int => $laporan->rata_keaktifan?->weight() ?? 0)->values(),
             'kehadiran' => $laporanData->sortByDesc('rata_kehadiran')->values(),
             'nama' => $laporanData->sortBy(fn (LaporanModel $l): string => $l->siswa->user->name ?? '')->values(),
-            default => $laporanData->sortByDesc('rata_nilai')->values(),
+            default => $laporanData->sortByDesc('rata_kehadiran')->values(),
         };
     }
 }

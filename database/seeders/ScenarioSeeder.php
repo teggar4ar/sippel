@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\Keaktifan;
 use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
 use App\Models\Kelas;
@@ -132,7 +133,7 @@ final class ScenarioSeeder extends Seeder
 
     /**
      * @param  Kelas[]  $classes
-     * @return array<int, array<string, Siswa[]>>
+     * @return array<int, list<Siswa>>
      */
     private function seedStudents(array $classes, TahunAjaran $tahunAjaran): array
     {
@@ -249,11 +250,18 @@ final class ScenarioSeeder extends Seeder
 
                     $detailData[] = [
                         'kehadiran' => $kehadiran,
-                        'partisipasi' => $kehadiran === 'hadir'
-                            ? fake()->randomElement([3, 3, 3, 4, 4, 2, 2, 2, 1])
-                            : null,
-                        'nilai' => $kehadiran === 'hadir'
-                            ? fake()->numberBetween(50, 100)
+                        'keaktifan' => $kehadiran === 'hadir'
+                            ? fake()->randomElement([
+                                Keaktifan::Aktif->value,
+                                Keaktifan::Aktif->value,
+                                Keaktifan::Aktif->value,
+                                Keaktifan::SangatAktif->value,
+                                Keaktifan::SangatAktif->value,
+                                Keaktifan::Cukup->value,
+                                Keaktifan::Cukup->value,
+                                Keaktifan::Cukup->value,
+                                Keaktifan::Pasif->value,
+                            ])
                             : null,
                         'catatan' => fake()->optional(0.3)->sentence(),
                         'aktivitas_pembelajaran_id' => $activity->id,

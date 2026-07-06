@@ -83,7 +83,7 @@ final class ClassReportExport implements FromCollection, WithColumnFormatting, W
 
     public function headings(): array
     {
-        return ['No', 'NIS', 'Nama', 'Tanggal', 'Kehadiran', 'Partisipasi', 'Catatan Observasi'];
+        return ['No', 'NIS', 'Nama', 'Tanggal', 'Kehadiran', 'Keaktifan', 'Catatan Observasi'];
     }
 
     public function startCell(): string
@@ -108,7 +108,7 @@ final class ClassReportExport implements FromCollection, WithColumnFormatting, W
             $detail->siswa?->user?->name ?? '-',
             $detail->aktivitasPembelajaran?->tanggal?->format('d/m/Y') ?? '-',
             $detail->kehadiran->label(),
-            $isHadir ? $detail->label_partisipasi : '-',
+            $isHadir ? $detail->label_keaktifan : '-',
             $isHadir ? ($detail->catatan ?? '-') : '-',
         ];
     }

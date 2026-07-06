@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Keaktifan;
 use App\Enums\KehadiranStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -105,90 +106,47 @@ final class Siswa extends Model
     }
 
     /**
-     * Get the average grade for this student.
-     * Calculates: SUM(nilai) / COUNT(nilai where nilai is not null)
+     * Get the average keaktifan weight for this student.
      *
      * @param  int|null  $mataPelajaranId  Filter by specific subject (optional)
      * @param  string|null  $startDate  Filter from date (optional)
      * @param  string|null  $endDate  Filter to date (optional)
      * @param  int|null  $tahunAjaranId  Filter by academic year (optional)
      */
-    public function getAverageGrade(
+    public function getAverageKeaktifan(
         ?int $mataPelajaranId = null,
         ?string $startDate = null,
         ?string $endDate = null,
         ?int $tahunAjaranId = null
     ): ?float {
         if ($this->needsQuery($mataPelajaranId, $startDate, $endDate, $tahunAjaranId)) {
-            $query = $this->buildFilteredDetailQuery($mataPelajaranId, $startDate, $endDate, $tahunAjaranId)
-                ->whereNotNull('detail_aktivitas.nilai');
-            $avg = $query->avg('detail_aktivitas.nilai');
+            $values = $this->buildFilteredDetailQuery($mataPelajaranId, $startDate, $endDate, $tahunAjaranId)
+                ->whereNotNull('detail_aktivitas.keaktifan')
+                ->pluck('detail_aktivitas.keaktifan');
 
-            return $avg !== null ? round((float) $avg, 2) : null;
+            return $this->averageKeaktifanValues($values);
         }
 
-        // Use pre-loaded relation for better performance
-        $grades = $this->detailAktivitas->whereNotNull('nilai')->pluck('nilai');
+        $values = $this->detailAktivitas->whereNotNull('keaktifan')->pluck('keaktifan');
 
-        return $grades->isNotEmpty() ? round($grades->avg(), 2) : null;
+        return $this->averageKeaktifanValues($values);
     }
 
     /**
-     * Get the average participation for this student.
-     * Calculates: SUM(partisipasi) / COUNT(partisipasi where partisipasi is not null)
-     *
      * @param  int|null  $mataPelajaranId  Filter by specific subject (optional)
      * @param  string|null  $startDate  Filter from date (optional)
      * @param  string|null  $endDate  Filter to date (optional)
      * @param  int|null  $tahunAjaranId  Filter by academic year (optional)
      */
-    public function getAverageParticipation(
-        ?int $mataPelajaranId = null,
-        ?string $startDate = null,
-        ?string $endDate = null,
-        ?int $tahunAjaranId = null
-    ): ?float {
-        if ($this->needsQuery($mataPelajaranId, $startDate, $endDate, $tahunAjaranId)) {
-            $query = $this->buildFilteredDetailQuery($mataPelajaranId, $startDate, $endDate, $tahunAjaranId)
-                ->whereNotNull('detail_aktivitas.partisipasi');
-            $avg = $query->avg('detail_aktivitas.partisipasi');
-
-            return $avg !== null ? round((float) $avg, 2) : null;
-        }
-
-        // Use pre-loaded relation for better performance
-        $participation = $this->detailAktivitas->whereNotNull('partisipasi')->pluck('partisipasi');
-
-        return $participation->isNotEmpty() ? round($participation->avg(), 2) : null;
-    }
-
-    /**
-     * Convert a numeric average participation score to an observation label.
-     * Thresholds: <1.5 = Pasif, <2.5 = Cukup, <3.5 = Aktif, >=3.5 = Sangat Aktif.
-     *
-     * @param  int|null  $mataPelajaranId  Filter by specific subject (optional)
-     * @param  string|null  $startDate  Filter from date (optional)
-     * @param  string|null  $endDate  Filter to date (optional)
-     * @param  int|null  $tahunAjaranId  Filter by academic year (optional)
-     */
-    public function getAverageParticipationLabel(
+    public function getAverageKeaktifanLabel(
         ?int $mataPelajaranId = null,
         ?string $startDate = null,
         ?string $endDate = null,
         ?int $tahunAjaranId = null
     ): string {
-        $avg = $this->getAverageParticipation($mataPelajaranId, $startDate, $endDate, $tahunAjaranId);
+        $avg = $this->getAverageKeaktifan($mataPelajaranId, $startDate, $endDate, $tahunAjaranId);
 
-        if ($avg === null) {
-            return '-';
-        }
-
-        return match (true) {
-            $avg < 1.5 => 'Pasif',
-            $avg < 2.5 => 'Cukup',
-            $avg < 3.5 => 'Aktif',
-            default => 'Sangat Aktif',
-        };
+        return $avg === null ? '-' : Keaktifan::fromAverage($avg)->label();
     }
 
     // =========================================================================
@@ -298,33 +256,23 @@ final class Siswa extends Model
     }
 
     /**
-     * Get the average grade attribute (all activities).
+     * Get the average keaktifan weight attribute (all activities).
      */
-    protected function averageGrade(): Attribute
+    protected function averageKeaktifan(): Attribute
     {
         return Attribute::make(
-            get: fn (): ?float => $this->getAverageGrade(),
+            get: fn (): ?float => $this->getAverageKeaktifan(),
         );
     }
 
     /**
-     * Get the average participation attribute (all activities).
+     * Get the average keaktifan as a human-readable label (all activities).
+     * Access via $siswa->average_keaktifan_label.
      */
-    protected function averageParticipation(): Attribute
+    protected function averageKeaktifanLabel(): Attribute
     {
         return Attribute::make(
-            get: fn (): ?float => $this->getAverageParticipation(),
-        );
-    }
-
-    /**
-     * Get the average participation as a human-readable label (all activities).
-     * Access via $siswa->average_participation_label.
-     */
-    protected function averageParticipationLabel(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): string => $this->getAverageParticipationLabel(),
+            get: fn (): string => $this->getAverageKeaktifanLabel(),
         );
     }
 
@@ -354,6 +302,22 @@ final class Siswa extends Model
         }
 
         return round(($hadir / $total) * 100, 2);
+    }
+
+    /**
+     * @param  Collection<int, Keaktifan|string>  $values
+     */
+    private function averageKeaktifanValues(Collection $values): ?float
+    {
+        if ($values->isEmpty()) {
+            return null;
+        }
+
+        $weights = $values->map(
+            fn (Keaktifan|string $value): int => ($value instanceof Keaktifan ? $value : Keaktifan::from($value))->weight()
+        );
+
+        return round((float) $weights->avg(), 2);
     }
 
     // =========================================================================

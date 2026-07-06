@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Student;
 
+use App\Enums\Keaktifan;
 use App\Enums\KehadiranStatus;
 use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
@@ -385,10 +386,10 @@ final class Dashboard extends Component
 
         $contextTahunAjaran = TahunAjaran::getContext();
         $attendance = $siswa->getAttendancePercentage(null, null, null, $contextTahunAjaran?->id);
-        $avgPartisipasi = $siswa->getAverageParticipation(null, null, null, $contextTahunAjaran?->id) ?? 0;
+        $avgKeaktifan = $siswa->getAverageKeaktifan(null, null, null, $contextTahunAjaran?->id) ?? 0;
 
         return match (true) {
-            $attendance >= 90 && $avgPartisipasi >= 3.5 => [
+            $attendance >= 90 && $avgKeaktifan >= 3.5 => [
                 'text' => 'Luar biasa! Kamu siswa teladan! 🌟',
                 'variant' => 'success',
             ],
@@ -396,11 +397,11 @@ final class Dashboard extends Component
                 'text' => 'Kehadiran sempurna! Pertahankan! ✨',
                 'variant' => 'info',
             ],
-            $avgPartisipasi >= 3.5 => [
+            $avgKeaktifan >= 3.5 => [
                 'text' => 'Keaktifan hebat! Terus semangat! 📚',
                 'variant' => 'success',
             ],
-            $attendance >= 75 && $avgPartisipasi >= 2.5 => [
+            $attendance >= 75 && $avgKeaktifan >= 2.5 => [
                 'text' => 'Kamu di jalur yang tepat! Pertahankan! 👍',
                 'variant' => 'info',
             ],
@@ -417,22 +418,19 @@ final class Dashboard extends Component
         $hadir = $details->where('kehadiran', KehadiranStatus::Hadir)->count();
         $attendancePct = $total > 0 ? round(($hadir / $total) * 100) : 0;
 
-        $avgPartisipasi = $details->whereNotNull('partisipasi')->avg('partisipasi');
-        $partisipasiLabel = match (true) {
-            $avgPartisipasi === null => '-',
-            $avgPartisipasi < 1.5 => 'Pasif',
-            $avgPartisipasi < 2.5 => 'Cukup',
-            $avgPartisipasi < 3.5 => 'Aktif',
-            default => 'Sangat Aktif',
-        };
+        $keaktifanWeights = $details
+            ->whereNotNull('keaktifan')
+            ->map(fn ($detail): int => $detail->keaktifan->weight());
+        $avgKeaktifan = $keaktifanWeights->isNotEmpty() ? (float) $keaktifanWeights->avg() : null;
+        $keaktifanLabel = $avgKeaktifan === null ? '-' : Keaktifan::fromAverage($avgKeaktifan)->label();
 
         $compositeScore = ($attendancePct * 0.6)
-            + (($avgPartisipasi ? ($avgPartisipasi / 4 * 100) : 0) * 0.4);
+            + (($avgKeaktifan ? ($avgKeaktifan / 4 * 100) : 0) * 0.4);
 
         return [
             'nama_mapel' => $mapel->nama_mapel,
             'attendance_pct' => $attendancePct,
-            'partisipasi_label' => $partisipasiLabel,
+            'keaktifan_label' => $keaktifanLabel,
             'composite_score' => $compositeScore,
             'total_activities' => $total,
         ];

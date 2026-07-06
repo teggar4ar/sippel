@@ -240,6 +240,8 @@ final class ClassReport extends Page implements HasForms
                 ->native(false)
                 ->options([
                     'kehadiran' => 'Kehadiran (Tertinggi)',
+                    'keaktifan' => 'Keaktifan (Tertinggi)',
+                    'keaktifan_asc' => 'Keaktifan (Terendah)',
                     'nama' => 'Nama (A-Z)',
                 ])
                 ->default('kehadiran')
@@ -356,6 +358,8 @@ final class ClassReport extends Page implements HasForms
         // Apply sorting
         return match ($this->sortBy) {
             'kehadiran' => $laporanData->sortByDesc('rata_kehadiran')->values(),
+            'keaktifan' => $laporanData->sortByDesc(fn (Laporan $laporan): int => $laporan->rata_keaktifan?->weight() ?? 0)->values(),
+            'keaktifan_asc' => $laporanData->sortBy(fn (Laporan $laporan): int => $laporan->rata_keaktifan?->weight() ?? 0)->values(),
             'nama' => $laporanData->sortBy(function (Laporan $l): string {
                 /** @var \App\Models\Siswa|null $siswa */
                 $siswa = $l->siswa;

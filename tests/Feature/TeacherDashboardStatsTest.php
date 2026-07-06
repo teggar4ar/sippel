@@ -54,7 +54,7 @@ it('loads teacher subjects once when calculating dashboard statistics', function
         ]);
     }
 
-    Cache::forget('teacher_dashboard_stats_'.$teacher->id.'_'.$selectedYear->id);
+    Cache::forget('teacher_dashboard_stats_v2_'.$teacher->id.'_'.$selectedYear->id);
     DB::flushQueryLog();
     DB::enableQueryLog();
 

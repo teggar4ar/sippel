@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Users\Pages;
 
 use App\Filament\Resources\Users\UserResource;
+use App\Services\AdminDashboardCacheService;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,6 +26,8 @@ final class CreateUser extends CreateRecord
         if ($role) {
             $user->assignRole($role);
         }
+
+        app(AdminDashboardCacheService::class)->invalidate();
 
         return $user;
     }

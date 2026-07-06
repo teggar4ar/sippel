@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 
 final class MataPelajaran extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'mata_pelajaran';
 
@@ -77,6 +78,6 @@ final class MataPelajaran extends Model
         }
 
         $tahunAjaranId = $kelas->tahun_ajaran_id;
-        Cache::forget('teacher_dashboard_stats_'.$guruId.'_'.$tahunAjaranId);
+        Cache::forget('teacher_dashboard_stats_v2_'.$guruId.'_'.$tahunAjaranId);
     }
 }

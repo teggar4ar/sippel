@@ -320,7 +320,7 @@
                         <div class="p-3 space-y-3 overflow-y-auto max-h-[400px]">
                             @foreach($this->mataPelajaranList as $data)
                                 @php
-                                    $partisipasiColor = match($data['partisipasi_label']) {
+                                    $keaktifanColor = match($data['keaktifan_label']) {
                                         'Sangat Aktif' => 'lime',
                                         'Aktif' => 'teal',
                                         'Cukup' => 'amber',
@@ -349,7 +349,7 @@
                                         <div class="flex items-center gap-1.5">
                                             <flux:icon name="star" class="w-3.5 h-3.5 text-amber-500" />
                                             <span class="text-xs text-teal-700 dark:text-teal-200">Keaktifan</span>
-                                            <flux:badge size="sm" color="{{ $partisipasiColor }}">{{ $data['partisipasi_label'] }}</flux:badge>
+                                            <flux:badge size="sm" color="{{ $keaktifanColor }}">{{ $data['keaktifan_label'] }}</flux:badge>
                                         </div>
                                     </div>
                                 </div>

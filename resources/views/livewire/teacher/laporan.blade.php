@@ -145,6 +145,8 @@
                                 class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 cursor-pointer"
                             >
                                 <option value="kehadiran">Kehadiran (Tertinggi)</option>
+                                <option value="keaktifan">Keaktifan (Tertinggi)</option>
+                                <option value="keaktifan_asc">Keaktifan (Terendah)</option>
                                 <option value="nama">Nama (A-Z)</option>
                             </flux:select>
                         </div>
@@ -227,11 +229,12 @@
                                 @php
                                     $totalActivities = $this->studentActivityData->total();
                                     $avgKehadiranPct = $this->studentReportData->isNotEmpty() ? $this->studentReportData->avg('rata_kehadiran') : 0;
-                                    $avgPartisipasi = $this->studentReportData->isNotEmpty() ? $this->studentReportData->avg('rata_partisipasi') : 0;
-                                    $partisipasiAvgLabel = match(true) {
-                                        $avgPartisipasi >= 3.5 => ['Sangat Aktif', 'text-emerald-600 dark:text-emerald-400'],
-                                        $avgPartisipasi >= 2.5 => ['Aktif', 'text-blue-600 dark:text-blue-400'],
-                                        $avgPartisipasi >= 1.5 => ['Cukup', 'text-amber-600 dark:text-amber-400'],
+                                    $keaktifanWeights = $this->studentReportData->pluck('rata_keaktifan')->filter()->map->weight();
+                                    $avgKeaktifan = $keaktifanWeights->isNotEmpty() ? $keaktifanWeights->avg() : 0;
+                                    $keaktifanAvgLabel = match(true) {
+                                        $avgKeaktifan >= 3.5 => ['Sangat Aktif', 'text-emerald-600 dark:text-emerald-400'],
+                                        $avgKeaktifan >= 2.5 => ['Aktif', 'text-blue-600 dark:text-blue-400'],
+                                        $avgKeaktifan >= 1.5 => ['Cukup', 'text-amber-600 dark:text-amber-400'],
                                         default => ['Pasif', 'text-rose-600 dark:text-rose-400'],
                                     };
                                 @endphp
@@ -261,7 +264,7 @@
                                             <flux:icon name="star" class="w-4.5 h-4.5 text-amber-500/70 dark:text-amber-400/60" />
                                         </div>
                                         <p class="text-[9px] sm:text-xs font-semibold uppercase tracking-wider text-amber-500/80 dark:text-amber-400/70 leading-tight">Keaktifan</p>
-                                        <p class="text-sm sm:text-xl font-bold {{ $partisipasiAvgLabel[1] }} mt-0.5 sm:mt-1">{{ $partisipasiAvgLabel[0] }}</p>
+                                        <p class="text-sm sm:text-xl font-bold {{ $keaktifanAvgLabel[1] }} mt-0.5 sm:mt-1">{{ $keaktifanAvgLabel[0] }}</p>
                                     </div>
                                 </div>
 
@@ -298,17 +301,16 @@
                                                         <flux:badge color="{{ $kehadiranBadge[1] }}" size="sm" inset="top bottom">{{ $kehadiranBadge[0] }}</flux:badge>
                                                     </flux:table.cell>
                                                     <flux:table.cell>
-                                                        @if($detail->kehadiran === \App\Enums\KehadiranStatus::Hadir && $detail->partisipasi)
+                                                        @if($detail->kehadiran === \App\Enums\KehadiranStatus::Hadir && $detail->keaktifan)
                                                             @php
-                                                                $partBadge = match((int) $detail->partisipasi) {
-                                                                    4 => ['Sangat Aktif', 'green'],
-                                                                    3 => ['Aktif', 'blue'],
-                                                                    2 => ['Cukup', 'amber'],
-                                                                    1 => ['Pasif', 'red'],
-                                                                    default => ['-', 'zinc'],
+                                                                $keaktifanBadge = match($detail->keaktifan) {
+                                                                    \App\Enums\Keaktifan::SangatAktif => ['Sangat Aktif', 'green'],
+                                                                    \App\Enums\Keaktifan::Aktif => ['Aktif', 'blue'],
+                                                                    \App\Enums\Keaktifan::Cukup => ['Cukup', 'amber'],
+                                                                    \App\Enums\Keaktifan::Pasif => ['Pasif', 'red'],
                                                                 };
                                                             @endphp
-                                                            <flux:badge color="{{ $partBadge[1] }}" size="sm" inset="top bottom">{{ $partBadge[0] }}</flux:badge>
+                                                            <flux:badge color="{{ $keaktifanBadge[1] }}" size="sm" inset="top bottom">{{ $keaktifanBadge[0] }}</flux:badge>
                                                         @else
                                                             <span class="text-xs text-slate-400">-</span>
                                                         @endif
@@ -408,12 +410,13 @@
                                 {{-- Summary Cards (dashboard style) --}}
                                 @php
                                     $avgKehadiran = $this->classReportData->avg('rata_kehadiran');
-                                    $avgPartisipasi = $this->classReportData->avg('rata_partisipasi');
+                                    $keaktifanWeights = $this->classReportData->pluck('rata_keaktifan')->filter()->map->weight();
+                                    $avgKeaktifan = $keaktifanWeights->isNotEmpty() ? $keaktifanWeights->avg() : 0;
                                     $totalPertemuan = $this->classReportData->max('total_kehadiran') ?? 0;
-                                    $partisipasiAvgLabel = match(true) {
-                                        $avgPartisipasi >= 3.5 => ['Sangat Aktif', 'text-emerald-600 dark:text-emerald-400'],
-                                        $avgPartisipasi >= 2.5 => ['Aktif', 'text-blue-600 dark:text-blue-400'],
-                                        $avgPartisipasi >= 1.5 => ['Cukup', 'text-amber-600 dark:text-amber-400'],
+                                    $keaktifanAvgLabel = match(true) {
+                                        $avgKeaktifan >= 3.5 => ['Sangat Aktif', 'text-emerald-600 dark:text-emerald-400'],
+                                        $avgKeaktifan >= 2.5 => ['Aktif', 'text-blue-600 dark:text-blue-400'],
+                                        $avgKeaktifan >= 1.5 => ['Cukup', 'text-amber-600 dark:text-amber-400'],
                                         default => ['Pasif', 'text-rose-600 dark:text-rose-400'],
                                     };
                                 @endphp
@@ -443,7 +446,7 @@
                                             <flux:icon name="star" class="w-4.5 h-4.5 text-amber-500/70 dark:text-amber-400/60" />
                                         </div>
                                         <p class="text-[9px] sm:text-xs font-semibold uppercase tracking-wider text-amber-500/80 dark:text-amber-400/70 leading-tight">Keaktifan</p>
-                                        <p class="text-sm sm:text-xl font-bold {{ $partisipasiAvgLabel[1] }} mt-0.5 sm:mt-1">{{ $partisipasiAvgLabel[0] }}</p>
+                                        <p class="text-sm sm:text-xl font-bold {{ $keaktifanAvgLabel[1] }} mt-0.5 sm:mt-1">{{ $keaktifanAvgLabel[0] }}</p>
                                     </div>
                                 </div>
 
@@ -458,11 +461,12 @@
                                     <flux:table.rows>
                                         @foreach($this->classReportData as $index => $laporan)
                                             @php
-                                                $partisipasiLabel = match(true) {
-                                                    $laporan->rata_partisipasi >= 4 => ['Sangat Aktif', 'green'],
-                                                    $laporan->rata_partisipasi >= 3 => ['Aktif', 'blue'],
-                                                    $laporan->rata_partisipasi >= 2 => ['Cukup', 'amber'],
-                                                    default => ['Pasif', 'red'],
+                                                $keaktifanLabel = match($laporan->rata_keaktifan) {
+                                                    \App\Enums\Keaktifan::SangatAktif => ['Sangat Aktif', 'green'],
+                                                    \App\Enums\Keaktifan::Aktif => ['Aktif', 'blue'],
+                                                    \App\Enums\Keaktifan::Cukup => ['Cukup', 'amber'],
+                                                    \App\Enums\Keaktifan::Pasif => ['Pasif', 'red'],
+                                                    null => ['-', 'zinc'],
                                                 };
                                                 $kehadiranPct = $laporan->rata_kehadiran;
                                                 $kehadiranColor = match(true) {
@@ -489,7 +493,7 @@
                                                     </div>
                                                 </flux:table.cell>
                                                 <flux:table.cell>
-                                                    <flux:badge color="{{ $partisipasiLabel[1] }}" size="sm" inset="top bottom">{{ $partisipasiLabel[0] }}</flux:badge>
+                                                    <flux:badge color="{{ $keaktifanLabel[1] }}" size="sm" inset="top bottom">{{ $keaktifanLabel[0] }}</flux:badge>
                                                 </flux:table.cell>
                                             </flux:table.row>
                                         @endforeach

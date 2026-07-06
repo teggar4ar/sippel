@@ -128,7 +128,7 @@ if (app()->environment('local')) {
                 ->whereHas('siswa', fn ($q) => $q->where('kelas_id', $kelas->id))
                 ->with(['siswa.user', 'mataPelajaran'])
                 ->get()
-                ->sortByDesc('rata_nilai')
+                ->sortByDesc('rata_kehadiran')
                 ->values();
 
             return view('reports.class-report', [

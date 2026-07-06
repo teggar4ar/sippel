@@ -1,7 +1,14 @@
 <?php
 
+/**
+ * @property \App\Models\TahunAjaran $tahunAjaran
+ * @property \App\Models\User        $teacher
+ * @property \App\Models\Kelas       $kelas
+ * @property \App\Models\MataPelajaran $mataPelajaran
+ */
 declare(strict_types=1);
 
+use App\Enums\Keaktifan;
 use App\Exports\ClassReportExport;
 use App\Models\AktivitasPembelajaran;
 use App\Models\DetailAktivitas;
@@ -40,7 +47,7 @@ it('generates excel with correct header structure', function () {
         'Nama',
         'Tanggal',
         'Kehadiran',
-        'Partisipasi',
+        'Keaktifan',
         'Catatan Observasi',
     ]);
 });
@@ -72,16 +79,14 @@ it('orders records by activity date', function () {
         'siswa_id' => $siswa1->id,
         'aktivitas_pembelajaran_id' => $aktivitas1->id,
         'kehadiran' => 'hadir',
-        'nilai' => 85,
-        'partisipasi' => 4,
+        'keaktifan' => Keaktifan::SangatAktif,
     ]);
 
     DetailAktivitas::create([
         'siswa_id' => $siswa1->id,
         'aktivitas_pembelajaran_id' => $aktivitas2->id,
         'kehadiran' => 'hadir',
-        'nilai' => 90,
-        'partisipasi' => 5,
+        'keaktifan' => Keaktifan::Aktif,
     ]);
 
     $export = new ClassReportExport($this->kelas);
@@ -94,7 +99,7 @@ it('orders records by activity date', function () {
         ->toBe($tanggal2->format('d/m/Y'));
 });
 
-it('maps detail rows with attendance and participation labels', function () {
+it('maps detail rows with attendance and keaktifan labels', function () {
     $siswa = Siswa::factory()->create(['kelas_id' => $this->kelas->id]);
 
     $aktivitas = AktivitasPembelajaran::create([
@@ -109,8 +114,7 @@ it('maps detail rows with attendance and participation labels', function () {
         'siswa_id' => $siswa->id,
         'aktivitas_pembelajaran_id' => $aktivitas->id,
         'kehadiran' => 'hadir',
-        'nilai' => 80,
-        'partisipasi' => 4,
+        'keaktifan' => Keaktifan::SangatAktif,
     ]);
 
     $export = new ClassReportExport($this->kelas, $this->mataPelajaran);
@@ -158,16 +162,14 @@ it('only includes activities for the specified subject when mata pelajaran is pa
         'siswa_id' => $siswa->id,
         'aktivitas_pembelajaran_id' => $aktivitasMatematika->id,
         'kehadiran' => 'hadir',
-        'nilai' => 90,
-        'partisipasi' => 5,
+        'keaktifan' => Keaktifan::SangatAktif,
     ]);
 
     DetailAktivitas::create([
         'siswa_id' => $siswa->id,
         'aktivitas_pembelajaran_id' => $aktivitasBahasa->id,
         'kehadiran' => 'izin',
-        'nilai' => 75,
-        'partisipasi' => 3,
+        'keaktifan' => null,
     ]);
 
     $export = new ClassReportExport($this->kelas, $this->mataPelajaran);
@@ -216,16 +218,14 @@ it('scopes activities to kelas via aktivitas_pembelajaran when spanning multiple
         'siswa_id' => $siswa->id,
         'aktivitas_pembelajaran_id' => $oldAktivitas->id,
         'kehadiran' => 'alpa',
-        'nilai' => 50,
-        'partisipasi' => 1,
+        'keaktifan' => null,
     ]);
 
     DetailAktivitas::create([
         'siswa_id' => $siswa->id,
         'aktivitas_pembelajaran_id' => $newAktivitas->id,
         'kehadiran' => 'hadir',
-        'nilai' => 85,
-        'partisipasi' => 5,
+        'keaktifan' => Keaktifan::SangatAktif,
     ]);
 
     $export = new ClassReportExport($this->kelas, $this->mataPelajaran);

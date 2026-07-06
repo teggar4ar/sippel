@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Keaktifan;
 use App\Enums\KehadiranStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -19,8 +20,7 @@ final class DetailAktivitas extends Model
 
     protected $fillable = [
         'kehadiran',
-        'nilai',
-        'partisipasi',
+        'keaktifan',
         'catatan',
         'aktivitas_pembelajaran_id',
         'siswa_id',
@@ -28,8 +28,7 @@ final class DetailAktivitas extends Model
 
     protected $casts = [
         'kehadiran' => KehadiranStatus::class,
-        'nilai' => 'decimal:2',
-        'partisipasi' => 'decimal:2',
+        'keaktifan' => Keaktifan::class,
     ];
 
     public function aktivitasPembelajaran(): BelongsTo
@@ -61,10 +60,10 @@ final class DetailAktivitas extends Model
     }
 
     /**
-     * Translate the numeric participation score into a human-readable observation label.
+     * Translate the keaktifan enum into a human-readable observation label.
      * Returns '-' when the student was not present (Hadir) or has no score recorded.
      */
-    protected function labelPartisipasi(): Attribute
+    protected function labelKeaktifan(): Attribute
     {
         return Attribute::make(
             get: function (): string {
@@ -72,13 +71,7 @@ final class DetailAktivitas extends Model
                     return '-';
                 }
 
-                return match ((int) $this->partisipasi) {
-                    1 => 'Pasif',
-                    2 => 'Cukup',
-                    3 => 'Aktif',
-                    4 => 'Sangat Aktif',
-                    default => '-',
-                };
+                return $this->keaktifan?->label() ?? '-';
             },
         );
     }

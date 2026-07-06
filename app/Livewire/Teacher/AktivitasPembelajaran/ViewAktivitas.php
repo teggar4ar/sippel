@@ -6,6 +6,7 @@ namespace App\Livewire\Teacher\AktivitasPembelajaran;
 
 use App\Models\AktivitasPembelajaran;
 use App\Models\TahunAjaran;
+use App\Services\LaporanCalculatorService;
 use App\Services\StudentDashboardCacheService;
 use App\Services\TeacherDashboardCacheService;
 use Exception;
@@ -54,8 +55,9 @@ final class ViewAktivitas extends Component
             'sakit' => $sakit,
             'alpa' => $alpa,
             'percentage' => $total > 0 ? round(($hadir / $total) * 100) : 0,
-            'avg_nilai' => $details->whereNotNull('nilai')->avg('nilai'),
-            'avg_partisipasi' => $details->whereNotNull('partisipasi')->avg('partisipasi'),
+            'avg_keaktifan' => $details->whereNotNull('keaktifan')->isNotEmpty()
+                ? $details->whereNotNull('keaktifan')->avg(fn ($detail): int => $detail->keaktifan->weight())
+                : null,
         ];
     }
 
@@ -84,6 +86,16 @@ final class ViewAktivitas extends Component
         try {
             $affectedSiswaIds = $this->aktivitas->detailAktivitas()->pluck('siswa_id')->all();
             $this->aktivitas->delete();
+
+            $calculator = app(LaporanCalculatorService::class);
+            foreach ($affectedSiswaIds as $siswaId) {
+                $calculator->recalculateForCombination(
+                    (int) $siswaId,
+                    $this->aktivitas->mata_pelajaran_id,
+                    $contextTahunAjaran->id,
+                    true
+                );
+            }
 
             app(TeacherDashboardCacheService::class)->invalidate(
                 (int) Auth::id(),

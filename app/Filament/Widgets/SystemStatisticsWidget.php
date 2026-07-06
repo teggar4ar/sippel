@@ -9,6 +9,7 @@ use App\Models\Kelas;
 use App\Models\MataPelajaran;
 use App\Models\TahunAjaran;
 use App\Models\User;
+use App\Services\AdminDashboardCacheService;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +32,8 @@ final class SystemStatisticsWidget extends StatsOverviewWidget
     protected function getStats(): array
     {
         // Cache stats for 5 minutes to improve performance
-        $stats = Cache::remember('admin_dashboard_stats', 300, function (): array {
+        $cacheVersion = app(AdminDashboardCacheService::class)->version();
+        $stats = Cache::remember('admin_dashboard_stats_v2_'.$cacheVersion, 300, function (): array {
             $activeTahunAjaran = TahunAjaran::where('status', true)->first();
 
             return [
