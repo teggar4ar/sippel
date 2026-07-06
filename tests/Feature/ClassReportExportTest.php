@@ -1,10 +1,10 @@
 <?php
 
 /**
- * @property \App\Models\TahunAjaran $tahunAjaran
- * @property \App\Models\User        $teacher
- * @property \App\Models\Kelas       $kelas
- * @property \App\Models\MataPelajaran $mataPelajaran
+ * @property TahunAjaran $tahunAjaran
+ * @property User $teacher
+ * @property Kelas $kelas
+ * @property MataPelajaran $mataPelajaran
  */
 declare(strict_types=1);
 
