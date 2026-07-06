@@ -112,10 +112,14 @@ final class LaporanCalculatorService
     {
         $total = $detailAktivitas->count();
 
-        $hadirCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Hadir)->count();
-        $izinCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Izin)->count();
-        $sakitCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Sakit)->count();
-        $alpaCount = $detailAktivitas->filter(fn ($d): bool => $d->kehadiran === KehadiranStatus::Alpa)->count();
+        // Single-pass count per attendance status (replaces 4 separate
+        // filter()->count() iterations over the same collection).
+        $counts = $detailAktivitas->countBy(fn ($d): string => $d->kehadiran->value);
+
+        $hadirCount = $counts[KehadiranStatus::Hadir->value] ?? 0;
+        $izinCount = $counts[KehadiranStatus::Izin->value] ?? 0;
+        $sakitCount = $counts[KehadiranStatus::Sakit->value] ?? 0;
+        $alpaCount = $counts[KehadiranStatus::Alpa->value] ?? 0;
 
         $rataKehadiran = $total > 0 ? round(($hadirCount / $total) * 100, 2) : 0;
 

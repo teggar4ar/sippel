@@ -66,9 +66,11 @@ final class SiswaKelasHistory extends Model
             return;
         }
 
+        // A kelas belongs to exactly one tahun_ajaran, so `kelas_id` already
+        // implies the academic year — the previous `whereHas('kelas')` subquery
+        // was a redundant verification. Query guru directly by kelas_id.
         $guruIds = MataPelajaran::query()
             ->where('kelas_id', $kelasId)
-            ->whereHas('kelas', fn ($q) => $q->where('tahun_ajaran_id', $tahunAjaranId))
             ->pluck('guru_id')
             ->filter()
             ->unique();

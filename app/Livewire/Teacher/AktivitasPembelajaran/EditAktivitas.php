@@ -384,16 +384,36 @@ final class EditAktivitas extends Component
 
     private function loadDetailAktivitas(): void
     {
-        // Get all students in the class
-        $siswaInClass = Siswa::where('kelas_id', $this->kelasId)
+        if ($this->kelasId === null || $this->kelasId === 0) {
+            return;
+        }
+
+        // Existing detail records (already eager-loaded in mount via
+        // `detailAktivitas.siswa.user`), keyed by siswa_id for O(1) lookup.
+        /** @var \Illuminate\Database\Eloquent\Collection<int|string, DetailAktivitas> $existingDetails */
+        $existingDetails = $this->aktivitas->detailAktivitas->keyBy('siswa_id');
+
+        // Reuse siswa already loaded through the detailAktivitas.siswa relation,
+        // filtered to the currently-selected class so siswa who have since moved
+        // out of this class are not shown (matches the previous where('kelas_id')
+        // behaviour). This avoids re-querying siswa we already have in memory.
+        $loadedSiswa = $existingDetails
+            ->map(fn (DetailAktivitas $detail): ?Siswa => $detail->siswa)
+            ->filter(fn (?Siswa $siswa): bool => $siswa instanceof Siswa && $siswa->kelas_id === $this->kelasId);
+
+        // Query only siswa in the class that don't yet have a loaded detail record.
+        $loadedSiswaIds = $loadedSiswa->keys()->all();
+        $queriedSiswa = Siswa::query()
+            ->where('kelas_id', $this->kelasId)
+            ->when($loadedSiswaIds !== [], fn ($q) => $q->whereNotIn('id', $loadedSiswaIds))
             ->with('user')
             ->orderBy('nis')
             ->get();
 
-        // Get existing detail records
-        $existingDetails = $this->aktivitas->detailAktivitas->keyBy('siswa_id');
+        // Merge both sources and sort consistently by nis.
+        $allSiswa = $loadedSiswa->merge($queriedSiswa)->sortBy('nis')->values();
 
-        foreach ($siswaInClass as $siswa) {
+        foreach ($allSiswa as $siswa) {
             $existing = $existingDetails->get($siswa->id);
 
             // Normalize kehadiran enum to capitalized string (UI expects 'Hadir', 'Izin', etc.)

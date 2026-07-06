@@ -403,7 +403,7 @@ Method ini menjalankan query hampir identik dengan `mySubjects()` computed prope
 
 ---
 
-### 16. `ClassReport` — duplikat query antara preview dan download
+### 16. `ClassReport` — duplikat query antara preview dan download (DONE)
 
 [ClassReport.php](file:///d:/laragon/www/sippel/app/Filament/Pages/ClassReport.php)
 
@@ -424,7 +424,7 @@ Method ini menjalankan query hampir identik dengan `mySubjects()` computed prope
 
 ---
 
-### 17. `HasLaporanDownloads` — duplikat access check
+### 17. `HasLaporanDownloads` — duplikat access check (DONE)
 
 [HasLaporanDownloads.php](file:///d:/laragon/www/sippel/app/Livewire/Teacher/Concerns/HasLaporanDownloads.php)
 
@@ -432,7 +432,7 @@ Method ini menjalankan query hampir identik dengan `mySubjects()` computed prope
 
 ---
 
-### 18. `EditAktivitas::loadDetailAktivitas()` — re-query Siswa yang sudah loaded
+### 18. `EditAktivitas::loadDetailAktivitas()` — re-query Siswa yang sudah loaded (DONE)
 
 [EditAktivitas.php](file:///d:/laragon/www/sippel/app/Livewire/Teacher/AktivitasPembelajaran/EditAktivitas.php)
 
@@ -446,7 +446,7 @@ Method ini menjalankan query hampir identik dengan `mySubjects()` computed prope
 
 ---
 
-### 19. `SiswaKelasHistory::clearTeacherDashboardCache()` — DB query di model event
+### 19. `SiswaKelasHistory::clearTeacherDashboardCache()` — DB query di model event (DONE)
 
 [SiswaKelasHistory.php](file:///d:/laragon/www/sippel/app/Models/SiswaKelasHistory.php)
 
@@ -461,7 +461,7 @@ Setiap create/update/delete pada `SiswaKelasHistory` menjalankan `MataPelajaran:
 
 ---
 
-### 20. `LaporanCalculatorService::calculateStatistics()` — 4× iterasi collection
+### 20. `LaporanCalculatorService::calculateStatistics()` — 4× iterasi collection (DONE)
 
 [LaporanCalculatorService.php](file:///d:/laragon/www/sippel/app/Services/LaporanCalculatorService.php)
 
