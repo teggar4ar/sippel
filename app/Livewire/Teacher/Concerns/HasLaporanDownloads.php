@@ -111,7 +111,7 @@ trait HasLaporanDownloads
      */
     private function canAccessSiswa(?Siswa $siswa): bool
     {
-        if (!$siswa instanceof \App\Models\Siswa) {
+        if (! $siswa instanceof Siswa) {
             return false;
         }
 
