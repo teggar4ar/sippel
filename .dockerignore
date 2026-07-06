@@ -17,5 +17,4 @@
 /*.log
 /.agents
 /skills-lock.json
-/graphify-out
-/.graphifyignore
+/.docker-compose.yml
