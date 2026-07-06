@@ -36,7 +36,7 @@ services:
       - .:/usr/src
     environment:
       SONAR_HOST_URL: http://sonarqube:9000
-      SONAR_TOKEN: sqp_012b68d568427133c86e640311d556085a2af802
+      SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
     profiles:
       - scan
 
