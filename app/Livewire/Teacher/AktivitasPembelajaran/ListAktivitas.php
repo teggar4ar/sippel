@@ -106,6 +106,7 @@ final class ListAktivitas extends Component
     public function aktivitas()
     {
         $contextTahunAjaran = \App\Models\TahunAjaran::getContext();
+        $search = mb_strtolower(trim($this->search));
 
         return AktivitasPembelajaran::query()
             ->where('guru_id', Auth::id())
@@ -114,7 +115,7 @@ final class ListAktivitas extends Component
             ->when($this->filterPeriode === 'today', fn ($q) => $q->whereDate('tanggal', Carbon::today()))
             ->when($this->filterPeriode === 'week', fn ($q) => $q->whereBetween('tanggal', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]))
             ->when($this->filterPeriode === 'month', fn ($q) => $q->whereMonth('tanggal', Carbon::now()->month)->whereYear('tanggal', Carbon::now()->year))
-            ->when($this->search, fn ($q) => $q->where('topik', 'like', "%{$this->search}%"))
+            ->when($search !== '', fn ($q) => $q->whereRaw('LOWER(topik) LIKE ?', ["%{$search}%"]))
             ->with(['mataPelajaran', 'kelas', 'detailAktivitas'])
             ->latest('tanggal')
             ->latest('created_at')

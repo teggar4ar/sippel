@@ -107,6 +107,7 @@ final class RiwayatAktivitas extends Component
         $siswa = $this->siswa;
 
         $contextTahunAjaran = TahunAjaran::getContext();
+        $search = mb_strtolower(trim($this->search));
         $riwayat = collect();
 
         if ($siswa) {
@@ -117,9 +118,14 @@ final class RiwayatAktivitas extends Component
                     $q->whereNull('deleted_at')
                         ->when($contextTahunAjaran, fn ($query) => $query->whereHas('kelas', fn ($k) => $k->where('tahun_ajaran_id', $contextTahunAjaran->id)));
                 })
-                ->when($this->search, fn ($q) => $q->where(function ($sub): void {
-                    $sub->whereHas('aktivitasPembelajaran', fn ($aq) => $aq->where('topik', 'like', "%{$this->search}%"))
-                        ->orWhereHas('aktivitasPembelajaran.mataPelajaran', fn ($mq) => $mq->where('nama_mapel', 'like', "%{$this->search}%"));
+                ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search): void {
+                    $pattern = "%{$search}%";
+
+                    $sub->whereHas('aktivitasPembelajaran', fn ($aq) => $aq
+                        ->whereRaw('LOWER(topik) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(catatan) LIKE ?', [$pattern]))
+                        ->orWhereHas('aktivitasPembelajaran.mataPelajaran', fn ($mq) => $mq->whereRaw('LOWER(nama_mapel) LIKE ?', [$pattern]))
+                        ->orWhereRaw('LOWER(catatan) LIKE ?', [$pattern]);
                 }))
                 ->when($this->filterKehadiran, fn ($q) => $q->where('kehadiran', $this->filterKehadiran))
                 ->when($this->filterMapel, fn ($q) => $q->whereHas('aktivitasPembelajaran', fn ($aq) => $aq->where('mata_pelajaran_id', $this->filterMapel)))
