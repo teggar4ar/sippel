@@ -17,7 +17,7 @@ When you've made changes and want to deploy:
 git add .
 git commit -m "fix: your bug fix or feature"
 
-# 2. Push to Heroku
+# 2. Push to Herokuu
 git push heroku update:main
 ```
 
