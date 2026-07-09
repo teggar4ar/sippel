@@ -12,11 +12,17 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 afterEach(function (): void {
+    if (DB::connection()->getDriverName() !== 'sqlite') {
+        return;
+    }
+
     DB::statement('PRAGMA case_sensitive_like = false');
 });
 
 it('finds teacher activity history regardless of search term casing', function (): void {
-    DB::statement('PRAGMA case_sensitive_like = true');
+    if (DB::connection()->getDriverName() === 'sqlite') {
+        DB::statement('PRAGMA case_sensitive_like = true');
+    }
 
     $tahunAjaran = TahunAjaran::factory()->active()->create();
     $kelas = Kelas::factory()->create([
