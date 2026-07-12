@@ -1,11 +1,9 @@
 <div class="space-y-4 overflow-x-hidden">
     {{-- Greeting --}}
-    <div>
-        <h1 class="text-xl font-bold text-teal-900 dark:text-white">Hai, {{ explode(' ', auth()->user()->name ?? 'Siswa')[0] }}!</h1>
-        @if($this->siswa && $this->contextKelas)
-            <p class="text-sm text-teal-600 dark:text-teal-300">Kelas {{ $this->contextKelas->tingkat_kelas }}-{{ $this->contextKelas->grup_kelas }}</p>
-        @endif
-    </div>
+    <x-ui.section-heading
+        variant="student"
+        title="Hai, {{ explode(' ', auth()->user()->name ?? 'Siswa')[0] }}!"
+        subtitle="{{ ($this->siswa && $this->contextKelas) ? 'Kelas '.$this->contextKelas->tingkat_kelas.'-'.$this->contextKelas->grup_kelas : null }}" />
 
     @if($this->siswa)
         {{-- Motivational Message --}}
@@ -16,7 +14,7 @@
                 <p class="text-sm text-teal-700 dark:text-teal-200">{{ $message['text'] }}</p>
             </div>
         </div>
-        <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-teal-200 dark:border-slate-700/90 p-4">
+        <x-ui.card variant="student">
             {{-- Filter Area --}}
             <div class="flex flex-col sm:flex-row sm:items-end gap-3 mb-4">
                 <div class="flex items-center gap-2">
@@ -62,37 +60,13 @@
 
             {{-- Summary Cards --}}
             @php $stats = $this->stats; @endphp
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div class="bg-emerald-100/80 dark:bg-emerald-900/30 rounded-xl p-3 flex flex-col">
-                    <div class="flex items-start justify-between">
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">Hadir</p>
-                        <flux:icon name="check-circle" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    </div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['hadir'] }}</p>
-                </div>
-                <div class="bg-blue-100/80 dark:bg-blue-900/30 rounded-xl p-3 flex flex-col">
-                    <div class="flex items-start justify-between">
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">Izin</p>
-                        <flux:icon name="clock" class="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                    </div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['izin'] }}</p>
-                </div>
-                <div class="bg-amber-100/80 dark:bg-amber-900/30 rounded-xl p-3 flex flex-col">
-                    <div class="flex items-start justify-between">
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">Sakit</p>
-                        <flux:icon name="exclamation-circle" class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                    </div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['sakit'] }}</p>
-                </div>
-                <div class="bg-rose-100/80 dark:bg-rose-900/30 rounded-xl p-3 flex flex-col">
-                    <div class="flex items-start justify-between">
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-rose-700 dark:text-rose-400">Alpa</p>
-                        <flux:icon name="x-circle" class="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
-                    </div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white mt-2 leading-none">{{ $stats['alpa'] }}</p>
-                </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <x-ui.metric-card accent="emerald" icon="check-circle" label="Hadir" :value="$stats['hadir']" />
+                <x-ui.metric-card accent="blue" icon="clock" label="Izin" :value="$stats['izin']" />
+                <x-ui.metric-card accent="amber" icon="exclamation-circle" label="Sakit" :value="$stats['sakit']" />
+                <x-ui.metric-card accent="rose" icon="x-circle" label="Alpa" :value="$stats['alpa']" />
             </div>
-        </div>
+        </x-ui.card>
         {{-- Main Content --}}
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
             {{-- Left Column: Heatmap + Widgets --}}
@@ -100,10 +74,7 @@
 
             {{-- Attendance Heatmap --}}
             @php $heatmap = $this->heatmapData; @endphp
-            <div class="self-start h-fit bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-teal-200 dark:border-slate-700/90 overflow-hidden">
-                <div class="px-3 py-2 border-b border-teal-100 dark:border-slate-700/90">
-                    <span class="text-sm font-semibold text-teal-900 dark:text-white">Peta Kehadiran</span>
-                </div>
+            <x-ui.card variant="student" title="Peta Kehadiran" flush class="self-start h-fit">
 
                 @if(!$heatmap['enrolled'])
                     <div class="p-6 text-center">
@@ -112,7 +83,7 @@
                     </div>
                 @else
                     {{-- Legend --}}
-                    <div class="flex flex-wrap gap-3 px-3 py-2 text-xs text-teal-600 dark:text-teal-400">
+                    <div class="flex flex-wrap gap-x-3 gap-y-1.5 px-4 py-3 text-xs text-teal-600 dark:text-teal-400">
                         <span class="flex items-center gap-1 whitespace-nowrap">
                             <span class="size-3 rounded-sm bg-emerald-500 shrink-0"></span> Hadir
                         </span>
@@ -149,7 +120,7 @@
                         ];
                     @endphp
                 {{-- WRAPPER SCROLLING HORIZONTAL --}}
-                <div class="overflow-x-auto w-full pb-4">
+                <div class="overflow-x-auto scroll-smooth w-full pb-4">
 
                     {{-- DITAMBAH w-max min-w-full agar ukuran grid tidak menyusut di layar HP dan memicu scroll --}}
                     <div class="flex px-4 w-max min-w-full h-fit self-start">
@@ -183,7 +154,7 @@
                                     @foreach($week['days'] as $day)
                                         <div
                                             class="size-5 rounded-sm {{ $cellColors[$day['status']] }}"
-                                            title="{{ $day['formatted_date'] ? $day['formatted_date'] . ' — ' . ($statusLabels[$day['status']] ?? '') : '' }}"
+                                            title="{{ $day['formatted_date'] ? $day['day_name'].', '.$day['formatted_date'].' — '.($statusLabels[$day['status']] ?? '') : '' }}"
                                         ></div>
                                     @endforeach
                                 @endforeach
@@ -193,7 +164,7 @@
                     </div>
                 </div>
                 @endif
-            </div>
+            </x-ui.card>
 
             {{-- Bottom Widgets: 2-column row --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -209,11 +180,10 @@
                     ['target' => 50, 'icon' => '🏆', 'label' => '50 Hari'],
                 ];
             @endphp
-            <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-teal-200 dark:border-slate-700/90 overflow-hidden">
-                <div class="px-3 py-2 border-b border-teal-100 dark:border-slate-700/90 flex items-center justify-between">
-                    <span class="text-sm font-semibold text-teal-900 dark:text-white">🔥 Streak Kehadiran</span>
+            <x-ui.card variant="student" title="🔥 Streak Kehadiran" flush>
+                <x-slot:actions>
                     <span class="text-[10px] font-medium uppercase tracking-wider text-teal-500 dark:text-teal-400">Berturut-turut</span>
-                </div>
+                </x-slot:actions>
                 <div class="p-4">
                     {{-- Streak Counter --}}
                     <div class="flex items-center gap-3 mb-4">
@@ -279,14 +249,10 @@
                         </div>
                     @endif
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- Widget 2: Panduan Indikator Keaktifan --}}
-            <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-teal-200 dark:border-slate-700/90 overflow-hidden">
-                <div class="px-3 py-2 border-b border-teal-100 dark:border-slate-700/90">
-                    <p class="text-[10px] font-semibold uppercase tracking-widest text-teal-500 dark:text-teal-400">Panduan</p>
-                    <span class="text-sm font-semibold text-teal-900 dark:text-white">Indikator Tingkat Keaktifan</span>
-                </div>
+            <x-ui.card variant="student" title="Indikator Tingkat Keaktifan" subtitle="Panduan" flush>
                 <div class="px-4 py-3 divide-y divide-teal-50 dark:divide-slate-800">
                     @foreach([
                         ['color' => 'bg-emerald-500', 'label' => 'Sangat Aktif', 'textColor' => 'text-emerald-600 dark:text-emerald-400', 'desc' => 'Proaktif, memimpin diskusi, sering bertanya.'],
@@ -303,7 +269,7 @@
                         </div>
                     @endforeach
                 </div>
-            </div>
+            </x-ui.card>
 
             </div> {{-- End Bottom Widgets --}}
 
@@ -312,10 +278,7 @@
             {{-- Right Column --}}
             <div class="lg:col-span-2 space-y-4">
                 {{-- Subject List --}}
-                <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-teal-200 dark:border-slate-700/90 overflow-hidden">
-                    <div class="px-3 py-2 border-b border-teal-100 dark:border-slate-700/90">
-                        <span class="text-sm font-semibold text-teal-900 dark:text-white">Mata Pelajaran Saya</span>
-                    </div>
+                <x-ui.card variant="student" title="Mata Pelajaran Saya" flush>
                     @if($this->mataPelajaranList->isNotEmpty())
                         <div class="p-3 space-y-3 overflow-y-auto max-h-[400px]">
                             @foreach($this->mataPelajaranList as $data)
@@ -361,7 +324,7 @@
                             <p class="text-sm text-teal-500 dark:text-teal-300">Belum ada data Mata Pelajaran</p>
                         </div>
                     @endif
-                </div>
+                </x-ui.card>
             </div>
         </div>
     @else
