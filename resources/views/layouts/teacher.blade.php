@@ -175,7 +175,7 @@
                 <div class="flex items-center gap-2">
                     <a href="{{ route('teacher.aktivitas.create') }}" wire:navigate
                        class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-                        <flux:icon name="plus" class="w-5 h-5" />
+                        <flux:icon name="plus" variant="outline" class="w-5 h-5" />
                     </a>
                 </div>
             </header>

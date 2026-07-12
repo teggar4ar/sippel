@@ -1,8 +1,11 @@
 @props(['variant' => 'teacher', 'items' => [], 'fab' => null])
 @php
-    $activeCls = $variant === 'student' ? 'text-teal-600 dark:text-teal-400' : 'text-blue-600 dark:text-blue-400';
+    $roleVariant = $variant;
+    unset($variant);
+
+    $activeCls = $roleVariant === 'student' ? 'text-teal-600 dark:text-teal-400' : 'text-blue-600 dark:text-blue-400';
     $idleCls = 'text-slate-400 dark:text-slate-500';
-    $fabBg = $variant === 'student' ? 'bg-teal-600 hover:bg-teal-700' : 'bg-blue-600 hover:bg-blue-700';
+    $fabBg = $roleVariant === 'student' ? 'bg-teal-600 hover:bg-teal-700' : 'bg-blue-600 hover:bg-blue-700';
     $gridCls = $fab ? 'grid-cols-5' : match (count($items)) {
         1 => 'grid-cols-1',
         2 => 'grid-cols-2',
@@ -20,7 +23,7 @@
                     <a href="{{ $fab['href'] }}" wire:navigate
                        class="w-12 h-12 -mt-5 rounded-full {{ $fabBg }} text-white flex items-center justify-center shadow-lg"
                        aria-label="{{ $fab['label'] }}">
-                        <flux:icon name="{{ $fab['icon'] }}" class="w-6 h-6" />
+                        <flux:icon name="{{ $fab['icon'] }}" variant="outline" class="w-6 h-6" />
                     </a>
                 </div>
             @endif

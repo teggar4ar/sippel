@@ -20,7 +20,7 @@
 <div {{ $attributes->class(['card-surface border-slate-200 dark:border-slate-800 px-2.5 py-2 sm:p-4 relative overflow-hidden']) }}>
     @if($icon)
         <div class="hidden sm:flex absolute top-3 right-3 w-9 h-9 {{ $a['bg'] }} rounded-lg items-center justify-center">
-            <flux:icon name="{{ $icon }}" class="w-4 h-4 {{ $a['ic'] }}" />
+            <flux:icon name="{{ $icon }}" variant="outline" class="w-4 h-4 {{ $a['ic'] }}" />
         </div>
     @endif
     <p class="text-[9px] sm:text-xs font-semibold uppercase tracking-wide {{ $a['ring'] }} leading-tight">
