@@ -183,7 +183,7 @@
 
         {{-- Main content --}}
         <main class="flex-1 lg:pl-60 overflow-x-hidden">
-            <div class="pt-16 lg:pt-4 pb-4 px-3 lg:px-6">
+            <div class="pt-16 lg:pt-4 pb-24 lg:pb-4 px-3 lg:px-6">
                 <div class="max-w-6xl mx-auto w-full">
                     {{-- Flash messages --}}
                     @if (session('success'))
@@ -203,6 +203,18 @@
                 </div>
             </div>
         </main>
+
+        {{-- Mobile bottom navigation --}}
+        <x-nav.bottom-bar
+            variant="teacher"
+            :fab="['href' => route('teacher.aktivitas.create'), 'icon' => 'plus', 'label' => 'Buat Aktivitas']"
+            :items="[
+                ['href' => route('teacher.dashboard'), 'icon' => 'squares-2x2', 'label' => 'Dashboard', 'active' => request()->routeIs('teacher.dashboard')],
+                ['href' => route('teacher.aktivitas.list'), 'icon' => 'clipboard-document-list', 'label' => 'Aktivitas', 'active' => request()->routeIs('teacher.aktivitas.*')],
+                ['href' => route('teacher.laporan'), 'icon' => 'chart-bar', 'label' => 'Laporan', 'active' => request()->routeIs('teacher.laporan')],
+                ['href' => route('teacher.profil'), 'icon' => 'user-circle', 'label' => 'Profil', 'active' => request()->routeIs('teacher.profil')],
+            ]"
+        />
     </div>
 
     {{-- Logout form --}}

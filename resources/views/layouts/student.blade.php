@@ -170,7 +170,7 @@
 
         {{-- Main content --}}
         <main class="flex-1 lg:pl-60 overflow-x-hidden">
-            <div class="pt-16 lg:pt-4 pb-4 px-3 lg:px-6">
+            <div class="pt-16 lg:pt-4 pb-24 lg:pb-4 px-3 lg:px-6">
                 <div class="max-w-6xl mx-auto w-full">
                     {{-- Flash messages --}}
                     @if (session('success'))
@@ -190,6 +190,16 @@
                 </div>
             </div>
         </main>
+
+        {{-- Mobile bottom navigation --}}
+        <x-nav.bottom-bar
+            variant="student"
+            :items="[
+                ['href' => route('student.dashboard'), 'icon' => 'squares-2x2', 'label' => 'Dashboard', 'active' => request()->routeIs('student.dashboard')],
+                ['href' => route('student.riwayat'), 'icon' => 'calendar-days', 'label' => 'Riwayat', 'active' => request()->routeIs('student.riwayat')],
+                ['href' => route('student.profil'), 'icon' => 'user', 'label' => 'Profil', 'active' => request()->routeIs('student.profil')],
+            ]"
+        />
     </div>
 
     {{-- Logout form --}}
