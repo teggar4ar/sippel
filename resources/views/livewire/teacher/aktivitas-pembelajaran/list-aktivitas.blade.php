@@ -244,34 +244,7 @@
                 @endforeach
             </div>
 
-            {{-- ═══ Pagination Footer ═══ --}}
-            <div class="px-4 py-3 border-t border-slate-100 dark:border-slate-700">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    {{-- Left: data info --}}
-                    <p class="text-xs text-slate-500 dark:text-slate-400">
-                        Menampilkan <strong class="text-slate-700 dark:text-slate-200">{{ $this->aktivitas->firstItem() }}-{{ $this->aktivitas->lastItem() }}</strong> dari <strong class="text-slate-700 dark:text-slate-200">{{ $this->aktivitas->total() }}</strong> aktivitas
-                    </p>
-
-                    {{-- Center: page links --}}
-                    <div class="flex-1 flex justify-center">
-                        {{ $this->aktivitas->links() }}
-                    </div>
-
-                    {{-- Right: per page --}}
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <span class="text-xs text-slate-500 dark:text-slate-400">Per halaman:</span>
-                        <flux:select
-                            wire:model.live="perPage"
-                            size="xs"
-                            class="text-xs border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                        >
-                            <option value="10">10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                        </flux:select>
-                    </div>
-                </div>
-            </div>
+            <x-ui.pagination-footer :paginator="$this->aktivitas" variant="teacher" label="aktivitas" per-page="perPage" />
         </x-ui.card>
     @else
         {{-- Empty state --}}

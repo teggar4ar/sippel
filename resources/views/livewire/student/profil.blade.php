@@ -1,4 +1,4 @@
-<div class="space-y-3 overflow-x-hidden">
+<div class="space-y-5 overflow-x-hidden">
 
     {{-- Success toast (shown via Livewire dispatch event) --}}
     <div
@@ -21,23 +21,29 @@
         </button>
     </div>
     {{-- Header --}}
-    <div class="min-w-0">
-        <h1 class="text-xl font-bold text-teal-900 dark:text-white">Profil Saya</h1>
-        <p class="text-sm text-teal-600 dark:text-teal-400 mt-0.5">Kelola informasi data diri dan pengaturan keamanan akun Anda</p>
-    </div>
+    <x-ui.section-heading
+        variant="student"
+        title="Profil Saya"
+        subtitle="Kelola informasi data diri dan pengaturan keamanan akun Anda" />
 
     {{-- Main Card --}}
-    <div class="bg-white dark:bg-slate-900/95 rounded-xl shadow-sm border border-teal-200 dark:border-slate-700/90 overflow-hidden">
-        {{-- Card header --}}
-        <div class="px-4 py-3 border-b border-teal-100 dark:border-slate-700/90">
-            <div class="flex items-center gap-2">
-                <flux:icon name="user-circle" class="w-5 h-5 text-teal-500" />
-                <span class="text-sm font-semibold text-teal-900 dark:text-white">Data Siswa dan Informasi Akun</span>
-            </div>
-        </div>
-
+    <x-ui.card variant="student" title="Data Siswa dan Informasi Akun" icon="user-circle" flush>
         {{-- Form --}}
         <form wire:submit="updateProfile" class="p-4 sm:p-6 space-y-6">
+            {{-- Identity Header --}}
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl bg-teal-50/80 dark:bg-slate-800/60 border border-teal-100 dark:border-slate-700 p-4">
+                <div class="flex h-14 w-14 items-center justify-center rounded-full bg-teal-600 text-lg font-bold text-white shadow-sm shrink-0">
+                    {{ mb_substr($nama ?: 'S', 0, 1) }}
+                </div>
+                <div class="min-w-0">
+                    <p class="text-base font-semibold text-teal-950 dark:text-white truncate">{{ $nama }}</p>
+                    <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-teal-700 dark:text-teal-300">
+                        <span class="inline-flex items-center rounded-full bg-white/80 dark:bg-slate-900/70 px-2 py-1 font-medium">NIS {{ $nis }}</span>
+                        <span class="inline-flex items-center rounded-full bg-white/80 dark:bg-slate-900/70 px-2 py-1 font-medium">{{ $kelas }}</span>
+                    </div>
+                </div>
+            </div>
+
             {{-- Profile Info Section --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <flux:input
@@ -129,5 +135,5 @@
                 </flux:button>
             </div>
         </form>
-    </div>
+    </x-ui.card>
 </div>

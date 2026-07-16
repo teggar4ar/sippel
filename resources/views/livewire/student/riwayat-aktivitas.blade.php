@@ -1,35 +1,32 @@
-<div class="space-y-4 overflow-x-hidden">
+<div class="space-y-5 overflow-x-hidden">
 
     {{-- ═══ Page Header ═══ --}}
-    <div>
-        <div class="flex justify-between items-center gap-4 flex-wrap">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Riwayat Aktivitas</h1>
-            </div>
-            <div>
-                <button
-                    wire:click="exportPdf"
-                    wire:loading.attr="disabled"
-                    wire:loading.class="opacity-50 cursor-not-allowed"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800 rounded-lg transition-colors cursor-pointer shrink-0"
-                >
-                    <flux:icon wire:loading.remove wire:target="exportPdf" name="arrow-down-tray" class="w-3.5 h-3.5" />
-                    <flux:icon wire:loading wire:target="exportPdf" name="arrow-path" class="w-3.5 h-3.5 animate-spin" />
-                    <span>Ekspor PDF</span>
-                </button>
-            </div>
-        </div>
-        <p class="text-sm text-teal-600 dark:text-teal-400 mt-0.5">Lihat rekap kehadiran dan keaktifan belajarmu</p>
-    </div>
+    <x-ui.section-heading
+        variant="student"
+        title="Riwayat Aktivitas"
+        subtitle="Lihat rekap kehadiran dan keaktifan belajarmu">
+        <x-slot:action>
+            <button
+                wire:click="exportPdf"
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50 cursor-not-allowed"
+                class="inline-flex min-h-10 items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800 rounded-lg transition-colors cursor-pointer shrink-0"
+            >
+                <flux:icon wire:loading.remove wire:target="exportPdf" name="arrow-down-tray" class="w-3.5 h-3.5" />
+                <flux:icon wire:loading wire:target="exportPdf" name="arrow-path" class="w-3.5 h-3.5 animate-spin" />
+                <span>Ekspor PDF</span>
+            </button>
+        </x-slot:action>
+    </x-ui.section-heading>
 
-    {{-- ═══ Main Card (Search + Filters + Table) ═══ --}}
-    <div class="bg-white dark:bg-slate-900/95 rounded-2xl border border-gray-200 dark:border-slate-700/80 shadow-sm overflow-hidden"
+    {{-- ═══ Main Card (Search + Filters + Timeline) ═══ --}}
+    <x-ui.card variant="student" flush
          wire:loading.class="opacity-50 pointer-events-none"
          wire:target="search, filterKehadiran, resetFilters, nextPage, previousPage, gotoPage">
 
         {{-- Search + Mapel Filter --}}
-        <div class="px-5 pb-3 mt-4">
-            <div class="flex gap-3">
+        <div class="px-4 pb-3 mt-4">
+            <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
                     <flux:icon name="magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     <input
@@ -39,7 +36,7 @@
                         class="w-full pl-9 pr-4 py-2.5 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition"
                     />
                 </div>
-                <div class="relative w-48 shrink-0">
+                <div class="relative w-full sm:w-48 shrink-0">
                     <flux:icon name="book-open" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10" />
                     <select
                         wire:model.live="filterMapel"
@@ -56,7 +53,7 @@
         </div>
 
         {{-- Pill Filters for Kehadiran --}}
-        <div class="px-5 pb-4 flex items-center gap-2 flex-wrap">
+        <div class="px-4 pb-4 flex items-center gap-2 flex-wrap">
             <button wire:click="$set('filterKehadiran', '')"
                 class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer
                     {{ $filterKehadiran === '' ? 'bg-teal-100 text-teal-800 dark:bg-teal-800/40 dark:text-teal-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600' }}">
@@ -157,14 +154,11 @@
                     </tbody>
                 </table>
 
-                {{-- Desktop Pagination --}}
-                <div class="px-5 py-3 border-t border-gray-100 dark:border-slate-700/80">
-                    {{ $riwayat->links() }}
-                </div>
+                <x-ui.pagination-footer :paginator="$riwayat" variant="student" label="aktivitas" />
             </div>
 
-            {{-- ═══ Mobile Cards (< lg) ═══ --}}
-            <div class="lg:hidden divide-y divide-gray-100 dark:divide-slate-700/60">
+            {{-- ═══ Mobile Timeline (< lg) ═══ --}}
+            <div class="lg:hidden p-4 space-y-3">
                 @foreach($riwayat as $detail)
                     @php
                         $kVal   = $detail->kehadiran->value;
@@ -185,9 +179,10 @@
                             default        => 'bg-gray-100 text-gray-500',
                         };
                     @endphp
-                    <div class="px-5 py-4" wire:key="mobile-{{ $detail->id }}">
+                    <div class="relative rounded-2xl border border-teal-100 dark:border-slate-800 bg-white dark:bg-slate-900/95 p-4 shadow-sm" wire:key="mobile-{{ $detail->id }}">
+                        <div class="absolute left-0 top-5 h-3 w-1 rounded-r-full bg-teal-500"></div>
                         {{-- Date + Mapel --}}
-                        <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <div class="flex items-center gap-2 mb-1.5 flex-wrap pl-2">
                             <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">
                                 {{ $detail->aktivitasPembelajaran->tanggal->translatedFormat('d M Y') }}
                             </span>
@@ -199,11 +194,11 @@
                             </span>
                         </div>
                         {{-- Topik --}}
-                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2 leading-snug">
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2 leading-snug pl-2">
                             {{ $detail->aktivitasPembelajaran->topik }}
                         </p>
                         {{-- Badges --}}
-                        <div class="flex items-center gap-2 flex-wrap">
+                        <div class="flex items-center gap-2 flex-wrap pl-2">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $kClass }}">{{ $kLabel }}</span>
                             @if($detail->kehadiran === \App\Enums\KehadiranStatus::Hadir)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pClass }}">{{ $pLabel }}</span>
@@ -215,26 +210,21 @@
                     </div>
                 @endforeach
 
-                {{-- Mobile Pagination --}}
-                <div class="px-5 py-3 border-t border-gray-100 dark:border-slate-700/80 flex justify-center">
-                    {{ $riwayat->links() }}
-                </div>
+                <x-ui.pagination-footer :paginator="$riwayat" variant="student" label="aktivitas" />
             </div>
 
         @else
             {{-- Empty State --}}
-            <div class="py-16 text-center">
-                <div class="w-14 h-14 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
-                    <flux:icon name="calendar" class="w-7 h-7 text-gray-400 dark:text-slate-500" />
-                </div>
-                <p class="text-sm font-medium text-gray-500 dark:text-slate-400">Belum ada data riwayat aktivitas</p>
+            <x-ui.empty-state variant="student" icon="calendar" title="Belum ada data riwayat aktivitas">
                 @if($search || $filterKehadiran)
-                    <button wire:click="resetFilters" class="mt-3 text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400 cursor-pointer underline underline-offset-2">
-                        Reset filter
-                    </button>
+                    <x-slot:cta>
+                        <button wire:click="resetFilters" class="min-h-10 px-3 text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400 cursor-pointer underline underline-offset-2">
+                            Reset filter
+                        </button>
+                    </x-slot:cta>
                 @endif
-            </div>
+            </x-ui.empty-state>
         @endif
 
-    </div>
+    </x-ui.card>
 </div>
