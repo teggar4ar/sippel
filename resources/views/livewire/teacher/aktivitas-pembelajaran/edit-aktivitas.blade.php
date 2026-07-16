@@ -22,11 +22,8 @@
     @endif
 
     {{-- Info Aktivitas --}}
-    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800">
-            <span class="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Informasi Aktivitas</span>
-        </div>
-        <div class="px-4 py-6 space-y-6">
+    <x-ui.card title="Informasi Aktivitas" variant="teacher">
+        <div class="space-y-6">
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6" style="column-gap: 1.5rem;">
                 <div>
@@ -75,7 +72,7 @@
             @endif
 
         </div>
-    </div>
+    </x-ui.card>
 
     {{-- Aktivitas Kelas — semua state di Alpine --}}
     @php $keaktifanOptions = \App\Enums\Keaktifan::cases(); @endphp
@@ -263,7 +260,7 @@
         </div>
 
         {{-- Action buttons --}}
-        <div class="flex gap-3 pt-1 mt-4">
+        <div class="sticky bottom-16 lg:static z-20 flex gap-3 mt-4 -mx-1 p-2 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur lg:mx-0 lg:p-0 lg:bg-transparent lg:dark:bg-transparent lg:backdrop-blur-none">
             <a href="{{ route('teacher.aktivitas.list') }}" wire:navigate
                class="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm rounded-xl transition-colors cursor-pointer">
                 Batal

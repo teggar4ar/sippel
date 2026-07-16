@@ -11,21 +11,21 @@
         </div>
     @endif
 
-    {{-- ═══ Header ═══ --}}
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">Aktivitas Pembelajaran</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Kelola catatan aktivitas dan observasi kelas harian Anda</p>
-        </div>
-        <a href="{{ route('teacher.aktivitas.create') }}" wire:navigate
-           class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm cursor-pointer">
-            <flux:icon name="plus" class="w-4 h-4" />
-            Buat Aktivitas
-        </a>
-    </div>
+    <x-ui.section-heading
+        title="Aktivitas Pembelajaran"
+        subtitle="Kelola catatan aktivitas dan observasi kelas harian Anda"
+    >
+        <x-slot:action>
+            <a href="{{ route('teacher.aktivitas.create') }}" wire:navigate
+               class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm cursor-pointer">
+                <flux:icon name="plus" class="w-4 h-4" />
+                Buat Aktivitas
+            </a>
+        </x-slot:action>
+    </x-ui.section-heading>
 
     {{-- ═══ Quick Filters + Search/Filter Bar ═══ --}}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <x-ui.card flush>
         {{-- Quick filter pills --}}
         <div class="px-3 pt-3 flex flex-wrap gap-1.5">
             <button wire:click="setQuickFilter('today')"
@@ -78,14 +78,11 @@
                 @endif
             </div>
         </div>
-    </div>
+    </x-ui.card>
 
     {{-- ═══ Activity List ═══ --}}
     @if($this->aktivitas->count() > 0)
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-                <h2 class="font-semibold text-slate-900 dark:text-white">Riwayat Aktivitas Pembelajaran</h2>
-            </div>
+        <x-ui.card title="Riwayat Aktivitas Pembelajaran" flush>
 
             {{-- ═══ Desktop Table (lg+) ═══ --}}
             <div class="hidden lg:block px-6">
@@ -194,23 +191,39 @@
                         };
                     @endphp
 
-                    <div class="p-3" wire:key="mobile-{{ $aktivitas->id }}">
-                        {{-- Top row: date + kelas + actions --}}
-                        <div class="flex items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <span class="text-xs font-bold tabular-nums text-blue-600 dark:text-blue-400">
-                                    {{ $aktivitas->tanggal->translatedFormat('d M') }}
-                                </span>
-                                <span class="text-[10px] tabular-nums text-slate-400 dark:text-slate-500">
-                                    {{ $aktivitas->created_at->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
-                                </span>
-                                <span class="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded">
-                                    {{ $aktivitas->kelas->tingkat_kelas }}-{{ $aktivitas->kelas->grup_kelas }}
-                                </span>
-                                <span class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                    {{ $aktivitas->mataPelajaran->nama_mapel }}
-                                </span>
-                            </div>
+                    <div class="p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors" wire:key="mobile-{{ $aktivitas->id }}">
+                        <div class="flex items-start justify-between gap-2">
+                            <a href="{{ route('teacher.aktivitas.view', $aktivitas->id) }}" wire:navigate
+                               class="block flex-1 min-w-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                                {{-- Top row: date + kelas --}}
+                                <div class="flex items-center gap-2 min-w-0 mb-2">
+                                    <span class="text-xs font-bold tabular-nums text-blue-600 dark:text-blue-400">
+                                        {{ $aktivitas->tanggal->translatedFormat('d M') }}
+                                    </span>
+                                    <span class="text-[10px] tabular-nums text-slate-400 dark:text-slate-500">
+                                        {{ $aktivitas->created_at->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
+                                    </span>
+                                    <span class="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded">
+                                        {{ $aktivitas->kelas->tingkat_kelas }}-{{ $aktivitas->kelas->grup_kelas }}
+                                    </span>
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                        {{ $aktivitas->mataPelajaran->nama_mapel }}
+                                    </span>
+                                </div>
+
+                                {{-- Topic --}}
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white leading-snug mb-1.5">
+                                    {{ $aktivitas->topik }}
+                                </p>
+
+                                {{-- Stats row: kehadiran + keaktifan --}}
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs tabular-nums {{ $kehadiranPct >= 80 ? 'text-emerald-600 dark:text-emerald-400' : ($kehadiranPct >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') }} font-semibold">
+                                        <flux:icon name="users" class="w-3 h-3 inline -mt-0.5" /> {{ $kehadiranPct }}%
+                                    </span>
+                                    <flux:badge color="{{ $keaktifanLabel[1] }}" size="sm">{{ $keaktifanLabel[0] }}</flux:badge>
+                                </div>
+                            </a>
                             <div class="flex items-center gap-0 shrink-0">
                                 <a href="{{ route('teacher.aktivitas.view', $aktivitas->id) }}" wire:navigate
                                    class="p-1 text-blue-500 dark:text-blue-400 rounded transition-colors">
@@ -227,19 +240,6 @@
                                 </button>
                             </div>
                         </div>
-
-                        {{-- Topic --}}
-                        <p class="text-sm font-semibold text-slate-900 dark:text-white leading-snug mb-1.5">
-                            {{ $aktivitas->topik }}
-                        </p>
-
-                        {{-- Stats row: kehadiran + keaktifan --}}
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs tabular-nums {{ $kehadiranPct >= 80 ? 'text-emerald-600 dark:text-emerald-400' : ($kehadiranPct >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') }} font-semibold">
-                                        <flux:icon name="users" class="w-3 h-3 inline -mt-0.5" /> {{ $kehadiranPct }}%
-                                    </span>
-                                    <flux:badge color="{{ $keaktifanLabel[1] }}" size="sm">{{ $keaktifanLabel[0] }}</flux:badge>
-                                </div>
                     </div>
                 @endforeach
             </div>
@@ -272,33 +272,31 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </x-ui.card>
     @else
         {{-- Empty state --}}
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center">
+        <x-ui.card class="text-center">
             @if($filterMapel || $filterPeriode || $search)
-                <div class="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <flux:icon name="magnifying-glass" class="w-6 h-6 text-slate-400" />
-                </div>
-                <h3 class="font-medium text-slate-900 dark:text-white mb-1">Tidak ada hasil</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Coba ubah filter atau reset</p>
-                <button wire:click="clearFilters"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer">
-                    Reset Filter
-                </button>
+                <x-ui.empty-state icon="magnifying-glass" title="Tidak ada hasil" message="Coba ubah filter atau reset">
+                    <x-slot:cta>
+                        <button wire:click="clearFilters"
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer">
+                            Reset Filter
+                        </button>
+                    </x-slot:cta>
+                </x-ui.empty-state>
             @else
-                <div class="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <flux:icon name="clipboard-document-list" class="w-6 h-6 text-slate-400" />
-                </div>
-                <h3 class="font-medium text-slate-900 dark:text-white mb-1">Belum Ada Aktivitas</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Mulai dengan membuat aktivitas pertama</p>
-                <a href="{{ route('teacher.aktivitas.create') }}" wire:navigate
-                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer">
-                    <flux:icon name="plus" class="w-4 h-4" />
-                    Buat Aktivitas
-                </a>
+                <x-ui.empty-state icon="clipboard-document-list" title="Belum Ada Aktivitas" message="Mulai dengan membuat aktivitas pertama">
+                    <x-slot:cta>
+                        <a href="{{ route('teacher.aktivitas.create') }}" wire:navigate
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer">
+                            <flux:icon name="plus" class="w-4 h-4" />
+                            Buat Aktivitas
+                        </a>
+                    </x-slot:cta>
+                </x-ui.empty-state>
             @endif
-        </div>
+        </x-ui.card>
     @endif
 
     {{-- ═══ Delete Confirmation Modal (Flux UI) ═══ --}}

@@ -20,24 +20,25 @@
             <flux:icon name="x-mark" class="w-4 h-4" />
         </button>
     </div>
-    {{-- Header --}}
-    <div class="min-w-0">
-        <h1 class="text-xl font-bold text-slate-900 dark:text-white">Profil Saya</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Kelola informasi data diri dan pengaturan keamanan akun Anda</p>
-    </div>
+    <x-ui.section-heading
+        variant="teacher"
+        title="Profil Saya"
+        subtitle="Kelola informasi data diri dan pengaturan keamanan akun Anda"
+    />
 
     {{-- Main Card --}}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-        {{-- Card header --}}
-        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-            <div class="flex items-center gap-2">
-                <flux:icon name="user-circle" class="w-5 h-5 text-blue-500" />
-                <span class="text-sm font-semibold text-slate-900 dark:text-white">Data Guru dan Informasi Akun</span>
-            </div>
-        </div>
-
+    <x-ui.card variant="teacher" title="Profil Saya" icon="user-circle">
         {{-- Form --}}
-        <form wire:submit="updateProfile" class="p-4 sm:p-6 space-y-6">
+        <form wire:submit="updateProfile" class="space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl bg-blue-50/70 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 p-4">
+                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white text-xl font-bold shadow-sm">
+                    {{ Str::of($nama ?: auth()->user()?->name ?: 'G')->substr(0, 1)->upper() }}
+                </div>
+                <div class="min-w-0">
+                    <p class="text-base font-semibold text-slate-900 dark:text-white truncate">{{ $nama }}</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 truncate">{{ $email }}</p>
+                </div>
+            </div>
             {{-- Profile Info Section --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <flux:input
@@ -111,5 +112,5 @@
                 </flux:button>
             </div>
         </form>
-    </div>
+    </x-ui.card>
 </div>

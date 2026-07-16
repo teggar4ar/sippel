@@ -1,9 +1,9 @@
 <div class="space-y-3 overflow-x-hidden">
-    {{-- Header --}}
-    <div class="min-w-0">
-        <h1 class="text-xl font-bold text-slate-900 dark:text-white">Laporan</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Lihat dan cetak laporan siswa kelas perwalian Anda</p>
-    </div>
+    <x-ui.section-heading
+        variant="teacher"
+        title="Laporan"
+        subtitle="Lihat dan cetak laporan siswa kelas perwalian Anda"
+    />
 
     @if(!$this->hasKelasWali)
         {{-- No homeroom class assigned --}}
@@ -16,11 +16,7 @@
         </div>
     @else
         {{-- Report Type Selection --}}
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700">
-                <span class="text-sm font-semibold text-slate-900 dark:text-white">Jenis Laporan</span>
-            </div>
-            <div class="p-3">
+        <x-ui.card variant="teacher" title="Jenis Laporan">
                 <div class="flex flex-col sm:flex-row gap-3">
                     <label class="flex-1 cursor-pointer">
                         <input type="radio" wire:model.live="reportType" value="student" class="peer hidden" />
@@ -47,18 +43,13 @@
                         </div>
                     </label>
                 </div>
-            </div>
-        </div>
+        </x-ui.card>
 
         {{-- Filter Form --}}
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-700">
-                <span class="text-sm font-semibold text-slate-900 dark:text-white">Filter Laporan</span>
-            </div>
-            <div class="p-3">
+        <x-ui.card variant="teacher" title="Filter Laporan">
                 @if($reportType === 'student')
                     {{-- Student filter: single horizontal row --}}
-                    <div class="flex flex-col lg:flex-row lg:items-end gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
                         <div class="flex-1 min-w-0">
                             <flux:select
                                 wire:model.live="kelasId"
@@ -104,7 +95,7 @@
                     </div>
                 @else
                     {{-- Class filter: single horizontal row --}}
-                    <div class="flex flex-col lg:flex-row lg:items-end gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
                         <div class="flex-1 min-w-0">
                             <flux:select
                                 wire:model.live="kelasId"
@@ -162,8 +153,7 @@
                         </button>
                     </div>
                 @endif
-            </div>
-        </div>
+        </x-ui.card>
 
         {{-- Preview Section --}}
         @if($showPreview)
@@ -172,26 +162,21 @@
                 {{-- Student Report Preview                                        --}}
                 {{-- ============================================================ --}}
                 @if($this->selectedSiswa && $this->contextTahunAjaran)
-                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-
-                        {{-- Header: title + export --}}
-                        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Pratinjau Laporan Siswa</h3>
-                                @if($this->studentActivityData->total() > 0)
-                                    <div class="shrink-0">
-                                        <button
-                                            wire:click="downloadStudentPdf"
-                                            wire:loading.attr="disabled"
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-rose-200 dark:border-rose-700 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors cursor-pointer"
-                                        >
-                                            <flux:icon name="document-text" class="w-3.5 h-3.5" />
-                                            <span>Ekspor PDF</span>
-                                        </button>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
+                    <x-ui.card variant="teacher" title="Pratinjau Laporan Siswa" flush>
+                        <x-slot:actions>
+                            @if($this->studentActivityData->total() > 0)
+                                <div class="shrink-0">
+                                    <button
+                                        wire:click="downloadStudentPdf"
+                                        wire:loading.attr="disabled"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-rose-200 dark:border-rose-700 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors cursor-pointer"
+                                    >
+                                        <flux:icon name="document-text" variant="outline" class="w-3.5 h-3.5" />
+                                        <span>Ekspor PDF</span>
+                                    </button>
+                                </div>
+                            @endif
+                        </x-slot:actions>
 
                         <div class="p-4 space-y-4">
                             {{-- Metadata (view-aktivitas style) --}}
@@ -271,7 +256,8 @@
                                 {{-- Riwayat Aktivitas Table --}}
                                 <div class="space-y-2">
                                     <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Riwayat Aktivitas</p>
-                                    <flux:table :paginate="$this->studentActivityData">
+                                    <div class="overflow-x-auto">
+                                        <flux:table :paginate="$this->studentActivityData">
                                         <flux:table.columns sticky class="bg-white dark:bg-slate-800">
                                             <flux:table.column>Tanggal</flux:table.column>
                                             <flux:table.column>Mata Pelajaran</flux:table.column>
@@ -325,7 +311,8 @@
                                                 </flux:table.row>
                                             @endforeach
                                         </flux:table.rows>
-                                    </flux:table>
+                                        </flux:table>
+                                    </div>
                                 </div>
 
                                 {{-- Activity count --}}
@@ -339,41 +326,40 @@
                                 </div>
                             @endif
                         </div>
-                    </div>
+                    </x-ui.card>
                 @endif
             @else
                 {{-- ============================================================ --}}
                 {{-- Class Report Preview                                          --}}
                 {{-- ============================================================ --}}
                 @if($this->selectedKelas && $this->selectedMataPelajaran && $this->contextTahunAjaran)
-                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-
-                        {{-- Header: title + export buttons --}}
-                        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Pratinjau Laporan Kelas</h3>
-                                @if($this->classReportData->isNotEmpty())
-                                    <div class="flex gap-2 shrink-0">
+                    <x-ui.card variant="teacher" title="Pratinjau Laporan Kelas" flush>
+                        <x-slot:actions>
+                            @if($this->classReportData->isNotEmpty())
+                                <div class="flex gap-2 shrink-0">
+                                    <button
+                                        wire:click="downloadClassPdf"
+                                        wire:loading.attr="disabled"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-rose-200 dark:border-rose-700 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors cursor-pointer"
+                                    >
+                                        <flux:icon name="document-text" variant="outline" class="w-3.5 h-3.5" />
+                                        <span>Ekspor PDF</span>
+                                    </button>
+                                    <form action="{{ route('reports.class.export') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="kelas_id" value="{{ $this->selectedKelas->id }}">
+                                        <input type="hidden" name="mata_pelajaran_id" value="{{ $this->selectedMataPelajaran->id }}">
                                         <button
-                                            wire:click="downloadClassPdf"
-                                            wire:loading.attr="disabled"
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-rose-200 dark:border-rose-700 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors cursor-pointer"
-                                        >
-                                            <flux:icon name="document-text" class="w-3.5 h-3.5" />
-                                            <span>Ekspor PDF</span>
-                                        </button>
-                                        <button
-                                            wire:click="exportClassExcel"
-                                            wire:loading.attr="disabled"
+                                            type="submit"
                                             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-emerald-200 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-lg transition-colors cursor-pointer"
                                         >
-                                            <flux:icon name="table-cells" class="w-3.5 h-3.5" />
+                                            <flux:icon name="table-cells" variant="outline" class="w-3.5 h-3.5" />
                                             <span>Ekspor Xlsx</span>
                                         </button>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
+                                    </form>
+                                </div>
+                            @endif
+                        </x-slot:actions>
 
                         <div class="p-4 space-y-4">
                             {{-- Metadata (view-aktivitas style) --}}
@@ -451,7 +437,8 @@
                                 </div>
 
                                 {{-- Flux UI Table --}}
-                                <flux:table container:class="max-h-[55vh]">
+                                <div class="overflow-x-auto">
+                                    <flux:table container:class="max-h-[55vh]">
                                     <flux:table.columns sticky class="bg-white dark:bg-slate-800">
                                         <flux:table.column class="w-10">No</flux:table.column>
                                         <flux:table.column>Siswa (Nama & NIS)</flux:table.column>
@@ -498,7 +485,8 @@
                                             </flux:table.row>
                                         @endforeach
                                     </flux:table.rows>
-                                </flux:table>
+                                    </flux:table>
+                                </div>
 
                                 {{-- Student count --}}
                                 <div class="text-xs text-slate-400 dark:text-slate-500 text-right">
@@ -511,7 +499,7 @@
                                 </div>
                             @endif
                         </div>
-                    </div>
+                    </x-ui.card>
                 @endif
             @endif
         @endif

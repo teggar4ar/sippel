@@ -26,7 +26,7 @@
     </div>
 
     {{-- ═══ Metadata Card ═══ --}}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
+    <x-ui.card>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
             {{-- Left column --}}
             <div class="space-y-2">
@@ -65,45 +65,45 @@
                 </div>
             </div>
         @endif
-    </div>
+    </x-ui.card>
 
     {{-- ═══ Ringkasan Pertemuan ═══ --}}
-    <div class="space-y-2">
-        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Ringkasan Pertemuan</p>
+    <x-ui.card title="Ringkasan Pertemuan">
+        <div class="space-y-2">
         @php
             $avgKeaktifan = $this->stats['avg_keaktifan'];
             $keaktifanLabel = $avgKeaktifan === null ? '-' : \App\Enums\Keaktifan::fromAverage((float) $avgKeaktifan)->label();
         @endphp
         <div class="flex flex-wrap gap-2">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 rounded-full bg-emerald-50 dark:bg-emerald-900/20">
                 <flux:icon name="user-group" class="w-3.5 h-3.5 text-emerald-500" />
                 Total Hadir: {{ $this->stats['hadir'] }}
             </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-full bg-blue-50 dark:bg-blue-900/20">
                 <flux:icon name="envelope" class="w-3.5 h-3.5 text-blue-500" />
                 Izin: {{ $this->stats['izin'] }}
             </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-full bg-amber-50 dark:bg-amber-900/20">
                 <flux:icon name="heart" class="w-3.5 h-3.5 text-amber-500" />
                 Sakit: {{ $this->stats['sakit'] }}
             </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-full bg-red-50 dark:bg-red-900/20">
                 <flux:icon name="x-circle" class="w-3.5 h-3.5 text-red-500" />
                 Alpa: {{ $this->stats['alpa'] }}
             </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-full bg-white dark:bg-slate-800">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 rounded-full bg-violet-50 dark:bg-violet-900/20">
                 <flux:icon name="star" class="w-3.5 h-3.5 text-violet-500" />
                 Rata-rata Keaktifan: {{ $keaktifanLabel }}
             </span>
         </div>
-    </div>
+        </div>
+    </x-ui.card>
 
     {{-- ═══ Daftar Observasi Siswa ═══ --}}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-            <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Daftar Observasi Siswa</span>
+    <x-ui.card title="Daftar Observasi Siswa" flush>
+        <x-slot:actions>
             <span class="text-[10px] text-slate-500 dark:text-slate-400">{{ $aktivitas->detailAktivitas->count() }} siswa</span>
-        </div>
+        </x-slot:actions>
 
         {{-- Desktop Table (lg+) --}}
         <div class="hidden lg:block px-4">
@@ -226,7 +226,7 @@
                 </div>
             @endforeach
         </div>
-    </div>
+    </x-ui.card>
 
     {{-- ═══ Delete Confirmation Modal (Flux UI) ═══ --}}
     <flux:modal wire:model.self="showDeleteModal" class="min-w-[22rem] max-w-sm">

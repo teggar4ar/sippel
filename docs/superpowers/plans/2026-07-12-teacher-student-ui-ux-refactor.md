@@ -167,7 +167,7 @@ Expected: only token/utility CSS changes are present. Do **not** commit unless t
   - `<x-ui.segmented>` wrapping caller-supplied `<button>`s (pure visual container).
   - `<x-ui.empty-state icon="" title="" message="" >` with optional CTA slot.
 
-- [ ] **Step 1: Create `card.blade.php`**
+- [x] **Step 1: Create `card.blade.php`**
 
 ```blade
 @props([
@@ -209,7 +209,7 @@ Expected: only token/utility CSS changes are present. Do **not** commit unless t
 
 > Note: the `p-4` body padding can be disabled by passing `flush` (e.g. for the heatmap and chart bodies that manage their own padding).
 
-- [ ] **Step 2: Create `metric-card.blade.php`**
+- [x] **Step 2: Create `metric-card.blade.php`**
 
 ```blade
 @props([
@@ -247,7 +247,7 @@ Expected: only token/utility CSS changes are present. Do **not** commit unless t
 </div>
 ```
 
-- [ ] **Step 3: Create `section-heading.blade.php`**
+- [x] **Step 3: Create `section-heading.blade.php`**
 
 ```blade
 @props(['variant' => 'teacher', 'title' => '', 'subtitle' => null])
@@ -264,7 +264,7 @@ Expected: only token/utility CSS changes are present. Do **not** commit unless t
 </div>
 ```
 
-- [ ] **Step 4: Create `segmented.blade.php`**
+- [x] **Step 4: Create `segmented.blade.php`**
 
 ```blade
 @props([])
@@ -273,7 +273,7 @@ Expected: only token/utility CSS changes are present. Do **not** commit unless t
 </div>
 ```
 
-- [ ] **Step 5: Create `empty-state.blade.php`**
+- [x] **Step 5: Create `empty-state.blade.php`**
 
 ```blade
 @props(['icon' => 'inbox', 'title' => '', 'message' => null, 'variant' => 'teacher'])
@@ -285,12 +285,12 @@ Expected: only token/utility CSS changes are present. Do **not** commit unless t
 </div>
 ```
 
-- [ ] **Step 6: Verify build compiles**
+- [x] **Step 6: Verify build compiles**
 
 Run: `npm run build`
 Expected: success, no Blade compile errors from the new components.
 
-- [ ] **Step 7: Checkpoint review**
+- [x] **Step 7: Checkpoint review**
 
 Run: `git diff -- resources/views/components/ui/`
 Expected: only the five shared UI components are present. Do **not** commit unless the user explicitly asks.
@@ -311,7 +311,7 @@ Expected: only the five shared UI components are present. Do **not** commit unle
 
 **Important:** Do NOT alter the sidebar's `route(...)`, `wire:navigate`, `request()->routeIs(...)`, or the `@livewire('components.tahun-ajaran-selector', ...)` calls. Navigation targets are frozen; only markup/styling around them changes.
 
-- [ ] **Step 1: Create `bottom-bar.blade.php`**
+- [x] **Step 1: Create `bottom-bar.blade.php`**
 
 ```blade
 @props(['variant' => 'teacher', 'items' => [], 'fab' => null])
@@ -350,11 +350,11 @@ Expected: only the five shared UI components are present. Do **not** commit unle
 </nav>
 ```
 
-- [ ] **Step 2: Add safe-area to the teacher mobile header**
+- [x] **Step 2: Add safe-area to the teacher mobile header**
 
 In `resources/views/layouts/teacher.blade.php:165`, the header already has `safe-area-inset` (now defined by Task 1) — no change needed. Confirm by reading the line.
 
-- [ ] **Step 3: Add the teacher bottom nav + content bottom padding**
+- [x] **Step 3: Add the teacher bottom nav + content bottom padding**
 
 In `resources/views/layouts/teacher.blade.php`, change the main content wrapper `resources/views/layouts/teacher.blade.php:186` from:
 
@@ -384,7 +384,7 @@ Then immediately **before** the closing `</div>` of `.flex.min-h-screen` (i.e. r
 
 > The FAB renders between "Aktivitas" and "Laporan" (center of 4 items), matching the existing mobile header's "+" action so no function is lost.
 
-- [ ] **Step 4: Add the student bottom nav + content bottom padding**
+- [x] **Step 4: Add the student bottom nav + content bottom padding**
 
 In `resources/views/layouts/student.blade.php:173`, change:
 ```blade
@@ -411,7 +411,7 @@ After the `</main>` at `resources/views/layouts/student.blade.php:192`, insert:
 
 (Student has no FAB — it is read-only, so `:fab` is omitted and the grid renders 3 equal columns.)
 
-- [ ] **Step 5: Verify build + smoke test both routes**
+- [x] **Step 5: Verify build + smoke test both routes**
 
 Run: `npm run build`
 Expected: success.
@@ -419,7 +419,7 @@ Then run the auth/redirect smoke tests to confirm layouts still render:
 Run: `php vendor/bin/pest --filter="Login"`
 Expected: PASS (login/redirect unaffected).
 
-- [ ] **Step 6: Checkpoint review**
+- [x] **Step 6: Checkpoint review**
 
 Run: `git diff -- resources/views/components/nav/bottom-bar.blade.php resources/views/layouts/teacher.blade.php resources/views/layouts/student.blade.php`
 Expected: only mobile navigation, safe-area, and layout padding changes are present. Do **not** commit unless the user explicitly asks.
@@ -439,16 +439,16 @@ Expected: only mobile navigation, safe-area, and layout padding changes are pres
 - Consumes: the three `#[Computed]` methods `$this->chartTrenKehadiran()`, `$this->chartKeaktifanPerTopik()`, `$this->chartDistribusiKeaktifan()` — called from the partial exactly as before.
 - Produces: `dashboard-charts.blade.php` containing the three chart cards (lines 107–181 region) plus both `@pushOnce` blocks (lines 279–725), moved unchanged.
 
-- [ ] **Step 1: Run the dashboard tests first (green baseline)**
+- [x] **Step 1: Run the dashboard tests first (green baseline)**
 
 Run: `php vendor/bin/pest tests/Feature/TeacherDashboardStatsTest.php tests/Feature/TeacherDashboardDateFilterTest.php`
 Expected: PASS. Record this as the baseline.
 
-- [ ] **Step 2: Move the chart cards + scripts into the partial**
+- [x] **Step 2: Move the chart cards + scripts into the partial**
 
 Create `resources/views/livewire/teacher/partials/dashboard-charts.blade.php` and paste, **unchanged**, the current dashboard blade content from the `{{-- Chart 1: Tren Kehadiran Siswa --}}` block (line 107) through the end of Chart 3 grid (line 181), followed by both the `@pushOnce('vendor-scripts')` block (lines 280–282) and the `@pushOnce('scripts')` block (lines 287–725). Keep every `id`, `x-data`, `@js(...)`, `@update-charts.window`, and script byte-identical.
 
-- [ ] **Step 3: Reference the partial from the dashboard**
+- [x] **Step 3: Reference the partial from the dashboard**
 
 In `resources/views/livewire/teacher/dashboard.blade.php`, replace the moved regions (chart cards lines 107–181, and the two `@pushOnce` blocks lines 279–725) with a single include where the chart cards were:
 
@@ -458,18 +458,18 @@ In `resources/views/livewire/teacher/dashboard.blade.php`, replace the moved reg
 
 Leave the filter bar (lines 68–105) and the right sidebar column (lines 184–274) in place for now.
 
-- [ ] **Step 4: Verify build + tests still green**
+- [x] **Step 4: Verify build + tests still green**
 
 Run: `npm run build`
 Expected: success.
 Run: `php vendor/bin/pest tests/Feature/TeacherDashboardStatsTest.php tests/Feature/TeacherDashboardDateFilterTest.php`
 Expected: PASS (identical to baseline — this was a pure move).
 
-- [ ] **Step 5: Manual chart smoke check**
+- [x] **Step 5: Manual chart smoke check**
 
 Serve locally (`composer dev`), open `/guru`, confirm all 3 charts render and the Semester/Bulan/Minggu buttons + Kelas/Mapel selects still redraw charts (the `update-charts` event still fires).
 
-- [ ] **Step 6: Checkpoint review**
+- [x] **Step 6: Checkpoint review**
 
 Run: `git diff -- resources/views/livewire/teacher/partials/dashboard-charts.blade.php resources/views/livewire/teacher/dashboard.blade.php`
 Expected: chart markup/scripts are moved into the partial with no behavior changes. Do **not** commit unless the user explicitly asks.
@@ -487,12 +487,12 @@ Expected: chart markup/scripts are moved into the partial with no behavior chang
 - Consumes: `<x-ui.section-heading>`, `<x-ui.metric-card>`, `<x-ui.card>`, `<x-ui.segmented>`, `<x-ui.empty-state>` (Task 2).
 - **Frozen:** `wire:model.live="kelasId"`, `wire:model.live="mapelId"`, `wire:click="$set('rentangWaktu', '...')"`, `$this->kelasList`, `$this->mapelList`, `$this->dashboardStats[...]`, `$this->keaktifanPerKelas`, chart DOM ids/scripts.
 
-- [ ] **Step 1: Baseline tests green**
+- [x] **Step 1: Baseline tests green**
 
 Run: `php vendor/bin/pest tests/Feature/TeacherDashboardStatsTest.php tests/Feature/TeacherDashboardDateFilterTest.php tests/Feature/TeacherActivityKeaktifanTest.php tests/Feature/TeacherDashboardCacheTest.php`
 Expected: PASS.
 
-- [ ] **Step 2: Replace the welcome header with `section-heading`**
+- [x] **Step 2: Replace the welcome header with `section-heading`**
 
 Replace `resources/views/livewire/teacher/dashboard.blade.php` lines 3–14 with:
 
@@ -512,7 +512,7 @@ Replace `resources/views/livewire/teacher/dashboard.blade.php` lines 3–14 with
     </x-ui.section-heading>
 ```
 
-- [ ] **Step 3: Replace the 4 metric cards with `metric-card`**
+- [x] **Step 3: Replace the 4 metric cards with `metric-card`**
 
 Replace lines 16–58 (the metric grid) with:
 
@@ -534,7 +534,7 @@ Replace lines 16–58 (the metric grid) with:
     </div>
 ```
 
-- [ ] **Step 4: Re-skin the filter bar (bindings unchanged)**
+- [x] **Step 4: Re-skin the filter bar (bindings unchanged)**
 
 Replace the filter bar `<div class="bg-white ...">` at lines 69–105 with a `<x-ui.card variant="teacher" flush>` wrapper; **keep the two `<flux:select wire:model.live=...>` blocks and the `wire:click="$set('rentangWaktu', ...)"` button loop byte-identical**, only wrapping the range buttons in `<x-ui.segmented>`:
 
@@ -575,26 +575,26 @@ Replace the filter bar `<div class="bg-white ...">` at lines 69–105 with a `<x
 
 > The `flex-1 sm:flex-none` addition makes the range buttons full-width on mobile (a real usability gain for thumb reach) without touching the `wire:click` logic.
 
-- [ ] **Step 5: Re-skin chart card shells in the partial (containers frozen)**
+- [x] **Step 5: Re-skin chart card shells in the partial (containers frozen)**
 
 In `resources/views/livewire/teacher/partials/dashboard-charts.blade.php`, wrap each of the 3 charts in `<x-ui.card variant="teacher" flush>` for consistent header/border/radius, but leave the inner `<div class="p-2 sm:p-4" wire:ignore x-data=... x-init="init()" @update-charts.window=...>` and every `id="chart-..."` element **exactly** as-is. For the empty states inside charts, you may swap the ad-hoc empty markup for `<x-ui.empty-state variant="teacher" ...>` **only** if it preserves the `x-show="empty"` / `x-show="!empty"` toggles — keep those Alpine directives on the same wrapping elements. If preserving the toggles cleanly is not trivial, leave the chart empty states unchanged (they are already acceptable).
 
-- [ ] **Step 6: Re-skin the right sidebar cards**
+- [x] **Step 6: Re-skin the right sidebar cards**
 
 Wrap the "Mata Pelajaran Diampu" card (lines 188–249) and "Panduan Indikator Keaktifan" card (lines 252–273) in `<x-ui.card variant="teacher" title="..." flush>`, moving their existing header text into the `title` prop and keeping the `@forelse($this->keaktifanPerKelas ...)` loop body and the panduan `@foreach` untouched.
 
-- [ ] **Step 7: Verify build + full dashboard test suite**
+- [x] **Step 7: Verify build + full dashboard test suite**
 
 Run: `npm run build`
 Expected: success.
 Run: `php vendor/bin/pest tests/Feature/TeacherDashboardStatsTest.php tests/Feature/TeacherDashboardDateFilterTest.php tests/Feature/TeacherActivityKeaktifanTest.php tests/Feature/TeacherDashboardCacheTest.php`
 Expected: PASS (unchanged).
 
-- [ ] **Step 8: Manual verification of the 3 charts + filters**
+- [x] **Step 8: Manual verification of the 3 charts + filters**
 
 Serve locally, open `/guru`: confirm (a) all 3 charts render, (b) changing Kelas/Mapel selects redraws charts, (c) Semester/Bulan/Minggu buttons redraw charts, (d) dark mode still themes charts, (e) mobile (<480px) charts shrink per the ApexCharts `responsive` block.
 
-- [ ] **Step 9: Checkpoint review**
+- [x] **Step 9: Checkpoint review**
 
 Run: `git diff -- resources/views/livewire/teacher/dashboard.blade.php resources/views/livewire/teacher/partials/dashboard-charts.blade.php`
 Expected: dashboard visual/card changes only; chart ids, Alpine factories, `wire:ignore`, and filter bindings unchanged. Do **not** commit unless the user explicitly asks.
@@ -611,12 +611,12 @@ Expected: dashboard visual/card changes only; chart ids, Alpine factories, `wire
 - Consumes: `<x-ui.section-heading>`, `<x-ui.metric-card>`, `<x-ui.card>`, `<x-ui.segmented>` (Task 2).
 - **Frozen:** the 4 summary items `$stats['hadir'|'izin'|'sakit'|'alpa']`; filters `wire:model.live="tanggalMulai"`, `wire:model.live="tanggalSelesai"`, `wire:click="$set('filterCepat', '...')"`; `$this->heatmapData` structure and its `$cellColors`/`$statusLabels` status keys (`hadir|absent|incomplete|no_activity|future|blank`); `$this->attendanceStreak`, `$this->mataPelajaranList`, `$this->motivationalMessage`.
 
-- [ ] **Step 1: Baseline tests green**
+- [x] **Step 1: Baseline tests green**
 
 Run: `php vendor/bin/pest tests/Feature/StudentDashboardCacheTest.php tests/Feature/Models/SiswaAttendanceBreakdownTest.php tests/Feature/Models/SiswaAttendanceStreakTest.php`
 Expected: PASS.
 
-- [ ] **Step 2: Replace greeting with `section-heading`**
+- [x] **Step 2: Replace greeting with `section-heading`**
 
 Replace lines 3–8 with:
 
@@ -627,11 +627,11 @@ Replace lines 3–8 with:
         subtitle="{{ ($this->siswa && $this->contextKelas) ? 'Kelas '.$this->contextKelas->tingkat_kelas.'-'.$this->contextKelas->grup_kelas : null }}" />
 ```
 
-- [ ] **Step 3: Re-skin the filter + summary card**
+- [x] **Step 3: Re-skin the filter + summary card**
 
 Keep the motivational message block (lines 11–18) as-is (it already fits the student identity). Wrap the filter+summary block (lines 19–95) in `<x-ui.card variant="student">`. **Preserve** the two `<input type="date" wire:model.live=...>` fields and the three `wire:click="$set('filterCepat', ...)"` buttons byte-identical; wrap the quick-filter pills' container unchanged (they are `rounded-full` pills — keep that student identity).
 
-- [ ] **Step 4: Replace the 4 summary cards with `metric-card`**
+- [x] **Step 4: Replace the 4 summary cards with `metric-card`**
 
 Replace the summary grid (lines 65–94) with — preserving the exact 4 items and their `$stats[...]` keys:
 
@@ -648,29 +648,29 @@ Replace the summary grid (lines 65–94) with — preserving the exact 4 items a
 
 > Count stays 4; keys stay `hadir/izin/sakit/alpa`; the connected date/quick filters above are untouched. This satisfies the "preserve number of attendance summary items + filters" constraint.
 
-- [ ] **Step 5: Re-skin the heatmap card (behavior frozen)**
+- [x] **Step 5: Re-skin the heatmap card (behavior frozen)**
 
 Wrap the heatmap (lines 103–196) in `<x-ui.card variant="student" title="Peta Kehadiran" flush>`. **Do not touch** the `@php $cellColors = [...] $statusLabels = [...] @endphp` arrays, the `$heatmap['weeks']` loops, the `grid grid-flow-col grid-rows-5` structure, or the `overflow-x-auto` wrapper. Permitted improvements only:
   - Improve the tooltip: change the day cell `title="..."` to also include the day name when present (readability), keeping the same data source: `title="{{ $day['formatted_date'] ? $day['day_name'].', '.$day['formatted_date'].' — '.($statusLabels[$day['status']] ?? '') : '' }}"`.
   - Improve legend spacing/wrap on mobile: keep all 5 legend items and their colors; only adjust `gap`/`text` classes.
   - Add `scroll-smooth` and a subtle right-edge fade hint for the horizontal scroll on mobile (visual only).
 
-- [ ] **Step 6: Re-skin the streak + panduan + subject-list cards**
+- [x] **Step 6: Re-skin the streak + panduan + subject-list cards**
 
 Wrap the Streak widget (lines 212–282), Panduan widget (lines 285–306), and "Mata Pelajaran Saya" card (lines 315–364) in `<x-ui.card variant="student" title="..." flush>`. Keep the streak `$milestones` PHP array, `$this->attendanceStreak`, progress-bar Alpine `x-data`, and the `@foreach($this->mataPelajaranList ...)` body untouched. Keep the emojis (they are part of the student identity and the spec allows emoji where already present).
 
-- [ ] **Step 7: Replace the two ad-hoc warning/empty blocks**
+- [x] **Step 7: Replace the two ad-hoc warning/empty blocks**
 
 Optionally swap the "Belum ada data Mata Pelajaran" (lines 358–363) and the no-student warning (lines 368–374) for `<x-ui.empty-state variant="student" ...>` — preserving the exact copy and the `@if($this->siswa)`/`@else` control flow.
 
-- [ ] **Step 8: Verify build + tests**
+- [x] **Step 8: Verify build + tests**
 
 Run: `npm run build`
 Expected: success.
 Run: `php vendor/bin/pest tests/Feature/StudentDashboardCacheTest.php tests/Feature/Models/SiswaAttendanceBreakdownTest.php tests/Feature/Models/SiswaAttendanceStreakTest.php`
 Expected: PASS.
 
-- [ ] **Step 9: Manual verification**
+- [x] **Step 9: Manual verification**
 
 Serve locally, open `/siswa`: confirm (a) 4 summary cards show correct counts, (b) date range + Semester/Bulan/Minggu filters still update the summary, (c) heatmap renders all week columns with correct colors + month labels + working tooltips, (d) horizontal scroll works on mobile width, (e) streak/subject cards render.
 
@@ -694,40 +694,40 @@ Expected: dashboard visual/card changes only; 4 summary keys, date filters, quic
 - Consumes shared UI components (Task 2).
 - **Frozen:** every `wire:model*`, `wire:click`, `wire:submit`, `wire:navigate`, validation error display (`@error`), route calls, and Livewire method names in these views. This is markup/skin only. The three Rector-protected components (`EditAktivitas.php`) are PHP — not edited here at all.
 
-- [ ] **Step 1: Baseline**
+- [x] **Step 1: Baseline**
 
 Run: `php vendor/bin/pest --filter=Aktivitas`
 Expected: PASS (record baseline; if zero tests match, note it and rely on manual + build).
 
-- [ ] **Step 2: Read each of the 4 blades fully**
+- [x] **Step 2: Read each of the 4 blades fully**
 
 Read all four files end-to-end to inventory their card wrappers, page headers, form fields, table/list rows, and empty states before editing.
 
-- [ ] **Step 3: Apply the shared system to `list-aktivitas.blade.php`**
+- [x] **Step 3: Apply the shared system to `list-aktivitas.blade.php`**
 
 - Replace the page header with `<x-ui.section-heading variant="teacher" title="..." subtitle="...">` (move existing "create" button into `<x-slot:action>`).
 - Wrap list/table container(s) in `<x-ui.card variant="teacher" flush>`.
 - Replace any bespoke empty state with `<x-ui.empty-state variant="teacher" ...>` preserving copy + any CTA `wire:navigate` link.
 - Ensure list rows are mobile-friendly: on `<sm`, stack row content vertically (`flex-col sm:flex-row`) and make each row a tappable card. Do not change any filter/search `wire:model`.
 
-- [ ] **Step 4: Apply the shared system to `create-aktivitas.blade.php` and `edit-aktivitas.blade.php`**
+- [x] **Step 4: Apply the shared system to `create-aktivitas.blade.php` and `edit-aktivitas.blade.php`**
 
 - Wrap the form in `<x-ui.card variant="teacher" title="...">`.
 - Group fields into logical sections with consistent spacing (`space-y-4`); keep every `<flux:input>/<flux:select>/<flux:textarea wire:model...>` and `@error` block byte-identical.
 - Make the submit/cancel action bar sticky-to-bottom on mobile (`sticky bottom-16 lg:static`) so long forms are usable one-handed. Keep `wire:submit`, `wire:loading`, and button `wire:click` targets unchanged.
 
-- [ ] **Step 5: Apply the shared system to `view-aktivitas.blade.php`**
+- [x] **Step 5: Apply the shared system to `view-aktivitas.blade.php`**
 
 - Wrap detail sections in `<x-ui.card variant="teacher" title="...">`.
 - Present per-student attendance/keaktifan rows with clear typographic hierarchy and status badges consistent with the dashboard's color mapping (Sangat Aktif=emerald, Aktif=blue, Cukup=amber, Pasif=rose). Keep all data bindings unchanged.
 
-- [ ] **Step 6: Verify build + tests + manual CRUD smoke**
+- [x] **Step 6: Verify build + tests + manual CRUD smoke**
 
 Run: `npm run build` → success.
 Run: `php vendor/bin/pest --filter=Aktivitas` → PASS (matches baseline).
 Manual: create → edit → view → list an aktivitas locally; confirm every field, validation message, and save works.
 
-- [ ] **Step 7: Checkpoint review**
+- [x] **Step 7: Checkpoint review**
 
 Run: `git diff -- resources/views/livewire/teacher/aktivitas-pembelajaran/`
 Expected: visual/layout changes only; form bindings, validation, routes, and actions unchanged. Do **not** commit unless the user explicitly asks.
@@ -744,33 +744,33 @@ Expected: visual/layout changes only; form bindings, validation, routes, and act
 **Interfaces:**
 - **Frozen:** all `wire:model*`/`wire:click` in Laporan filters, the report **export** form/button that posts to `route('reports.class.export')`, and the `export-class-report` gated action. `TeacherProfile.php` has Rector-protected `protected` validation methods — do not touch the PHP.
 
-- [ ] **Step 1: Baseline**
+- [x] **Step 1: Baseline**
 
 Run: `php vendor/bin/pest --filter=Laporan; php vendor/bin/pest --filter=Profile`
 Expected: PASS (or note absence; rely on manual + build).
 
-- [ ] **Step 2: Read both blades fully.**
+- [x] **Step 2: Read both blades fully.**
 
-- [ ] **Step 3: Re-skin `laporan.blade.php`**
+- [x] **Step 3: Re-skin `laporan.blade.php`**
 
 - Page header → `<x-ui.section-heading variant="teacher">`.
 - Filter controls → wrap in `<x-ui.card variant="teacher">` and, where multiple selects exist, align them in a responsive `grid sm:grid-cols-2 lg:grid-cols-3 gap-3`. Keep every `wire:model` verbatim.
 - The report table → wrap in `<x-ui.card flush>`; on mobile give the table `overflow-x-auto` and keep column headers; do not drop columns (data parity).
 - The **export button/form** stays functionally identical (same `method="POST"`, `@csrf`, `action`), only restyled to match the primary button style.
 
-- [ ] **Step 4: Re-skin `teacher-profile.blade.php`**
+- [x] **Step 4: Re-skin `teacher-profile.blade.php`**
 
 - Wrap profile info + edit form in `<x-ui.card variant="teacher" title="Profil Saya">`.
 - Keep all `wire:model`, `@error`, and save `wire:submit`/`wire:click` unchanged.
 - Improve avatar/name header block and field spacing (`space-y-4`).
 
-- [ ] **Step 5: Verify build + tests + manual**
+- [x] **Step 5: Verify build + tests + manual**
 
 Run: `npm run build` → success.
 Run: `php vendor/bin/pest --filter=Laporan; php vendor/bin/pest --filter=Profile` → PASS.
 Manual: apply a Laporan filter, trigger an export (confirm file downloads), edit + save profile.
 
-- [ ] **Step 6: Checkpoint review**
+- [x] **Step 6: Checkpoint review**
 
 Run: `git diff -- resources/views/livewire/teacher/laporan.blade.php resources/views/livewire/teacher/teacher-profile.blade.php`
 Expected: visual/layout changes only; report filters/export and profile bindings unchanged. Do **not** commit unless the user explicitly asks.
