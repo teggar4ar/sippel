@@ -18,3 +18,7 @@
 /.agents
 /skills-lock.json
 /.docker-compose.yml
+/.claude
+/.kilo
+/.opencode
+/.superpowers

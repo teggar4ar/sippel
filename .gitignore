@@ -31,3 +31,6 @@ skills-lock.json
 .graphifyignore
 AGENTS.md
 .kilo
+/.claude
+CLAUDE.md
+/.superpowers

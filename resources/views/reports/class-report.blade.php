@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -223,13 +224,16 @@
         }
     </style>
 </head>
+
 <body>
     <div class="page">
 
         {{-- ═══ Kop Surat ═══ --}}
         <div class="header">
             <div class="school-name">{{ config('app.school_name', 'SMP Islam Terpadu Al-Itqon') }}</div>
-            <div class="school-address">{{ config('app.school_address', 'Kp. Kandang Panjang, Jl. M. Otong, RT 001/006, Desa Tajurhalang, Kec. Tajurhalang, Kab. Bogor') }}</div>
+            <div class="school-address">
+                {{ config('app.school_address', 'Kp. Kandang Panjang, Jl. M. Otong, RT 001/006, Desa Tajurhalang, Kec. Tajurhalang, Kab. Bogor') }}
+            </div>
         </div>
 
         {{-- ═══ Judul Dokumen ═══ --}}
@@ -266,14 +270,14 @@
         </div>
 
         {{-- ═══ Ringkasan Kelas ═══ --}}
-        @if($laporanData->isNotEmpty())
+        @if ($laporanData->isNotEmpty())
             @php
                 $avgKehadiran = $laporanData->avg('rata_kehadiran');
                 $keaktifanWeights = $laporanData->pluck('rata_keaktifan')->filter()->map->weight();
                 $avgKeaktifan = $keaktifanWeights->isNotEmpty() ? $keaktifanWeights->avg() : 0;
                 $totalPertemuan = $laporanData->max('total_kehadiran') ?? 0;
 
-                $keaktifanLabel = match(true) {
+                $keaktifanLabel = match (true) {
                     $avgKeaktifan >= 3.5 => 'Sangat Aktif',
                     $avgKeaktifan >= 2.5 => 'Aktif',
                     $avgKeaktifan >= 1.5 => 'Cukup',
@@ -337,8 +341,10 @@
         <div class="keterangan">
             <strong>Keterangan:</strong>
             <ul>
-                <li><strong>% Kehadiran</strong>: Persentase kehadiran siswa selama aktivitas pembelajaran berlangsung.</li>
-                <li><strong>Keaktifan</strong>: Tingkat rata-rata keaktifan siswa (Sangat Aktif / Aktif / Cukup / Pasif).</li>
+                <li><strong>% Kehadiran</strong>: Persentase kehadiran siswa selama aktivitas pembelajaran berlangsung.
+                </li>
+                <li><strong>Keaktifan</strong>: Tingkat rata-rata keaktifan siswa (Sangat Aktif / Aktif / Cukup /
+                    Pasif).</li>
             </ul>
         </div>
 
@@ -372,4 +378,5 @@
     </div>
 
 </body>
+
 </html>
