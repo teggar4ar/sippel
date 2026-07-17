@@ -11,13 +11,11 @@
         </div>
     @endif
 
-    <x-ui.section-heading
-        title="Aktivitas Pembelajaran"
-        subtitle="Kelola catatan aktivitas dan observasi kelas harian Anda"
-    >
+    <x-ui.section-heading title="Aktivitas Pembelajaran"
+        subtitle="Kelola catatan aktivitas dan observasi kelas harian Anda">
         <x-slot:action>
             <a href="{{ route('teacher.aktivitas.create') }}" wire:navigate
-               class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm cursor-pointer">
+                class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm cursor-pointer">
                 <flux:icon name="plus" class="w-4 h-4" />
                 Buat Aktivitas
             </a>
@@ -29,15 +27,15 @@
         {{-- Quick filter pills --}}
         <div class="px-3 pt-3 flex flex-wrap gap-1.5">
             <button wire:click="setQuickFilter('today')"
-                    class="px-3 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer {{ $filterPeriode === 'today' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600' }}">
+                class="px-3 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer {{ $filterPeriode === 'today' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600' }}">
                 Hari Ini
             </button>
             <button wire:click="setQuickFilter('week')"
-                    class="px-3 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer {{ $filterPeriode === 'week' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600' }}">
+                class="px-3 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer {{ $filterPeriode === 'week' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600' }}">
                 Minggu Ini
             </button>
             <button wire:click="setQuickFilter('month')"
-                    class="px-3 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer {{ $filterPeriode === 'month' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600' }}">
+                class="px-3 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer {{ $filterPeriode === 'month' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600' }}">
                 Bulan Ini
             </button>
         </div>
@@ -47,31 +45,25 @@
             <div class="flex flex-col sm:flex-row gap-2">
                 {{-- Search --}}
                 <div class="flex-1">
-                    <flux:input
-                        wire:model.live.debounce.300ms="search"
-                        type="text"
-                        inputmode="search"
-                        placeholder="Cari topik..."
-                        icon="magnifying-glass"
-                        class:input="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                    />
+                    <flux:input wire:model.live.debounce.300ms="search" type="text" inputmode="search"
+                        placeholder="Cari topik..." icon="magnifying-glass"
+                        class:input="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0" />
                 </div>
                 {{-- Mapel dropdown --}}
                 <div class="sm:w-44">
-                    <flux:select
-                        wire:model.live="filterMapel"
-                        class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
-                    >
+                    <flux:select wire:model.live="filterMapel"
+                        class="border-slate-200 dark:border-slate-600 dark:bg-slate-900 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0">
                         <option value="">Semua Mapel</option>
-                        @foreach($this->mataPelajaran as $mapel)
-                            <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }} ({{ $mapel->kelas?->tingkat_kelas }}-{{ $mapel->kelas?->grup_kelas }})</option>
+                        @foreach ($this->mataPelajaran as $mapel)
+                            <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}
+                                ({{ $mapel->kelas?->tingkat_kelas }}-{{ $mapel->kelas?->grup_kelas }})</option>
                         @endforeach
                     </flux:select>
                 </div>
                 {{-- Reset button --}}
-                @if($filterMapel || $filterPeriode || $search)
+                @if ($filterMapel || $filterPeriode || $search)
                     <button wire:click="clearFilters"
-                            class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors shrink-0 cursor-pointer">
+                        class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors shrink-0 cursor-pointer">
                         <flux:icon name="arrow-path" class="w-3.5 h-3.5" />
                         <span class="hidden sm:inline">Reset</span>
                     </button>
@@ -81,7 +73,7 @@
     </x-ui.card>
 
     {{-- ═══ Activity List ═══ --}}
-    @if($this->aktivitas->count() > 0)
+    @if ($this->aktivitas->count() > 0)
         <x-ui.card title="Riwayat Aktivitas Pembelajaran" flush>
 
             {{-- ═══ Desktop Table (lg+) ═══ --}}
@@ -97,17 +89,23 @@
                         <flux:table.column>Aksi</flux:table.column>
                     </flux:table.columns>
                     <flux:table.rows>
-                        @foreach($this->aktivitas as $aktivitas)
+                        @foreach ($this->aktivitas as $aktivitas)
                             @php
                                 $details = $aktivitas->detailAktivitas;
                                 $totalSiswa = $details->count();
-                                $hadirCount = $details->filter(fn($d) => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir)->count();
+                                $hadirCount = $details
+                                    ->filter(fn($d) => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir)
+                                    ->count();
                                 $kehadiranPct = $totalSiswa > 0 ? round(($hadirCount / $totalSiswa) * 100) : 0;
 
-                                $hadirDetails = $details->filter(fn($d) => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir);
-                                $keaktifanWeights = $hadirDetails->whereNotNull('keaktifan')->map(fn($d) => $d->keaktifan->weight());
+                                $hadirDetails = $details->filter(
+                                    fn($d) => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir,
+                                );
+                                $keaktifanWeights = $hadirDetails
+                                    ->whereNotNull('keaktifan')
+                                    ->map(fn($d) => $d->keaktifan->weight());
                                 $avgKeaktifan = $keaktifanWeights->isNotEmpty() ? $keaktifanWeights->avg() : 0;
-                                $keaktifanLabel = match(true) {
+                                $keaktifanLabel = match (true) {
                                     $avgKeaktifan >= 3.5 => ['Sangat Aktif', 'green'],
                                     $avgKeaktifan >= 2.5 => ['Aktif', 'blue'],
                                     $avgKeaktifan >= 1.5 => ['Cukup', 'amber'],
@@ -117,43 +115,53 @@
                             @endphp
                             <flux:table.row :key="$aktivitas->id">
                                 <flux:table.cell class="whitespace-nowrap text-slate-600 dark:text-slate-300">
-                                    <div class="text-xs tabular-nums">{{ $aktivitas->tanggal->translatedFormat('d M Y') }}</div>
-                                    <div class="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">{{ $aktivitas->created_at->setTimezone('Asia/Jakarta')->format('H:i') }} WIB</div>
+                                    <div class="text-xs tabular-nums">
+                                        {{ $aktivitas->tanggal->translatedFormat('d M Y') }}</div>
+                                    <div class="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">
+                                        {{ $aktivitas->created_at->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
+                                    </div>
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <span class="text-xs font-medium px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
+                                    <span
+                                        class="text-xs font-medium px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
                                         {{ $aktivitas->kelas->tingkat_kelas }}-{{ $aktivitas->kelas->grup_kelas }}
                                     </span>
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <span class="text-sm text-slate-900 dark:text-white">{{ $aktivitas->mataPelajaran->nama_mapel }}</span>
+                                    <span
+                                        class="text-sm text-slate-900 dark:text-white">{{ $aktivitas->mataPelajaran->nama_mapel }}</span>
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <span class="text-sm font-medium text-slate-900 dark:text-white" title="{{ $aktivitas->topik }}">{{ Str::limit($aktivitas->topik, 30) }}</span>
+                                    <span class="text-sm font-medium text-slate-900 dark:text-white"
+                                        title="{{ $aktivitas->topik }}">{{ Str::limit($aktivitas->topik, 30) }}</span>
                                 </flux:table.cell>
                                 <flux:table.cell>
                                     <div class="flex flex-col gap-1 min-w-[3.5rem]">
-                                        <span class="text-sm tabular-nums font-semibold {{ $kehadiranPct >= 80 ? 'text-emerald-600 dark:text-emerald-400' : ($kehadiranPct >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') }}">
+                                        <span
+                                            class="text-sm tabular-nums font-semibold {{ $kehadiranPct >= 80 ? 'text-emerald-600 dark:text-emerald-400' : ($kehadiranPct >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') }}">
                                             {{ $kehadiranPct }}%
                                         </span>
-                                        <div class="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                            <div class="h-full rounded-full {{ $kehadiranPct >= 80 ? 'bg-emerald-500' : ($kehadiranPct >= 60 ? 'bg-amber-500' : 'bg-red-500') }}" x-data="{ w: @js(min($kehadiranPct, 100)) }" x-bind:style="`width: ${w}%`"></div>
+                                        <div
+                                            class="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                            <div class="h-full rounded-full {{ $kehadiranPct >= 80 ? 'bg-emerald-500' : ($kehadiranPct >= 60 ? 'bg-amber-500' : 'bg-red-500') }}"
+                                                x-data="{ w: @js(min($kehadiranPct, 100)) }" x-bind:style="`width: ${w}%`"></div>
                                         </div>
                                     </div>
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <flux:badge color="{{ $keaktifanLabel[1] }}" size="sm" inset="top bottom">{{ $keaktifanLabel[0] }}</flux:badge>
+                                    <flux:badge color="{{ $keaktifanLabel[1] }}" size="sm" inset="top bottom">
+                                        {{ $keaktifanLabel[0] }}</flux:badge>
                                 </flux:table.cell>
                                 <flux:table.cell>
                                     <div class="flex items-center gap-0.5">
                                         <a href="{{ route('teacher.aktivitas.view', $aktivitas->id) }}" wire:navigate
-                                           class="p-1.5 text-blue-500 dark:text-blue-400 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"
-                                           title="Lihat">
+                                            class="p-1.5 text-blue-500 dark:text-blue-400 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"
+                                            title="Lihat">
                                             <flux:icon name="eye" class="w-4 h-4" />
                                         </a>
                                         <a href="{{ route('teacher.aktivitas.edit', $aktivitas->id) }}" wire:navigate
-                                           class="p-1.5 text-amber-500 dark:text-amber-400 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded transition-colors"
-                                           title="Edit">
+                                            class="p-1.5 text-amber-500 dark:text-amber-400 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded transition-colors"
+                                            title="Edit">
                                             <flux:icon name="pencil" class="w-4 h-4" />
                                         </a>
                                         <button
@@ -172,17 +180,21 @@
 
             {{-- ═══ Mobile Cards (< lg) ═══ --}}
             <div class="lg:hidden divide-y divide-slate-100 dark:divide-slate-700">
-                @foreach($this->aktivitas as $aktivitas)
+                @foreach ($this->aktivitas as $aktivitas)
                     @php
                         $details = $aktivitas->detailAktivitas;
                         $totalSiswa = $details->count();
-                        $hadirCount = $details->filter(fn($d) => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir)->count();
+                        $hadirCount = $details
+                            ->filter(fn($d) => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir)
+                            ->count();
                         $kehadiranPct = $totalSiswa > 0 ? round(($hadirCount / $totalSiswa) * 100) : 0;
 
                         $hadirDetails = $details->filter(fn($d) => $d->kehadiran === \App\Enums\KehadiranStatus::Hadir);
-                        $keaktifanWeights = $hadirDetails->whereNotNull('keaktifan')->map(fn($d) => $d->keaktifan->weight());
+                        $keaktifanWeights = $hadirDetails
+                            ->whereNotNull('keaktifan')
+                            ->map(fn($d) => $d->keaktifan->weight());
                         $avgKeaktifan = $keaktifanWeights->isNotEmpty() ? $keaktifanWeights->avg() : 0;
-                        $keaktifanLabel = match(true) {
+                        $keaktifanLabel = match (true) {
                             $avgKeaktifan >= 3.5 => ['Sangat Aktif', 'green'],
                             $avgKeaktifan >= 2.5 => ['Aktif', 'blue'],
                             $avgKeaktifan >= 1.5 => ['Cukup', 'amber'],
@@ -191,10 +203,11 @@
                         };
                     @endphp
 
-                    <div class="p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors" wire:key="mobile-{{ $aktivitas->id }}">
+                    <div class="p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                        wire:key="mobile-{{ $aktivitas->id }}">
                         <div class="flex items-start justify-between gap-2">
                             <a href="{{ route('teacher.aktivitas.view', $aktivitas->id) }}" wire:navigate
-                               class="block flex-1 min-w-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                                class="block flex-1 min-w-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                                 {{-- Top row: date + kelas --}}
                                 <div class="flex items-center gap-2 min-w-0 mb-2">
                                     <span class="text-xs font-bold tabular-nums text-blue-600 dark:text-blue-400">
@@ -203,7 +216,8 @@
                                     <span class="text-[10px] tabular-nums text-slate-400 dark:text-slate-500">
                                         {{ $aktivitas->created_at->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
                                     </span>
-                                    <span class="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded">
+                                    <span
+                                        class="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded">
                                         {{ $aktivitas->kelas->tingkat_kelas }}-{{ $aktivitas->kelas->grup_kelas }}
                                     </span>
                                     <span class="text-xs text-slate-500 dark:text-slate-400 truncate">
@@ -218,19 +232,22 @@
 
                                 {{-- Stats row: kehadiran + keaktifan --}}
                                 <div class="flex items-center gap-3">
-                                    <span class="text-xs tabular-nums {{ $kehadiranPct >= 80 ? 'text-emerald-600 dark:text-emerald-400' : ($kehadiranPct >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') }} font-semibold">
-                                        <flux:icon name="users" class="w-3 h-3 inline -mt-0.5" /> {{ $kehadiranPct }}%
+                                    <span
+                                        class="text-xs tabular-nums {{ $kehadiranPct >= 80 ? 'text-emerald-600 dark:text-emerald-400' : ($kehadiranPct >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') }} font-semibold">
+                                        <flux:icon name="users" class="w-3 h-3 inline -mt-0.5" />
+                                        {{ $kehadiranPct }}%
                                     </span>
-                                    <flux:badge color="{{ $keaktifanLabel[1] }}" size="sm">{{ $keaktifanLabel[0] }}</flux:badge>
+                                    <flux:badge color="{{ $keaktifanLabel[1] }}" size="sm">
+                                        {{ $keaktifanLabel[0] }}</flux:badge>
                                 </div>
                             </a>
                             <div class="flex items-center gap-0 shrink-0">
                                 <a href="{{ route('teacher.aktivitas.view', $aktivitas->id) }}" wire:navigate
-                                   class="p-1 text-blue-500 dark:text-blue-400 rounded transition-colors">
+                                    class="p-1 text-blue-500 dark:text-blue-400 rounded transition-colors">
                                     <flux:icon name="eye" class="w-3.5 h-3.5" />
                                 </a>
                                 <a href="{{ route('teacher.aktivitas.edit', $aktivitas->id) }}" wire:navigate
-                                   class="p-1 text-amber-500 dark:text-amber-400 rounded transition-colors">
+                                    class="p-1 text-amber-500 dark:text-amber-400 rounded transition-colors">
                                     <flux:icon name="pencil" class="w-3.5 h-3.5" />
                                 </a>
                                 <button
@@ -249,20 +266,22 @@
     @else
         {{-- Empty state --}}
         <x-ui.card class="text-center">
-            @if($filterMapel || $filterPeriode || $search)
-                <x-ui.empty-state icon="magnifying-glass" title="Tidak ada hasil" message="Coba ubah filter atau reset">
+            @if ($filterMapel || $filterPeriode || $search)
+                <x-ui.empty-state icon="magnifying-glass" title="Tidak ada hasil"
+                    message="Coba ubah filter atau reset">
                     <x-slot:cta>
                         <button wire:click="clearFilters"
-                                class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer">
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer">
                             Reset Filter
                         </button>
                     </x-slot:cta>
                 </x-ui.empty-state>
             @else
-                <x-ui.empty-state icon="clipboard-document-list" title="Belum Ada Aktivitas" message="Mulai dengan membuat aktivitas pertama">
+                <x-ui.empty-state icon="clipboard-document-list" title="Belum Ada Aktivitas"
+                    message="Mulai dengan membuat aktivitas pertama">
                     <x-slot:cta>
                         <a href="{{ route('teacher.aktivitas.create') }}" wire:navigate
-                           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer">
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer">
                             <flux:icon name="plus" class="w-4 h-4" />
                             Buat Aktivitas
                         </a>
@@ -276,7 +295,8 @@
     <flux:modal wire:model.self="showDeleteModal" class="min-w-[22rem] max-w-sm">
         <div class="space-y-5">
             {{-- Icon --}}
-            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-50 dark:bg-red-950/50 rounded-full ring-4 ring-red-100 dark:ring-red-900/30">
+            <div
+                class="flex items-center justify-center w-12 h-12 mx-auto bg-red-50 dark:bg-red-950/50 rounded-full ring-4 ring-red-100 dark:ring-red-900/30">
                 <flux:icon name="exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
 
@@ -295,12 +315,8 @@
                 <flux:modal.close>
                     <flux:button variant="ghost" class="cursor-pointer">Batal</flux:button>
                 </flux:modal.close>
-                <flux:button
-                    wire:click="deleteAktivitas"
-                    wire:loading.attr="disabled"
-                    variant="danger"
-                    class="cursor-pointer"
-                >
+                <flux:button wire:click="deleteAktivitas" wire:loading.attr="disabled" variant="danger"
+                    class="cursor-pointer">
                     <span wire:loading.remove wire:target="deleteAktivitas">Hapus</span>
                     <span wire:loading wire:target="deleteAktivitas">Menghapus...</span>
                 </flux:button>

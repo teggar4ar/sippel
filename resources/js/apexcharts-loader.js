@@ -7,3 +7,5 @@ import 'apexcharts/pie';                     // registers: pie + donut
 import 'apexcharts/features/legend';
 
 window.ApexCharts = ApexCharts;
+
+import './charts/teacher-dashboard-charts';

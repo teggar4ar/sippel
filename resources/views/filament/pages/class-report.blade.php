@@ -17,18 +17,12 @@
                         Lihat Preview
                     </x-filament::button>
 
-                    @if($previewData && $previewData['hasData'])
-                        <x-filament::button
-                            wire:click="downloadPdf"
-                            color="success"
-                            icon="heroicon-o-arrow-down-tray">
+                    @if ($previewData && $previewData['hasData'])
+                        <x-filament::button wire:click="downloadPdf" color="success" icon="heroicon-o-arrow-down-tray">
                             Download PDF
                         </x-filament::button>
 
-                        <x-filament::button
-                            wire:click="exportExcel"
-                            color="info"
-                            icon="heroicon-o-table-cells">
+                        <x-filament::button wire:click="exportExcel" color="info" icon="heroicon-o-table-cells">
                             Export Excel
                         </x-filament::button>
                     @endif
@@ -37,7 +31,7 @@
         </x-filament::section>
 
         {{-- Preview Section --}}
-        @if($previewData)
+        @if ($previewData)
             <x-filament::section>
                 <x-slot name="heading">
                     <div class="flex items-center gap-2">
@@ -46,9 +40,10 @@
                     </div>
                 </x-slot>
 
-                @if($previewData['hasData'])
+                @if ($previewData['hasData'])
                     {{-- Class Info --}}
-                    <div class="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+                    <div
+                        class="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
                         <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
                             <div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Kelas</p>
@@ -58,17 +53,20 @@
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Mata Pelajaran</p>
-                                <p class="font-semibold text-gray-900 dark:text-white">{{ $previewData['mataPelajaran']->nama_mapel }}</p>
+                                <p class="font-semibold text-gray-900 dark:text-white">
+                                    {{ $previewData['mataPelajaran']->nama_mapel }}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Tahun Ajaran</p>
                                 <p class="font-semibold text-gray-900 dark:text-white">
-                                    {{ $previewData['tahunAjaran']->nama_tahun }} - {{ $previewData['tahunAjaran']->semester }}
+                                    {{ $previewData['tahunAjaran']->nama_tahun }} -
+                                    {{ $previewData['tahunAjaran']->semester }}
                                 </p>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Jumlah Siswa</p>
-                                <p class="font-semibold text-gray-900 dark:text-white">{{ $previewData['laporanData']->count() }} siswa</p>
+                                <p class="font-semibold text-gray-900 dark:text-white">
+                                    {{ $previewData['laporanData']->count() }} siswa</p>
                             </div>
                         </div>
                     </div>
@@ -80,26 +78,34 @@
                                 <tr class="border-b dark:border-gray-700">
                                     <th class="pb-3 text-left font-medium text-gray-500 dark:text-gray-400">No</th>
                                     <th class="pb-3 text-left font-medium text-gray-500 dark:text-gray-400">NIS</th>
-                                    <th class="pb-3 text-left font-medium text-gray-500 dark:text-gray-400">Nama Siswa</th>
-                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Kehadiran (%)</th>
+                                    <th class="pb-3 text-left font-medium text-gray-500 dark:text-gray-400">Nama Siswa
+                                    </th>
+                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Kehadiran
+                                        (%)</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Hadir</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Izin</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Sakit</th>
                                     <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Alpa</th>
-                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Keaktifan</th>
+                                    <th class="pb-3 text-center font-medium text-gray-500 dark:text-gray-400">Keaktifan
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y dark:divide-gray-700">
-                                @foreach($previewData['laporanData'] as $index => $laporan)
+                                @foreach ($previewData['laporanData'] as $index => $laporan)
                                     <tr class="{{ $index < 3 ? 'bg-yellow-50 dark:bg-yellow-500/10' : '' }}">
                                         <td class="py-3 text-gray-900 dark:text-white">{{ $index + 1 }}</td>
-                                        <td class="py-3 text-gray-600 dark:text-gray-300">{{ $laporan->siswa?->nis }}</td>
-                                        <td class="py-3 text-gray-900 dark:text-white">{{ $laporan->siswa?->user?->name }}</td>
+                                        <td class="py-3 text-gray-600 dark:text-gray-300">{{ $laporan->siswa?->nis }}
+                                        </td>
+                                        <td class="py-3 text-gray-900 dark:text-white">
+                                            {{ $laporan->siswa?->user?->name }}</td>
                                         <td class="py-3 text-center">
-                                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                                                {{ $laporan->rata_kehadiran >= 80 ? 'bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400' :
-                                                   ($laporan->rata_kehadiran >= 60 ? 'bg-warning-100 text-warning-700 dark:bg-warning-500/20 dark:text-warning-400' :
-                                                   'bg-danger-100 text-danger-700 dark:bg-danger-500/20 dark:text-danger-400') }}">
+                                            <span
+                                                class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                                {{ $laporan->rata_kehadiran >= 80
+                                                    ? 'bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400'
+                                                    : ($laporan->rata_kehadiran >= 60
+                                                        ? 'bg-warning-100 text-warning-700 dark:bg-warning-500/20 dark:text-warning-400'
+                                                        : 'bg-danger-100 text-danger-700 dark:bg-danger-500/20 dark:text-danger-400') }}">
                                                 {{ number_format($laporan->rata_kehadiran, 1) }}%
                                             </span>
                                         </td>
@@ -118,14 +124,19 @@
                                         <td class="py-3 text-center">
                                             @php
                                                 $keaktifanLabel = $laporan->rata_keaktifan?->label() ?? '-';
-                                                $keaktifanColor = match($laporan->rata_keaktifan) {
-                                                    \App\Enums\Keaktifan::SangatAktif => 'bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400',
-                                                    \App\Enums\Keaktifan::Aktif => 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-400',
-                                                    \App\Enums\Keaktifan::Cukup => 'bg-warning-100 text-warning-700 dark:bg-warning-500/20 dark:text-warning-400',
-                                                    default => 'bg-danger-100 text-danger-700 dark:bg-danger-500/20 dark:text-danger-400',
+                                                $keaktifanColor = match ($laporan->rata_keaktifan) {
+                                                    \App\Enums\Keaktifan::SangatAktif
+                                                        => 'bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400',
+                                                    \App\Enums\Keaktifan::Aktif
+                                                        => 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-400',
+                                                    \App\Enums\Keaktifan::Cukup
+                                                        => 'bg-warning-100 text-warning-700 dark:bg-warning-500/20 dark:text-warning-400',
+                                                    default
+                                                        => 'bg-danger-100 text-danger-700 dark:bg-danger-500/20 dark:text-danger-400',
                                                 };
                                             @endphp
-                                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $keaktifanColor }}">
+                                            <span
+                                                class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $keaktifanColor }}">
                                                 {{ $keaktifanLabel }}
                                             </span>
                                         </td>
@@ -135,7 +146,8 @@
                         </table>
                     </div>
                 @else
-                    <div class="rounded-lg border border-warning-200 bg-warning-50 p-6 text-center dark:border-warning-800 dark:bg-warning-900/20">
+                    <div
+                        class="rounded-lg border border-warning-200 bg-warning-50 p-6 text-center dark:border-warning-800 dark:bg-warning-900/20">
                         <x-heroicon-o-exclamation-triangle class="mx-auto h-12 w-12 text-warning-500" />
                         <h3 class="mt-2 text-lg font-medium text-warning-800 dark:text-warning-200">Tidak Ada Data</h3>
                         <p class="mt-1 text-sm text-warning-600 dark:text-warning-400">

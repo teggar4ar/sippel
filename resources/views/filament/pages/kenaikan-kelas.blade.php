@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    @if(!$activeTahunAjaran)
+    @if (!$activeTahunAjaran)
         <x-filament::section>
             <div class="flex items-center gap-4 text-warning-600 dark:text-warning-400">
                 <x-heroicon-o-exclamation-triangle class="h-8 w-8" />
@@ -26,7 +26,7 @@
         </x-filament::section>
     @else
         <form wire:submit="create">
-             {{ $this->form }}
+            {{ $this->form }}
         </form>
     @endif
 </x-filament-panels::page>
